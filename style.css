@@ -1,0 +1,163 @@
+/* 简洁待办清单 - 自定义样式 */
+
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 任务项动画 */
+.task-item {
+    animation: fadeInUp 0.3s ease-out;
+    transition: all 0.2s ease;
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 完成状态过渡 */
+.task-content {
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+/* 按钮点击效果 */
+button:active {
+    transform: scale(0.98);
+}
+
+/* 输入框焦点效果增强 */
+input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 加载动画 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 空状态动画 */
+#emptyState {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 完成按钮动画 */
+.complete-btn {
+    transition: all 0.2s ease;
+}
+
+.complete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 删除按钮动画 */
+.delete-btn {
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 筛选按钮激活状态 */
+.filter-btn.active {
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* 统计卡片动画 */
+#totalTasks, #completedTasks {
+    transition: all 0.3s ease;
+}
+
+/* 通知动画 */
+.notification {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 打印样式 */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .task-item {
+        border: 1px solid #ddd !important;
+        margin-bottom: 10px !important;
+    }
+}
