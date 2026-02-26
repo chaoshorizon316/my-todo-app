@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简洁待办清单 | Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">
+                <i class="fas fa-check-circle text-blue-500 mr-3"></i>
+                简洁待办清单
+            </h1>
+            <p class="text-gray-600 text-lg">专注完成重要的事情，提高工作效率</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧：添加任务和统计 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 sticky top-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-plus-circle text-green-500 mr-2"></i>
+                        添加新任务
+                    </h2>
+
+                    <div class="mb-6">
+                        <div class="flex mb-4">
+                            <input
+                                type="text"
+                                id="taskInput"
+                                placeholder="输入任务内容，如：完成项目报告"
+                                class="flex-grow px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                autocomplete="off"
+                            >
+                            <button
+                                id="addTaskBtn"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-r-lg transition duration-200 font-medium"
+                            >
+                                <i class="fas fa-plus mr-2"></i>添加
+                            </button>
+                        </div>
+
+                        <div class="text-sm text-gray-500 mb-2">
+                            <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                            提示：按 Enter 键快速添加任务
+                        </div>
+                    </div>
+
+                    <!-- 统计信息 -->
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-chart-bar text-purple-500 mr-2"></i>
+                            任务统计
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                <div class="text-2xl font-bold text-blue-600" id="totalTasks">0</div>
+                                <div class="text-sm text-blue-800">总任务</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg text-center">
+                                <div class="text-2xl font-bold text-green-600" id="completedTasks">0</div>
+                                <div class="text-sm text-green-800">已完成</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="border-t pt-6">
+                        <button
+                            id="clearCompletedBtn"
+                            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition duration-200 font-medium mb-3"
+                        >
+                            <i class="fas fa-trash-alt mr-2"></i>清空已完成任务
+                        </button>
+                        <button
+                            id="clearAllBtn"
+                            class="w-full bg-red-50 hover:bg-red-100 text-red-600 py-3 rounded-lg transition duration-200 font-medium"
+                        >
+                            <i class="fas fa-broom mr-2"></i>清空所有任务
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 使用说明 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                        使用说明
+                    </h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>输入任务内容，点击"添加"或按Enter键</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>点击任务文本标记为完成/未完成</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>点击删除按钮 <i class="fas fa-times text-red-500"></i> 删除任务</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>任务数据自动保存，刷新页面不会丢失</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 右侧：任务列表 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg p-6 h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-tasks text-blue-500 mr-3"></i>
+                            任务列表
+                        </h2>
+                        <div class="text-gray-500">
+                            <span id="filterStatus">全部任务</span>
+                        </div>
+                    </div>
+
+                    <!-- 筛选按钮 -->
+                    <div class="flex space-x-2 mb-6">
+                        <button
+                            data-filter="all"
+                            class="filter-btn active bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition duration-200"
+                        >
+                            全部
+                        </button>
+                        <button
+                            data-filter="active"
+                            class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition duration-200"
+                        >
+                            进行中
+                        </button>
+                        <button
+                            data-filter="completed"
+                            class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition duration-200"
+                        >
+                            已完成
+                        </button>
+                    </div>
+
+                    <!-- 任务列表容器 -->
+                    <div id="tasksContainer" class="space-y-4">
+                        <!-- 空状态 -->
+                        <div id="emptyState" class="text-center py-12">
+                            <div class="text-gray-400 text-6xl mb-4">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-500 mb-2">还没有任务</h3>
+                            <p class="text-gray-400 mb-6">添加你的第一个待办事项，开始高效工作吧！</p>
+                            <button
+                                id="addExampleBtn"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 font-medium inline-flex items-center"
+                            >
+                                <i class="fas fa-magic mr-2"></i>添加示例任务
+                            </button>
+                        </div>
+
+                        <!-- 任务项会通过JS动态添加到这里 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="text-center mt-12 pt-8 border-t border-gray-200">
+            <p class="text-gray-500">
+                简洁待办清单 &copy; 2026 | 使用
+                <span class="text-blue-500 font-medium">HTML</span>,
+                <span class="text-blue-500 font-medium">Tailwind CSS</span> 和
+                <span class="text-blue-500 font-medium">JavaScript</span> 构建
+            </p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
