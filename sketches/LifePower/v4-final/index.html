@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>守望电量 LifePower v4</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+  background: #1a1a2e;
+  display: flex; justify-content: center; align-items: center; min-height: 100vh;
+}
+.phone {
+  width: 375px; height: 750px;
+  background: linear-gradient(180deg, #fef7f2 0%, #faf5ff 50%, #fef7f2 100%);
+  border-radius: 40px; overflow: hidden; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header { padding: 50px 24px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #9ca3af; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.profile-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#f97316,#ec4899); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; border:none; }
+.share-icon-btn { font-size:18px; cursor:pointer; background:none; border:none; padding:4px; }
+
+/* Screens */
+.screen { display: none; height: calc(100% - 130px); overflow-y: auto; padding: 0 24px; }
+.screen.active { display: block; }
+.screen::-webkit-scrollbar { width: 0; }
+
+/* Fullscreen onboarding overlay */
+.onboard-overlay {
+  display: none; position: absolute; inset: 0; z-index: 100;
+  background: linear-gradient(180deg, #fdf2f8, #f0f9ff, #fdf2f8);
+  border-radius: 40px; padding: 80px 24px 40px; overflow-y: auto;
+}
+.onboard-overlay.active { display: block; }
+.onboard-overlay::-webkit-scrollbar { width: 0; }
+.progress-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 32px; }
+.progress-dots span { width: 28px; height: 5px; border-radius: 3px; background: #e5e7eb; transition: all 0.3s; }
+.progress-dots span.done { background: linear-gradient(90deg, #f97316, #ec4899); }
+.ob-title { font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+.ob-sub { font-size: 14px; color: #9ca3af; margin-bottom: 24px; line-height: 1.7; }
+.ob-step { display: none; }
+.ob-step.active { display: block; }
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip {
+  padding: 10px 16px; border-radius: 14px; border: 1.5px solid #f3f4f6;
+  background: #fff; font-size: 13px; color: #6b7280; cursor: pointer; transition: all 0.2s;
+}
+.chip:hover { border-color: #f97316; }
+.chip.selected { border-color: #f97316; background: #fff7ed; color: #f97316; font-weight: 600; }
+.section-label { font-size: 11px; color: #d1d5db; margin: 16px 0 8px; letter-spacing: 1px; }
+.ob-btn {
+  width: 100%; padding: 15px; margin-top: 28px; border-radius: 16px;
+  border: none; background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+}
+.ob-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Profile Panel */
+.profile-panel {
+  display: none; position: absolute; top: 0; right: 0; width: 280px; height: 100%;
+  background: #fff; z-index: 90; border-radius: 0 40px 40px 0; padding: 60px 20px 30px;
+  box-shadow: -4px 0 30px rgba(0,0,0,0.1);
+}
+.profile-panel.active { display: block; }
+.profile-close { position: absolute; top: 50px; right: 20px; font-size: 20px; cursor: pointer; color: #9ca3af; }
+.profile-name { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+.profile-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 20px; }
+.profile-tag { font-size: 10px; padding: 3px 8px; border-radius: 10px; background: #fff7ed; color: #f97316; }
+.profile-stat { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9fafb; font-size: 13px; color: #6b7280; }
+
+/* HOME */
+.battery-wrap { text-align: center; padding: 10px 0; }
+.battery {
+  position: relative; width: 110px; height: 200px; margin: 0 auto 10px;
+}
+.bat-body {
+  width: 110px; height: 180px; border-radius: 18px; border: 5px solid #e5e7eb;
+  background: #f9fafb; position: relative; overflow: hidden;
+}
+.bat-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+  border-radius: 0 0 13px 13px; transition: height 1s;
+}
+.bat-cap { width: 36px; height: 9px; background: #d1d5db; border-radius: 3px 3px 0 0; margin: 0 auto; }
+.bat-num { font-size: 38px; font-weight: 800; color: #f59e0b; margin-top: -150px; position: relative; z-index: 1; }
+.bat-unit { font-size: 13px; color: #9ca3af; }
+.trend { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; margin: 6px 0; }
+.trend.down { background: #fef2f2; color: #ef4444; }
+.trend.up { background: #ecfdf5; color: #10b981; }
+
+/* AI Quote */
+.ai-quote {
+  background: #fff; border-radius: 18px; padding: 16px; margin: 12px 0;
+  text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.04); position: relative;
+}
+.ai-quote .ai-icon { font-size: 20px; margin-bottom: 6px; }
+.ai-quote .ai-text { font-size: 13px; color: #6b7280; line-height: 1.7; font-style: italic; }
+.ai-quote .ai-tag { font-size: 9px; color: #d1d5db; margin-top: 6px; }
+
+/* Mode indicator */
+.mode-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 14px; }
+.mode-dot { width: 8px; height: 8px; border-radius: 50%; background: #f97316; }
+.mode-dot.future { background: #e5e7eb; }
+.mode-label { font-size: 10px; color: #9ca3af; text-align: center; }
+
+/* MOOD */
+.mood-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.time-tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #fff; color: #ec4899; }
+.mood-q { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 12px; }
+.mood-grid-8 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 16px; }
+.mood-opt {
+  background: #fff; border-radius: 14px; padding: 11px 10px; display: flex; align-items: center; gap: 8px;
+  cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+}
+.mood-opt:hover { border-color: #fcd34d; }
+.mood-opt.selected { border-color: #f97316; background: #fff7ed; }
+.mood-opt .emo { font-size: 24px; }
+.mood-opt .det { text-align: left; }
+.mood-opt .det .nm { font-size: 12px; font-weight: 600; color: #1f2937; }
+.mood-opt .det .im { font-size: 10px; }
+.mood-opt .det .im.plus { color: #10b981; }
+.mood-opt .det .im.minus { color: #ef4444; }
+.mood-submit-btn {
+  width: 100%; padding: 13px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Trend Chart */
+.mood-chart {
+  background: #fff; border-radius: 18px; padding: 16px; margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.chart-title { font-size: 12px; color: #9ca3af; margin-bottom: 12px; letter-spacing: 1px; }
+.chart-area { position: relative; height: 120px; }
+.chart-svg { width: 100%; height: 100%; }
+.chart-legend { display: flex; gap: 12px; margin-top: 8px; font-size: 10px; color: #9ca3af; justify-content: center; }
+
+/* BOND */
+.bond-tab-bar { display: flex; background: #fff; border-radius: 14px; padding: 3px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+.bond-tab {
+  flex: 1; padding: 8px; text-align: center; font-size: 12px; color: #9ca3af;
+  cursor: pointer; border-radius: 11px; transition: all 0.2s;
+}
+.bond-tab.active { background: linear-gradient(135deg, #f97316, #ec4899); color: #fff; font-weight: 600; }
+.bond-list { display: flex; flex-direction: column; gap: 8px; }
+.bond-item {
+  background: #fff; border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: pointer; transition: all 0.2s;
+}
+.bond-item:hover { transform: translateX(3px); }
+.b-av { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #fff; flex-shrink: 0; }
+.b-info { flex: 1; }
+.b-name { font-size: 14px; font-weight: 600; color: #1f2937; }
+.b-tags { display: flex; gap: 4px; margin-top: 2px; }
+.b-tag { font-size: 9px; padding: 2px 7px; border-radius: 8px; }
+.b-tag.pub { background: #ecfdf5; color: #10b981; }
+.b-tag.quiet { background: #eff6ff; color: #6366f1; }
+.b-status { font-size: 11px; color: #9ca3af; }
+.b-act-group { display: flex; gap: 4px; }
+.b-act {
+  padding: 5px 12px; border-radius: 14px; border: 1.5px solid #f97316;
+  background: #fff; color: #f97316; font-size: 11px; cursor: pointer; white-space: nowrap;
+}
+.b-act.flower { border-color: #ec4899; color: #ec4899; }
+.b-act.kiss { border-color: #f59e0b; color: #f59e0b; }
+.b-act.energy { border-color: #10b981; color: #10b981; }
+.add-btn {
+  text-align: center; padding: 13px; margin-top: 10px; border-radius: 14px;
+  border: 2px dashed #fcd34d; color: #f97316; font-size: 13px; cursor: pointer;
+}
+
+.cost-hint { text-align: center; font-size: 10px; color: #d1d5db; margin-top: 10px; }
+
+/* Bottom Nav */
+.btm-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px); border-top: 1px solid #f3f4f6;
+  padding: 6px 0 20px; z-index: 80;
+}
+.nav-i {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 10px; color: #d1d5db; cursor: pointer; padding: 4px 0; transition: all 0.2s;
+}
+.nav-i.active { color: #f97316; }
+.nav-i .ico { font-size: 20px; }
+
+.toast {
+  position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+  background: #1f2937; color: #fff; padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="header">
+    <span>21:09</span>
+    <div class="header-right">
+      <button class="share-icon-btn" onclick="showToast('📤 状态链接已复制')" title="分享状态">📤</button>
+      <button class="profile-btn" onclick="toggleProfile()">我</button>
+    </div>
+  </div>
+
+  <!-- ========== FULLSCREEN ONBOARDING ========== -->
+  <div class="onboard-overlay active" id="onboard">
+    <div class="progress-dots" id="dots"><span class="done"></span><span></span><span></span></div>
+    <!-- Step 1 -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-title">🌿 了解你的底色</div>
+      <div class="ob-sub">你的性格决定了生命能源的「基线范围」。选最像你的那一个：</div>
+      <div class="chip-grid" id="mbti-g">
+        <div class="chip" onclick="pick(this)">INTJ 建筑师</div><div class="chip" onclick="pick(this)">INTP 逻辑学家</div>
+        <div class="chip" onclick="pick(this)">ENTJ 指挥官</div><div class="chip" onclick="pick(this)">INFJ 提倡者</div>
+        <div class="chip" onclick="pick(this)">INFP 调停者</div><div class="chip" onclick="pick(this)">ENFP 竞选者</div>
+        <div class="chip" onclick="pick(this)">ISTJ 物流师</div><div class="chip" onclick="pick(this)">ISFJ 守卫者</div>
+      </div>
+      <button class="ob-btn" disabled id="b1" onclick="obNext(2)">下一步</button>
+    </div>
+    <!-- Step 2 -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-title">💝 你的情感宇宙</div>
+      <div class="ob-sub">这会影响你的「能量消耗模式」</div>
+      <div class="chip-grid" id="life-g">
+        <div class="chip" onclick="pick(this)">💍 已婚</div><div class="chip" onclick="pick(this)">💑 热恋中</div>
+        <div class="chip" onclick="pick(this)">🧊 冷战期</div><div class="chip" onclick="pick(this)">💔 刚失恋</div>
+        <div class="chip" onclick="pick(this)">🧍 单身快乐</div><div class="chip" onclick="pick(this)">🔍 寻觅中</div>
+        <div class="chip" onclick="pick(this)">🏠 分居中</div><div class="chip" onclick="pick(this)">👴 空巢期</div>
+      </div>
+      <button class="ob-btn" disabled id="b2" onclick="obNext(3)">下一步</button>
+    </div>
+    <!-- Step 3 -->
+    <div class="ob-step" id="ob3">
+      <div class="ob-title">💼 当下的角色</div>
+      <div class="ob-sub">工作与家庭共同塑造你的日常能量流</div>
+      <div class="section-label">工作状态</div>
+      <div class="chip-grid" id="work-g">
+        <div class="chip" onclick="pick(this)">💻 在职稳定</div><div class="chip" onclick="pick(this)">🚀 创业中</div>
+        <div class="chip" onclick="pick(this)">🎓 学生党</div><div class="chip" onclick="pick(this)">🏠 全职带娃</div>
+        <div class="chip" onclick="pick(this)">🔍 求职中</div><div class="chip" onclick="pick(this)">🌴 Gap期</div>
+      </div>
+      <div class="section-label">家庭角色（可选）</div>
+      <div class="chip-grid" id="fam-g">
+        <div class="chip" onclick="pick(this)">👨‍👩‍👧 有娃父母</div><div class="chip" onclick="pick(this)">👫 二人世界</div>
+        <div class="chip" onclick="pick(this)">🧑 独居自由</div><div class="chip" onclick="pick(this)">🏡 与父母同住</div>
+        <div class="chip" onclick="pick(this)">🐶 宠物家长</div>
+      </div>
+      <button class="ob-btn" disabled id="b3" onclick="finishOB()">开启守望之旅 ✨</button>
+    </div>
+  </div>
+
+  <!-- ========== PROFILE PANEL ========== -->
+  <div class="profile-panel" id="profile">
+    <span class="profile-close" onclick="toggleProfile()">✕</span>
+    <div class="profile-name">小守</div>
+    <div class="profile-tags">
+      <span class="profile-tag">INFP</span><span class="profile-tag">热恋中</span><span class="profile-tag">创业中</span>
+      <span class="profile-tag">二人世界</span>
+    </div>
+    <div class="profile-stat"><span>基线范围</span><span style="color:#f97316;font-weight:600">35-75</span></div>
+    <div class="profile-stat"><span>当前阶段</span><span style="color:#ec4899">单人模式 Day 3</span></div>
+    <div class="profile-stat"><span>总录入心情</span><span>14 次</span></div>
+    <div class="profile-stat"><span>羁绊数量</span><span>3 人</span></div>
+    <div class="profile-stat"><span>共享能量</span><span>12 次</span></div>
+    <div style="margin-top:20px;text-align:center;font-size:11px;color:#d1d5db">数据仅存本地 · 你拥有全部控制权</div>
+  </div>
+
+  <!-- ========== SCREEN: HOME ========== -->
+  <div class="screen" id="sc-home">
+    <!-- Mode indicator -->
+    <div class="mode-row">
+      <div class="mode-dot"></div><div class="mode-dot"></div><div class="mode-dot"></div>
+      <div class="mode-dot future"></div><div class="mode-dot future"></div><div class="mode-dot future"></div><div class="mode-dot future"></div>
+    </div>
+    <div class="mode-label">单人模式 · 第 3 天 · 4天后解锁羁绊</div>
+
+    <div class="battery-wrap">
+      <div class="battery">
+        <div class="bat-cap"></div>
+        <div class="bat-body"><div class="bat-fill" style="height:40%"></div></div>
+        <div class="bat-num">40%</div>
+        <div class="bat-unit">当前生命能源</div>
+      </div>
+      <div class="trend down">▼ 较昨日 -8%</div>
+    </div>
+
+    <!-- AI Quote -->
+    <div class="ai-quote">
+      <div class="ai-icon">🔮</div>
+      <div class="ai-text" id="ai-quote-text">今天的你有 40% 的能量储备。<br>就像傍晚的太阳，虽然开始下沉，但余光依然温暖。<br>别忘了——有 2 个人正在默默关心着你。</div>
+      <div class="ai-tag">AI 解读 · 基于你的心情模型</div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN: MOOD ========== -->
+  <div class="screen" id="sc-mood">
+    <div class="mood-header">
+      <span class="time-tag">🕘 此刻</span>
+    </div>
+    <div class="mood-q">现在，你感觉怎么样？</div>
+    <div class="mood-grid-8">
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😊</span><div class="det"><div class="nm">元气满满</div><div class="im plus">+15%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😌</span><div class="det"><div class="nm">平静放松</div><div class="im plus">+5%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">🥰</span><div class="det"><div class="nm">幸福满足</div><div class="im plus">+10%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">🤩</span><div class="det"><div class="nm">紧张期待</div><div class="im plus">+5%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😴</span><div class="det"><div class="nm">疲惫乏力</div><div class="im minus">-10%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😟</span><div class="det"><div class="nm">焦虑不安</div><div class="im minus">-15%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😢</span><div class="det"><div class="nm">低落难过</div><div class="im minus">-15%</div></div></div>
+      <div class="mood-opt" onclick="selMood(this)"><span class="emo">😤</span><div class="det"><div class="nm">烦躁易怒</div><div class="im minus">-10%</div></div></div>
+    </div>
+    <button class="mood-submit-btn" onclick="recordMood()">记录此刻</button>
+
+    <!-- Trend Chart -->
+    <div class="mood-chart">
+      <div class="chart-title">📊 心情趋势（近 7 天）</div>
+      <div class="chart-area">
+        <svg class="chart-svg" viewBox="0 0 300 100">
+          <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316" stop-opacity="0.3"/><stop offset="100%" stop-color="#f97316" stop-opacity="0"/></linearGradient></defs>
+          <polygon fill="url(#grad)" points="0,70 40,55 85,80 130,45 175,65 220,35 265,50 300,60 300,100 0,100"/>
+          <polyline fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            points="0,70 40,55 85,80 130,45 175,65 220,35 265,50 300,60"/>
+          <circle cx="300" cy="60" r="5" fill="#ec4899"/>
+        </svg>
+      </div>
+      <div class="chart-legend"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>今天</span></div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN: BOND ========== -->
+  <div class="screen" id="sc-bond">
+    <div class="bond-tab-bar">
+      <div class="bond-tab active" onclick="swBond('mutual',this)">🤝 双向羁绊</div>
+      <div class="bond-tab" onclick="swBond('quiet',this)">🌙 默默守护</div>
+    </div>
+    <div id="bond-mutual" class="bond-list">
+      <!-- Energetic friend: flower/kiss -->
+      <div class="bond-item">
+        <div class="b-av" style="background:linear-gradient(135deg,#ec4899,#f97316)">张</div>
+        <div class="b-info">
+          <div class="b-name">张小明<div class="b-tags"><span class="b-tag pub">公开</span></div></div>
+          <div class="b-status">🟢 精力充沛 · 男友</div>
+        </div>
+        <div class="b-act-group">
+          <button class="b-act flower" onclick="showToast('💐 已送花')">💐</button>
+          <button class="b-act kiss" onclick="showToast('😘 已飞吻')">😘</button>
+          <button class="b-act" onclick="showToast('👍 已点赞')">👍</button>
+        </div>
+      </div>
+      <!-- Low energy friend: transfer energy -->
+      <div class="bond-item">
+        <div class="b-av" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)">李</div>
+        <div class="b-info">
+          <div class="b-name">李小花<div class="b-tags"><span class="b-tag quiet">默默</span></div></div>
+          <div class="b-status">🟡 电量偏低 · 闺蜜</div>
+        </div>
+        <div class="b-act-group">
+          <button class="b-act energy" onclick="showToast('⚡ 传递 5% 能量（消耗自身 5%）')">传递能量 -5%</button>
+        </div>
+      </div>
+      <!-- Family: normal -->
+      <div class="bond-item">
+        <div class="b-av" style="background:linear-gradient(135deg,#10b981,#059669)">爸</div>
+        <div class="b-info">
+          <div class="b-name">老爸<div class="b-tags"><span class="b-tag pub">公开</span></div></div>
+          <div class="b-status">🟢 状态良好 · 家人</div>
+        </div>
+        <div class="b-act-group">
+          <button class="b-act flower" onclick="showToast('💐 已送花')">💐</button>
+          <button class="b-act" onclick="showToast('👋 发送问候')">👋</button>
+        </div>
+      </div>
+      <div class="cost-hint">💡 传递能量会消耗自身电量 · 每人每天限 3 次</div>
+    </div>
+    <div id="bond-quiet" class="bond-list" style="display:none">
+      <div class="bond-item">
+        <div class="b-av" style="background:linear-gradient(135deg,#94a3b8,#64748b)">王</div>
+        <div class="b-info">
+          <div class="b-name">王阿姨<div class="b-tags"><span class="b-tag quiet">默默</span></div></div>
+          <div class="b-status">约 2 小时前在线 · 前同事</div>
+        </div>
+        <button class="b-act" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已默默问候')">默默问候</button>
+      </div>
+      <div style="text-align:center;padding:20px;color:#d1d5db;font-size:11px">💡 默默守护：你能看到对方状态<br>对方不知道你在守望</div>
+    </div>
+    <div class="add-btn" onclick="showToast('📋 邀请链接已复制')">+ 建立新的羁绊</div>
+  </div>
+
+  <!-- ========== BOTTOM NAV ========== -->
+  <div class="btm-nav">
+    <div class="nav-i" onclick="navTo('home',0)"><span class="ico">🔋</span><span>生命能源</span></div>
+    <div class="nav-i" onclick="navTo('mood',1)"><span class="ico">💭</span><span>心情</span></div>
+    <div class="nav-i" onclick="navTo('bond',2)"><span class="ico">💫</span><span>羁绊</span></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+let userMood = null;
+
+function pick(el) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  let step = el.parentElement.id.includes('mbti') ? 1 : el.parentElement.id.includes('life') ? 2 : 3;
+  let btn = document.getElementById('b'+step);
+  if (btn) btn.disabled = false;
+}
+
+function obNext(n) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('ob'+n).classList.add('active');
+  let dots = document.querySelectorAll('#dots span');
+  dots.forEach((d,i) => d.classList.toggle('done', i < n));
+}
+
+function finishOB() {
+  document.getElementById('onboard').classList.remove('active');
+  document.getElementById('sc-home').classList.add('active');
+  navAct(0); showToast('🎉 心情模型已建立！基线范围：35-75');
+}
+
+function toggleProfile() {
+  document.getElementById('profile').classList.toggle('active');
+}
+
+function navTo(name, idx) {
+  document.getElementById('sc-home').classList.remove('active');
+  document.getElementById('sc-mood').classList.remove('active');
+  document.getElementById('sc-bond').classList.remove('active');
+  document.getElementById('sc-'+name).classList.add('active');
+  navAct(idx);
+}
+
+function navAct(idx) {
+  document.querySelectorAll('.nav-i').forEach((n,i) => n.classList.toggle('active', i===idx));
+}
+
+function selMood(el) {
+  document.querySelectorAll('.mood-opt').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function recordMood() {
+  let sel = document.querySelector('.mood-opt.selected');
+  if (!sel) { showToast('请先选择心情'); return; }
+  let name = sel.querySelector('.nm').textContent;
+  let impact = sel.querySelector('.im').textContent;
+  showToast('✅ 已记录：' + name + ' ' + impact);
+}
+
+function swBond(tab, el) {
+  document.getElementById('bond-mutual').style.display = tab==='mutual' ? 'flex' : 'none';
+  document.getElementById('bond-quiet').style.display = tab==='quiet' ? 'flex' : 'none';
+  document.querySelectorAll('.bond-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

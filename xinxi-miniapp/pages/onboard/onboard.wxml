@@ -1,0 +1,148 @@
+<!-- 引导页 · Onboarding -->
+<scroll-view scroll-y class="page" enhanced show-scrollbar="{{false}}">
+  <!-- 顶部 -->
+  <view class="ob-header">
+    <view class="ob-brand">
+      <text class="ob-logo">🪷</text>
+      <text class="ob-name">心汐</text>
+    </view>
+    <text class="ob-step">0{{step}} / 02</text>
+  </view>
+
+  <!-- Step 1: 你的底色 -->
+  <view class="ob-body" wx:if="{{step===1}}">
+    <view class="ob-intro">
+      <text class="ob-title">你的底色</text>
+      <text class="ob-desc">这些选择会让心湖更懂你</text>
+    </view>
+
+    <!-- 人格底色 -->
+    <view class="ob-section">
+      <view class="ob-section-title">
+        <text>人格底色</text>
+        <view class="ob-divider"></view>
+      </view>
+      <view class="ob-chip-grid">
+        <view class="ob-chip {{picks.mbti==='INFP'?'active':''}}" data-key="mbti" data-val="INFP" bindtap="pick">
+          <text class="ob-chip-label">INFP</text>
+          <text class="ob-chip-desc">治愈者，在静谧中编织灵魂诗意</text>
+        </view>
+        <view class="ob-chip {{picks.mbti==='ENFJ'?'active':''}}" data-key="mbti" data-val="ENFJ" bindtap="pick">
+          <text class="ob-chip-label">ENFJ</text>
+          <text class="ob-chip-desc">感召者，点燃他人内心的火焰</text>
+        </view>
+        <view class="ob-chip {{picks.mbti==='INTJ'?'active':''}}" data-key="mbti" data-val="INTJ" bindtap="pick">
+          <text class="ob-chip-label">INTJ</text>
+          <text class="ob-chip-desc">建筑师，于寂静中构建理性秩序</text>
+        </view>
+        <view class="ob-chip {{picks.mbti==='ESFP'?'active':''}}" data-key="mbti" data-val="ESFP" bindtap="pick">
+          <text class="ob-chip-label">ESFP</text>
+          <text class="ob-chip-desc">表演者，生命是永不落幕的舞</text>
+        </view>
+        <view class="ob-chip {{picks.mbti==='ISFJ'?'active':''}}" data-key="mbti" data-val="ISFJ" bindtap="pick">
+          <text class="ob-chip-label">ISFJ</text>
+          <text class="ob-chip-desc">守卫者，温和可靠默默守护</text>
+        </view>
+        <view class="ob-chip {{picks.mbti==='ENTP'?'active':''}}" data-key="mbti" data-val="ENTP" bindtap="pick">
+          <text class="ob-chip-label">ENTP</text>
+          <text class="ob-chip-desc">辩论家，好奇驱动思维碰撞</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="ob-mist"></view>
+
+    <!-- 情感状态 -->
+    <view class="ob-section">
+      <view class="ob-section-title">
+        <text>情感状态</text>
+        <view class="ob-divider"></view>
+      </view>
+      <view class="ob-chip-row">
+        <block wx:for="{{emotionOptions}}" wx:key="*this">
+          <view class="ob-chip-sm {{picks.emotion===item?'active':''}}" data-key="emotion" data-val="{{item}}" bindtap="pick">{{item}}</view>
+        </block>
+      </view>
+    </view>
+
+    <view class="ob-mist"></view>
+
+    <!-- 当下角色 -->
+    <view class="ob-section">
+      <view class="ob-section-title">
+        <text>当下角色</text>
+        <view class="ob-divider"></view>
+      </view>
+      <view class="ob-role-row">
+        <view class="ob-role-card {{picks.roleWork?'active':''}}" data-key="roleWork" data-val="{{picks.roleWork}}" bindtap="pickRole">
+          <text class="ob-role-icon">💼</text>
+          <text class="ob-role-label">上班的你</text>
+          <text class="ob-role-desc">游走于规则与创造之间</text>
+        </view>
+        <view class="ob-role-card {{picks.roleHome?'active':''}}" data-key="roleHome" bindtap="pickRoleHome">
+          <text class="ob-role-icon">🏠</text>
+          <text class="ob-role-label">在家的你</text>
+          <text class="ob-role-desc">卸下甲胄，回归质朴留白</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="ob-mist"></view>
+
+    <!-- 心中盼头 -->
+    <view class="ob-section">
+      <view class="ob-section-title">
+        <text>心中盼头</text>
+        <view class="ob-divider"></view>
+      </view>
+      <view class="ob-hope-toggle">
+        <view class="ob-hope-opt {{picks.hope==='far'?'active':''}}" data-key="hope" data-val="far" bindtap="pick">远方的朝露</view>
+        <view class="ob-hope-opt {{picks.hope==='near'?'active':''}}" data-key="hope" data-val="near" bindtap="pick">当下的灯火</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 2: 你的此刻 -->
+  <view class="ob-body" wx:if="{{step===2}}">
+    <view class="ob-intro">
+      <text class="ob-title">你的此刻</text>
+      <text class="ob-desc">湖面即将成形，最后一步</text>
+    </view>
+
+    <view class="ob-section">
+      <view class="ob-section-title">
+        <text>今天的微状态</text>
+        <view class="ob-divider"></view>
+      </view>
+      <view class="ob-chip-grid">
+        <view class="ob-chip {{picks.micro==='online'?'active':''}}" data-key="micro" data-val="online" bindtap="pick">
+          <text class="ob-chip-label">📈 状态在线</text>
+          <text class="ob-chip-desc">今天效率满满</text>
+        </view>
+        <view class="ob-chip {{picks.micro==='offline'?'active':''}}" data-key="micro" data-val="offline" bindtap="pick">
+          <text class="ob-chip-label">😴 不在状态</text>
+          <text class="ob-chip-desc">昨晚没睡好</text>
+        </view>
+        <view class="ob-chip {{picks.micro==='sprint'?'active':''}}" data-key="micro" data-val="sprint" bindtap="pick">
+          <text class="ob-chip-label">🔥 高压冲刺</text>
+          <text class="ob-chip-desc">今天截止日</text>
+        </view>
+        <view class="ob-chip {{picks.micro==='chill'?'active':''}}" data-key="micro" data-val="chill" bindtap="pick">
+          <text class="ob-chip-label">🧘 佛系摸鱼</text>
+          <text class="ob-chip-desc">今天想躺</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="ob-footer">
+    <button wx:if="{{step===1}}" class="ob-btn {{canAdvance?'ready':''}}" bindtap="nextStep" disabled="{{!canAdvance}}">
+      {{canAdvance?'涟漪成形，继续前行':'请完成上方选择'}}
+    </button>
+    <button wx:if="{{step===2}}" class="ob-btn {{picks.micro?'ready':''}}" bindtap="finish" disabled="{{!picks.micro}}">
+      {{picks.micro?'开启守望之旅':'选择你的微状态'}}
+    </button>
+    <text class="ob-skip" bindtap="finish">跳过，直接进入心湖</text>
+  </view>
+</scroll-view>

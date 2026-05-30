@@ -1,0 +1,21 @@
+.page-bond { padding: 32rpx; }
+.title { font-size: 36rpx; font-weight: 600; }
+.subtitle { font-size: 26rpx; color: #999; margin-bottom: 32rpx; }
+.bond-grid { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.bond-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  width: calc(50% - 8rpx);
+  box-sizing: border-box;
+}
+.bond-name { font-size: 28rpx; font-weight: 500; }
+.bond-relation { font-size: 22rpx; color: #999; margin-top: 4rpx; }
+.bond-type { font-size: 20rpx; color: #E8815B; margin-top: 4rpx; }
+.empty { text-align: center; color: #999; padding: 80rpx 0; }
+.btn-add { 
+  background: #E8815B; color: #fff; 
+  border-radius: 48rpx; padding: 24rpx;
+  font-size: 30rpx; text-align: center;
+  margin-top: 40rpx; border: none;
+}

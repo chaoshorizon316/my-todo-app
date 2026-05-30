@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npx skills *)",
+      "Bash(npm --version)",
+      "Read(//usr/local/bin/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\")",
+      "Read(//Users/will/**)",
+      "Bash(brew install *)",
+      "Bash(sudo chown -R will /usr/local/Cellar)",
+      "Bash(curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh)",
+      "Bash(bash)",
+      "Bash(GIT_CURL_VERBOSE=1 git clone https://github.com/nvm-sh/nvm.git /tmp/nvm-test)",
+      "Read(//tmp/**)",
+      "Read(//usr/local/**)",
+      "Read(//opt/**)",
+      "Bash(mdfind \"kMDItemFSName == 'node'\")",
+      "Bash(git config *)",
+      "Bash(curl -I https://github.com)",
+      "WebFetch(domain:gitee.com)",
+      "Bash(curl -sI https://gitee.com/chaos613/mywork)",
+      "Bash(git ls-remote *)",
+      "Bash(git clone *)",
+      "Bash(ls -la /tmp/mywork/ 2>&1)",
+      "Read(//private/tmp/mywork/**)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(lsof -ti:3001)",
+      "Bash(xargs kill)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(xargs kill -9)",
+      "Bash(lsof -ti:5173)",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@mywork.com\",\"password\":\"admin123\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Token OK' if d.get\\('token'\\) else 'FAIL'\\); print\\('User:', d['user']['name'], '| Role:', d['user']['role']\\)\")",
+      "Bash(curl -s -X POST http://localhost:5173/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@mywork.com\",\"password\":\"admin123\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Proxy OK | User:', d['user']['name'], '| Permissions:', len\\(d['user']['permissions']\\)\\)\")",
+      "Skill(stitch-design)",
+      "Skill(stitch-design:*)",
+      "Bash(mkdir -p /Users/will/my-todo-app/jiezhu)",
+      "Bash(open /Users/will/my-todo-app/jiezhu/index.html)"
+    ],
+    "additionalDirectories": [
+      "/Users/will/my-todo-app/jiezhu"
+    ]
+  }
+}

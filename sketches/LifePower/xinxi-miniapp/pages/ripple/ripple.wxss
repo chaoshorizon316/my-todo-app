@@ -1,0 +1,28 @@
+.page-ripple { padding: 32rpx; }
+.title { font-size: 36rpx; font-weight: 600; }
+.subtitle { font-size: 26rpx; color: #999; margin-bottom: 32rpx; }
+
+.mood-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.mood-dot {
+  width: 24rpx; height: 24rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #E8815B;
+}
+
+.mood-text { font-size: 28rpx; display: block; }
+.mood-time { font-size: 22rpx; color: #999; }
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 80rpx 0;
+}

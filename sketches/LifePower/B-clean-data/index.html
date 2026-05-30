@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>守望电量 — 清爽数据风</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+  background: #000;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh;
+}
+.phone {
+  width: 375px; height: 750px;
+  background: #0f172a;
+  border-radius: 40px; overflow: hidden; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  color: #e2e8f0;
+}
+.app-header {
+  padding: 50px 24px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  color: #64748b; font-size: 13px;
+}
+
+/* Screens */
+.screen { display: none; padding: 0 24px; }
+.screen.active { display: block; }
+
+/* Screen 1: Power Dashboard */
+.power-section { text-align: center; padding: 20px 0; }
+.badge {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  font-size: 11px; background: #1e293b; color: #38bdf8;
+  margin-bottom: 16px;
+}
+.ring-container {
+  position: relative; width: 180px; height: 180px; margin: 0 auto 16px;
+}
+.ring-svg { transform: rotate(-90deg); }
+.ring-center {
+  position: absolute; inset: 0; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-number { font-size: 52px; font-weight: 700; color: #38bdf8; line-height: 1; }
+.ring-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+.stats-row {
+  display: flex; gap: 12px; margin-top: 16px;
+}
+.stat-card {
+  flex: 1; background: #1e293b; border-radius: 16px;
+  padding: 14px; text-align: center;
+}
+.stat-value { font-size: 20px; font-weight: 700; color: #e2e8f0; }
+.stat-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+.stat-sub { font-size: 10px; color: #475569; margin-top: 4px; }
+
+/* Screen 2: Mood */
+.mood-section { padding-top: 20px; }
+.section-title {
+  font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 16px;
+}
+.mood-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+}
+.mood-card {
+  background: #1e293b; border-radius: 20px; padding: 20px 12px;
+  text-align: center; cursor: pointer; border: 2px solid transparent;
+  transition: all 0.2s;
+}
+.mood-card:hover { border-color: #334155; }
+.mood-card.selected {
+  border-color: #38bdf8; background: #1e293b;
+  box-shadow: 0 0 20px rgba(56,189,248,0.15);
+}
+.mood-emoji { font-size: 36px; margin-bottom: 8px; }
+.mood-name { font-size: 12px; color: #94a3b8; }
+.mood-impact { font-size: 10px; color: #64748b; margin-top: 4px; }
+.confirm-btn {
+  width: 100%; padding: 14px; margin-top: 24px; border-radius: 16px;
+  border: none; background: #38bdf8; color: #0f172a; font-size: 15px;
+  font-weight: 600; cursor: pointer;
+}
+.week-chart {
+  margin-top: 24px; background: #1e293b; border-radius: 16px; padding: 16px;
+}
+.chart-title { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; justify-content: center; }
+.chart-bar {
+  width: 24px; border-radius: 4px 4px 0 0; transition: all 0.3s;
+}
+.chart-label { font-size: 9px; color: #475569; text-align: center; margin-top: 4px; }
+
+/* Screen 3: Guardian */
+.guardian-section { padding-top: 20px; }
+.guardian-list { display: flex; flex-direction: column; gap: 10px; }
+.guardian-item {
+  background: #1e293b; border-radius: 16px; padding: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.guardian-item:hover { background: #263148; }
+.g-avatar {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 600; color: #fff;
+}
+.g-info { flex: 1; }
+.g-name { font-size: 14px; color: #e2e8f0; }
+.g-status { font-size: 11px; margin-top: 2px; }
+.g-status.high { color: #10b981; }
+.g-status.mid { color: #f59e0b; }
+.g-status.low { color: #ef4444; }
+.g-action {
+  padding: 6px 16px; border-radius: 20px; border: none;
+  background: #263148; color: #38bdf8; font-size: 12px; cursor: pointer;
+}
+.add-guardian {
+  text-align: center; padding: 16px; margin-top: 16px;
+  border-radius: 16px; border: 1px dashed #334155;
+  color: #64748b; font-size: 13px; cursor: pointer;
+}
+.add-guardian:hover { border-color: #38bdf8; color: #38bdf8; }
+
+/* Bottom Nav */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; background: #0f172a; border-top: 1px solid #1e293b;
+  padding: 8px 0 20px;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  font-size: 10px; color: #475569; cursor: pointer;
+}
+.nav-item.active { color: #38bdf8; }
+.nav-item .icon { font-size: 20px; }
+
+.toast {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; color: #e2e8f0; padding: 10px 20px;
+  border-radius: 20px; font-size: 13px; z-index: 100; opacity: 0; transition: opacity 0.3s;
+  border: 1px solid #334155;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="app">
+  <div class="app-header">
+    <span>21:09</span>
+    <span style="color:#38bdf8">Day 3</span>
+  </div>
+
+  <!-- Screen 1: Dashboard -->
+  <div class="screen active" id="screen-home">
+    <div class="power-section">
+      <div class="badge">🔬 单人模式</div>
+      <div class="ring-container">
+        <svg class="ring-svg" width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="80" fill="none" stroke="#1e293b" stroke-width="12"/>
+          <circle cx="90" cy="90" r="80" fill="none" stroke="#38bdf8" stroke-width="12"
+            stroke-dasharray="502.65" stroke-dashoffset="301.59" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-number" id="percent-display">40%</div>
+          <div class="ring-label">当前电量</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">3,241</div>
+          <div class="stat-label">今日步数</div>
+          <div class="stat-sub">目标 5,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">7.2h</div>
+          <div class="stat-label">昨夜睡眠</div>
+          <div class="stat-sub">6-9h 达标</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#38bdf8">2</div>
+          <div class="stat-label">守望者</div>
+          <div class="stat-sub">在线关注</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#475569;margin-top:16px">⚡ 步数+0% · 睡眠+10% · 久坐-5% · 熬夜-10% · 自评+10%</div>
+    </div>
+  </div>
+
+  <!-- Screen 2: Mood -->
+  <div class="screen" id="screen-mood">
+    <div class="mood-section">
+      <div class="section-title">🌙 今天感觉怎么样？</div>
+      <div class="mood-grid">
+        <div class="mood-card" onclick="selectMood(this)">
+          <div class="mood-emoji">😫</div>
+          <div class="mood-name">电量耗尽</div>
+          <div class="mood-impact">电量 -10%</div>
+        </div>
+        <div class="mood-card selected" onclick="selectMood(this)">
+          <div class="mood-emoji">😐</div>
+          <div class="mood-name">还行</div>
+          <div class="mood-impact">不变</div>
+        </div>
+        <div class="mood-card" onclick="selectMood(this)">
+          <div class="mood-emoji">😊</div>
+          <div class="mood-name">元气满满</div>
+          <div class="mood-impact">电量 +10%</div>
+        </div>
+      </div>
+      <button class="confirm-btn" onclick="showToast('标注已保存 ✅')">确认标注</button>
+      <div class="week-chart">
+        <div class="chart-title">📊 本周电量趋势</div>
+        <div class="chart-bars">
+          <div><div class="chart-bar" style="height:36px;background:#10b981"></div><div class="chart-label">一</div></div>
+          <div><div class="chart-bar" style="height:40px;background:#10b981"></div><div class="chart-label">二</div></div>
+          <div><div class="chart-bar" style="height:28px;background:#f59e0b"></div><div class="chart-label">三</div></div>
+          <div><div class="chart-bar" style="height:20px;background:#ef4444"></div><div class="chart-label">四</div></div>
+          <div><div class="chart-bar" style="height:32px;background:#f59e0b"></div><div class="chart-label">五</div></div>
+          <div><div class="chart-bar" style="height:38px;background:#f59e0b"></div><div class="chart-label">六</div></div>
+          <div><div class="chart-bar" style="height:44px;background:#10b981;border-radius:4px 4px 4px 4px"></div><div class="chart-label">日</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Guardian -->
+  <div class="screen" id="screen-guardian">
+    <div class="guardian-section">
+      <div class="section-title">我守望的人</div>
+      <div class="guardian-list">
+        <div class="guardian-item">
+          <div class="g-avatar" style="background:#8b5cf6">张</div>
+          <div class="g-info">
+            <div class="g-name">张小明</div>
+            <div class="g-status high">🟢 精力充沛</div>
+          </div>
+          <button class="g-action" onclick="showToast('已发送关怀 💌')">关怀</button>
+        </div>
+        <div class="guardian-item">
+          <div class="g-avatar" style="background:#ec4899">李</div>
+          <div class="g-info">
+            <div class="g-name">李小花</div>
+            <div class="g-status mid">🟡 电量偏低</div>
+          </div>
+          <button class="g-action" onclick="showToast('已发送关怀 💌')">关怀</button>
+        </div>
+      </div>
+    </div>
+    <div class="guardian-section" style="margin-top:24px">
+      <div class="section-title">守望我的人</div>
+      <div class="guardian-list">
+        <div class="guardian-item" style="cursor:default">
+          <div class="g-avatar" style="background:#10b981">王</div>
+          <div class="g-info">
+            <div class="g-name">王阿姨</div>
+            <div class="g-status" style="color:#64748b">2 小时前在线</div>
+          </div>
+          <span style="font-size:14px">❤️</span>
+        </div>
+      </div>
+      <div class="add-guardian" onclick="showToast('邀请链接已复制 📋')">
+        + 邀请新的守望者
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchScreen('home', this)">
+      <span class="icon">⚡</span><span>电量</span>
+    </div>
+    <div class="nav-item" onclick="switchScreen('mood', this)">
+      <span class="icon">💭</span><span>心情</span>
+    </div>
+    <div class="nav-item" onclick="switchScreen('guardian', this)">
+      <span class="icon">🤝</span><span>守望</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function switchScreen(name, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectMood(el) {
+  document.querySelectorAll('.mood-card').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>

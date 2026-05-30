@@ -1,0 +1,665 @@
+/* ============================================================
+   心汐 v9-stitch · 心湖 6 种状态样式
+   从 Stitch 设计文档提取心湖的 6 种湖面状态视觉差异。
+
+   状态一览:
+   .lake--mirror   湖面如镜 — 平静、全屏背景图 + 薄叠加层
+   .lake--breeze   微风微澜 — 轻柔涟漪动画
+   .lake--ripples  涟漪频密 — 密集涟漪 + 多层波纹
+   .lake--storm    风起浪涌 — 暴风雨效果、动画波浪
+   .lake--stone    投石入水 — 石子交互动画 + 印章浮现
+   .lake--profile  侧向视角 — 特殊视角布局
+
+   每个 class 覆盖：背景色/图、湖面光效（墨水晕染）、
+   涟漪/波浪动画、文字颜色适配。
+   ============================================================ */
+
+/* ============================================================
+   共享: 湖面基础结构 (不绑定状态)
+   ============================================================ */
+
+/* 湖面容器 */
+.lake-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--breath-lg);
+}
+
+/* 湖面圆形基底 (各状态可覆盖) */
+.lake-surface {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  /* 默认墨水晕染光晕 (对齐 Stitch .ink-wash-glow) */
+  box-shadow: 0 0 60px 20px rgba(211, 211, 211, 0.4);
+  border: 1px solid rgba(196, 199, 199, 0.2); /* outline-variant/20 */
+  /* 默认湖面水纹照片 — 微风微澜 */
+  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD_5XzAVQFuOf9ICbD1NWUdspUOUohjDA-Y5bDuC5QysHlfIIdCfb85oXWNKVJ_2r1ymTxnpdoIWfmkMbGBAlijtxtTBkixmYiCIKe7oRDA1r2yp7za51eGQ8LpyBmEWnN1aQpnY_DorpXVmKPaH0r6m39qhhzO1fHePtzXDD8-83DwVSm-VNZa7whOiZSXaieL8nnkJeOMDrQVQYYVq67BZHkMaguAKSbRSUmerN8LMc7X1BxK1CJIqz_dJ2ljodtJAjlAh4OPIxY');
+  background-size: cover;
+  background-position: center;
+}
+
+/* 湖面墨水内光 (核心光效层) */
+.lake-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  background: radial-gradient(
+    circle at center,
+    var(--color-primary),
+    transparent 70%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* 涟漪基础元素 */
+.lake-ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(23, 24, 24, 0.05);
+  pointer-events: none;
+}
+
+.lake-ripple--outer {
+  border-color: rgba(23, 24, 24, 0.03);
+  opacity: 0.5;
+}
+
+.lake-ripple--faint {
+  border-color: rgba(23, 24, 24, 0.02);
+  opacity: 0.2;
+}
+
+/* 状态文字容器 */
+.lake-state-label {
+  text-align: center;
+  margin-bottom: var(--breath-xl);
+}
+
+/* 石子按钮通用样式 */
+.lake-stone-btn {
+  position: relative;
+  padding: var(--breath-sm) var(--breath-lg);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(23, 24, 24, 0.4);
+  background: transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--duration-slow) var(--ease-out);
+}
+.lake-stone-btn:hover {
+  border-color: var(--color-primary);
+}
+.lake-stone-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 24, 24, 0.05);
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+.lake-stone-btn:hover::after {
+  opacity: 1;
+}
+
+/* 回响计数 */
+.lake-echo-count {
+  font-family: var(--font-body);
+  font-size: var(--fs-label-poetic);
+  line-height: var(--lh-label-poetic);
+  letter-spacing: var(--ls-label-poetic);
+  font-weight: var(--fw-label-poetic);
+  color: var(--color-secondary);
+  opacity: 0.8;
+  text-align: center;
+}
+
+/* ============================================================
+   状态 1: 湖面如镜 — .lake--mirror
+   视觉: 平静、全屏背景图 + 薄叠加层
+   ============================================================ */
+
+.lake--mirror {
+  /* 整体画布使用全屏背景 */
+  position: relative;
+}
+
+.lake--mirror .lake-container {
+  margin-bottom: var(--breath-lg);
+}
+
+/* 如镜状态 — 湖面光效更亮更纯净 */
+.lake--mirror .lake-surface {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container-low),
+    var(--color-surface-container-highest),
+    var(--color-surface-dim)
+  );
+  box-shadow: var(--shadow-ink-wash);
+  border-color: rgba(196, 199, 199, 0.15);
+}
+
+.lake--mirror .lake-surface::after {
+  opacity: 0.2; /* 更淡的内光 — 镜面清澈 */
+}
+
+/* 如镜状态 — 文字带柔光阴影，确保叠加在图上可读 */
+.lake--mirror .lake-state-label h2 {
+  text-shadow: var(--text-shadow-soft);
+}
+
+.lake--mirror .lake-echo-count {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+  padding: 0.25rem 1rem;
+  border-radius: var(--radius-full);
+  color: rgba(23, 24, 24, 0.8);
+  display: inline-block;
+}
+
+.lake--mirror .lake-stone-btn {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+/* 如镜 — 无涟漪环 (极度平静) */
+.lake--mirror .lake-ripple {
+  display: none;
+}
+
+
+/* ============================================================
+   状态 2: 微风微澜 — .lake--breeze
+   视觉: 轻柔涟漪动画
+   ============================================================ */
+
+.lake--breeze .lake-surface {
+  width: 160px;
+  height: 160px;
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container-low),
+    var(--color-surface-container-highest),
+    var(--color-surface-dim)
+  );
+  box-shadow: var(--ink-wash-glow);
+}
+
+/* 3 层同心涟漪 */
+.lake--breeze .lake-ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(23, 24, 24, 0.05);
+  pointer-events: none;
+}
+
+.lake--breeze .lake-ripple:nth-child(1) {
+  width: 160px;
+  height: 160px;
+  animation: breeze-pulse 3s ease-in-out infinite;
+}
+
+.lake--breeze .lake-ripple:nth-child(2) {
+  width: 240px;
+  height: 240px;
+  opacity: 0.8;
+  animation: breeze-pulse 4s ease-in-out 0.5s infinite;
+}
+
+.lake--breeze .lake-ripple:nth-child(3) {
+  width: 320px;
+  height: 320px;
+  opacity: 0.4;
+  animation: breeze-pulse 5s ease-in-out 1s infinite;
+}
+
+@keyframes breeze-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: inherit;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: calc(inherit * 0.5);
+  }
+}
+
+/* 微风 — 湖面微动 */
+@keyframes breeze-surface-shimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.02);
+  }
+}
+
+.lake--breeze .lake-surface::after {
+  animation: breeze-surface-shimmer 4s var(--ease-smooth) infinite;
+}
+
+
+/* ============================================================
+   状态 3: 涟漪频密 — .lake--ripples
+   视觉: 密集涟漪 + 多层波纹
+   ============================================================ */
+
+.lake--ripples .lake-container {
+  /* 需要更大空间容纳多层波纹 */
+}
+
+.lake--ripples .lake-surface {
+  width: 160px;
+  height: 160px;
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container-low),
+    var(--color-surface-container-highest),
+    var(--color-surface-dim)
+  );
+  box-shadow: var(--ink-wash-glow);
+}
+
+/* 密集涟漪 — 更多层、更强动画 */
+.lake--ripples .lake-ripple:nth-child(1) {
+  width: 160px;
+  height: 160px;
+  animation: ripples-dense-pulse 2s ease-in-out infinite;
+}
+
+.lake--ripples .lake-ripple:nth-child(2) {
+  width: 200px;
+  height: 200px;
+  opacity: 0.6;
+  border-color: rgba(23, 24, 24, 0.06);
+  animation: ripples-dense-pulse 2.5s ease-in-out 0.3s infinite;
+}
+
+.lake--ripples .lake-ripple:nth-child(3) {
+  width: 260px;
+  height: 260px;
+  opacity: 0.4;
+  border-color: rgba(23, 24, 24, 0.04);
+  animation: ripples-dense-pulse 3s ease-in-out 0.7s infinite;
+}
+
+.lake--ripples .lake-ripple:nth-child(4) {
+  width: 320px;
+  height: 320px;
+  opacity: 0.2;
+  border-color: rgba(23, 24, 24, 0.03);
+  animation: ripples-dense-pulse 3.5s ease-in-out 1s infinite;
+}
+
+@keyframes ripples-dense-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: inherit;
+  }
+  25% {
+    transform: scale(1.08);
+  }
+  50% {
+    transform: scale(1);
+    opacity: calc(inherit * 0.6);
+  }
+  75% {
+    transform: scale(1.04);
+  }
+}
+
+/* 频密 — 湖面光效脉动 */
+@keyframes ripples-surface-glow {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.5; }
+}
+
+.lake--ripples .lake-surface::after {
+  animation: ripples-surface-glow 2s var(--ease-in-out) infinite;
+}
+
+/* 涟漪交互覆盖层 (用于 JS 投石) */
+.lake--ripples .lake-splash-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   状态 4: 风起浪涌 — .lake--storm
+   视觉: 暴风雨效果、动画波浪、灰度高对比
+   ============================================================ */
+
+.lake--storm .lake-surface {
+  width: 240px;
+  height: 240px;
+  /* 更大的湖面 — 体现汹涌感 */
+  background: var(--color-surface-container-highest);
+  border: 2px solid rgba(23, 24, 24, 0.2);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 风暴 — 湖面内光更深沉 */
+.lake--storm .lake-surface::after {
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background: radial-gradient(
+    circle at 40% 40%,
+    rgba(23, 24, 24, 0.3),
+    transparent 70%
+  );
+}
+
+/* 风暴涟漪 — 更厚实、更快速的动画 */
+.lake--storm .lake-ripple:nth-child(1) {
+  width: 240px;
+  height: 240px;
+  border-width: 2px;
+  border-color: rgba(23, 24, 24, 0.1);
+  animation: storm-swell 1.5s ease-in-out infinite;
+}
+
+.lake--storm .lake-ripple:nth-child(2) {
+  width: 300px;
+  height: 300px;
+  border-width: 1.5px;
+  border-color: rgba(23, 24, 24, 0.06);
+  opacity: 0.5;
+  animation: storm-swell 2s ease-in-out 0.4s infinite;
+}
+
+@keyframes storm-swell {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: inherit;
+  }
+  30% {
+    transform: scale(1.1) rotate(2deg);
+    opacity: calc(inherit * 0.7);
+  }
+  60% {
+    transform: scale(0.95) rotate(-1deg);
+  }
+}
+
+/* 风暴 — 湖面旋转渐变 */
+@keyframes storm-surface-roil {
+  0%   { opacity: 0.5; transform: scale(1) rotate(0deg); }
+  25%  { opacity: 0.6; transform: scale(1.03) rotate(1deg); }
+  50%  { opacity: 0.4; transform: scale(0.97) rotate(-1deg); }
+  75%  { opacity: 0.55; transform: scale(1.02) rotate(0.5deg); }
+  100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+}
+
+.lake--storm .lake-surface::after {
+  animation: storm-surface-roil 3s var(--ease-in-out) infinite;
+}
+
+/* ============================================================
+   状态 5: 投石入水 — .lake--stone
+   视觉: 石子交互 + 墨滴动画 + 印章浮现
+   ============================================================ */
+
+.lake--stone {
+  position: relative;
+}
+
+/* 全屏交互层 (接收点击/触摸) */
+.lake--stone .lake-splash-container {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* 水墨滴落动画 */
+@keyframes stone-ink-drop {
+  0%   { transform: translateY(-100px) scale(0.5); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes stone-ink-ripple {
+  0%   { transform: scale(0.1); opacity: 0.8; border-width: 4px; }
+  100% { transform: scale(4); opacity: 0; border-width: 1px; }
+}
+
+@keyframes stone-ink-droplet {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--splash-x), var(--splash-y)) scale(0); opacity: 0; }
+}
+
+@keyframes stone-seal-emerge {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.8); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 墨滴 */
+.lake--stone .ink-drop {
+  position: absolute;
+  width: 12px;
+  height: 20px;
+  background: var(--color-primary);
+  border-radius: 50% 50% 40% 40%;
+  pointer-events: none;
+  z-index: 20;
+  animation: stone-ink-drop 0.4s cubic-bezier(.17,.67,.83,.67) forwards;
+}
+
+/* 涟漪 */
+.lake--stone .ink-ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  pointer-events: none;
+  z-index: 15;
+  animation: stone-ink-ripple 2s var(--ease-out) forwards;
+}
+
+/* 飞溅墨滴 */
+.lake--stone .ink-droplet {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 18;
+  animation: stone-ink-droplet 0.6s var(--ease-out) forwards;
+}
+
+/* 印章浮现 (投石后从湖中升起) */
+.lake--stone .seal {
+  position: absolute;
+  z-index: 25;
+  pointer-events: none;
+  animation: stone-seal-emerge 1s var(--ease-smooth) forwards;
+  opacity: 0;
+}
+
+/* 投石状态 — 湖面 */
+.lake--stone .lake-surface {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container-low),
+    var(--color-surface-container-highest),
+    var(--color-surface-dim)
+  );
+  box-shadow: var(--shadow-ink-deep);
+}
+
+/* 投石状态 — 石子按钮突出 */
+.lake--stone .lake-stone-btn {
+  border-color: rgba(23, 24, 24, 0.6);
+}
+
+.lake--stone .lake-stone-btn:hover {
+  background: rgba(23, 24, 24, 0.03);
+}
+
+
+/* ============================================================
+   状态 6: 侧向视角 — .lake--profile
+   视觉: 特殊视角布局 — 非居中、不对称构图
+   ============================================================ */
+
+.lake--profile {
+  /* 侧向视角使用不同的布局范式 */
+}
+
+/* 侧向视角 — 湖面容器偏移到一侧 */
+.lake--profile .lake-container {
+  justify-content: flex-start;
+  margin-left: var(--gutter);
+  margin-bottom: 0;
+}
+
+/* 侧向湖面 — 椭圆形以模拟透视 */
+.lake--profile .lake-surface {
+  width: 200px;
+  height: 140px;
+  border-radius: 50%;
+  /* 透视变形 — 宽 > 高 */
+  transform: perspective(600px) rotateX(15deg);
+}
+
+/* 侧向视角 — 涟漪跟随透视 */
+.lake--profile .lake-ripple {
+  border-radius: 50%;
+  transform: perspective(600px) rotateX(15deg);
+}
+
+/* 侧向文字布局 — 偏移到右下或旁边 */
+.lake--profile .lake-state-label {
+  text-align: left;
+  margin-left: var(--gutter);
+  margin-bottom: var(--breath-md);
+}
+
+.lake--profile .lake-state-label h2 {
+  font-size: var(--fs-headline-lg-mobile);
+}
+
+/* 侧向视角 — 石子按钮左对齐 */
+.lake--profile .lake-stone-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: var(--gutter);
+  gap: var(--breath-md);
+}
+
+/* 侧向视角 — 所有 overlay 内容在背景图之上 */
+.lake--profile .lake-content-overlay {
+  position: relative;
+  z-index: 10;
+}
+
+
+/* ============================================================
+   共享: 微涟漪交互动画 (用于 JS 投石触发)
+   ============================================================ */
+
+/* 水花涟漪 (按钮点击触发) */
+@keyframes splash-ripple-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+    border-width: 4px;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.splash-active {
+  position: absolute;
+  border-radius: 50%;
+  border-color: rgba(23, 24, 24, 0.3);
+  pointer-events: none;
+  z-index: 10;
+  animation: splash-ripple-expand 1.5s cubic-bezier(0, 0.2, 0.8, 1) forwards;
+}
+
+/* 石子粒子 (风暴状态专用) */
+@keyframes stone-fall {
+  0%   { transform: translateY(-200px) scale(1.5); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(0) scale(0.5); opacity: 0; }
+}
+
+@keyframes ripple-expand {
+  0%   { transform: scale(0.5); opacity: 0.8; border-width: 4px; }
+  100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+}
+
+.stone-particle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--color-on-surface-variant);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.stone-particle.animate-stone {
+  animation: stone-fall 0.6s var(--ease-in) forwards;
+}
+
+.ripple-effect {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.ripple-effect.animate-ripple {
+  animation: ripple-expand 1.5s var(--ease-out) forwards;
+}
+
+
+/* ============================================================
+   状态过渡 (切换动画)
+   ============================================================ */
+
+/* 状态切换时的过渡效果 */
+.lake-surface,
+.lake-ripple,
+.lake-state-label h2,
+.lake-container {
+  transition: all var(--duration-slow) var(--ease-smooth);
+}
+
+/* 新状态淡入 */
+@keyframes state-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lake-state-entering .lake-state-label,
+.lake-state-entering .lake-surface {
+  animation: state-enter var(--duration-gentle) var(--ease-out) both;
+}

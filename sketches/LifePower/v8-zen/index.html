@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LifePower v8 · 心湖</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#0a1628;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:375px;height:750px;background:linear-gradient(180deg,#edf4fa 0%,#e8f2fb 50%,#edf4fa 100%);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.header{padding:50px 24px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#94a3b8}
+.header-right{display:flex;align-items:center;gap:10px}
+.profile-btn{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:none}
+.msg-btn{position:relative;font-size:18px;cursor:pointer;background:none;border:none}
+.msg-badge{position:absolute;top:-4px;right:-6px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center}
+.screen{display:none;height:calc(100% - 130px);overflow-y:auto;padding:0 24px}
+.screen.active{display:block}
+.screen::-webkit-scrollbar{width:0}
+
+/* Onboarding */
+.ob-overlay{display:none;position:absolute;inset:0;z-index:100;background:linear-gradient(180deg,#e8f4fd,#edf4fa,#e8f4fd);border-radius:40px;padding:60px 24px 30px;overflow-y:auto}
+.ob-overlay.active{display:block}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+.ob-dots span{width:20px;height:4px;border-radius:2px;background:#cbd5e1}
+.ob-dots span.done{background:linear-gradient(90deg,#0ea5e9,#6366f1)}
+.ob-title{font-size:22px;font-weight:700;color:#1e293b;margin-bottom:6px}
+.ob-sub{font-size:13px;color:#94a3b8;margin-bottom:20px;line-height:1.6}
+.ob-step{display:none}
+.ob-step.active{display:block}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{padding:10px 14px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;font-size:12px;color:#64748b;cursor:pointer;transition:all 0.2s}
+.chip:hover{border-color:#0ea5e9}
+.chip.selected{border-color:#0ea5e9;background:#f0f9ff;color:#0ea5e9;font-weight:600}
+.chip-grid.col2 .chip{width:calc(50% - 4px);text-align:center}
+.chip .chip-desc{display:block;font-size:9px;color:#94a3b8;font-weight:400;margin-top:2px;line-height:1.3}
+.chip.selected .chip-desc{color:#0ea5e9;opacity:0.7}
+.slbl{font-size:11px;color:#94a3b8;margin:14px 0 8px;letter-spacing:1px}
+.ob-btn{width:100%;padding:14px;margin-top:20px;border-radius:16px;border:none;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.ob-btn:disabled{opacity:0.4;cursor:not-allowed}
+.ob-skip{display:block;text-align:center;margin-top:10px;font-size:12px;color:#94a3b8;cursor:pointer}
+
+/* HOME / 心湖 — Lake Surface */
+.lake-wrap{text-align:center;padding:8px 0}
+.mode-row{display:flex;justify-content:center;gap:6px;margin-bottom:12px}
+.m-dot{width:8px;height:8px;border-radius:50%;background:#0ea5e9}
+.m-dot.future{background:#cbd5e1}
+.m-label{font-size:10px;color:#94a3b8;text-align:center}
+
+/* Lake surface visual */
+.lake{position:relative;width:160px;height:160px;margin:0 auto 8px}
+.lake-body{width:160px;height:160px;border-radius:50%;background:linear-gradient(180deg,#bae6fd 0%,#7dd3fc 30%,#38bdf8 60%,#0ea5e9 100%);position:relative;overflow:hidden;box-shadow:0 0 30px rgba(14,165,233,0.2),inset 0 0 40px rgba(255,255,255,0.15)}
+.lake-body::before{content:'';position:absolute;top:0;left:-50%;width:200%;height:100%;background:linear-gradient(180deg,transparent 0%,rgba(255,255,255,0.3) 40%,rgba(255,255,255,0.1) 60%,transparent 100%);animation:lakeShimmer 4s ease-in-out infinite}
+.lake-body::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,transparent,rgba(14,165,233,0.4));border-radius:0 0 50% 50%}
+@keyframes lakeShimmer{0%,100%{transform:translateX(-5%)}50%{transform:translateX(5%)}}
+
+/* Ripple rings */
+.lake-ripples{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.lake-ripple{position:absolute;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);animation:rippleOut 3s ease-out infinite}
+.lake-ripple:nth-child(1){width:40px;height:40px;margin:-20px 0 0 -20px;animation-delay:0s}
+.lake-ripple:nth-child(2){width:40px;height:40px;margin:-20px 0 0 -20px;animation-delay:0.8s}
+.lake-ripple:nth-child(3){width:40px;height:40px;margin:-20px 0 0 -20px;animation-delay:1.6s}
+@keyframes rippleOut{0%{width:40px;height:40px;margin:-20px 0 0 -20px;opacity:0.8;border-width:1.5px}100%{width:140px;height:140px;margin:-70px 0 0 -70px;opacity:0;border-width:0.3px}}
+
+/* Lake state text overlay */
+.lake-num{font-size:28px;font-weight:800;color:#fff;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-shadow:0 2px 8px rgba(14,165,233,0.4);z-index:2;text-align:center;line-height:1.3}
+.lake-unit{font-size:12px;color:rgba(255,255,255,0.8);display:block;font-weight:400}
+
+.trend{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;margin:4px 0}
+.trend.down{background:#fef2f2;color:#ef4444}
+.trend.up{background:#ecfdf5;color:#10b981}
+.lake-status{font-size:10px;margin-top:2px}
+
+/* Lake overflow state */
+.lake-overflow .lake-body{background:linear-gradient(180deg,#e0f2fe 0%,#bae6fd 30%,#7dd3fc 60%,#38bdf8 100%);box-shadow:0 0 40px rgba(56,189,248,0.4),inset 0 0 50px rgba(255,255,255,0.2)}
+.lake-overflow .lake-num{color:#fff;text-shadow:0 2px 12px rgba(56,189,248,0.6)}
+
+/* Ripple source tags (was energy source tags) */
+.src-tags{display:flex;justify-content:center;gap:14px;margin-top:6px;font-size:9px}
+.src-tag{display:flex;align-items:center;gap:3px;color:#64748b}
+.src-dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.src-dot.self{background:#3b82f6}
+.src-dot.mark{background:#10b981}
+.src-dot.transfer{background:#f59e0b}
+
+/* Warning bar */
+.warn-bar{background:#fef2f2;border-left:3px solid #ef4444;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:12px;color:#991b1b;display:none}
+.warn-bar.show{display:block}
+.warn-bar .warn-title{font-weight:600;margin-bottom:4px}
+.warn-bar .warn-actions{display:flex;gap:6px;margin-top:8px}
+.warn-bar .warn-actions button{padding:5px 12px;border-radius:10px;border:1px solid #fca5a5;background:#fff;color:#ef4444;font-size:11px;cursor:pointer}
+
+/* Record-now button */
+.rec-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;margin:8px 0 12px;border-radius:16px;border:none;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(14,165,233,0.25)}
+
+/* Record-now modal */
+.rn-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;border-radius:40px;align-items:center;justify-content:center}
+.rn-overlay.active{display:flex}
+.rn-card{background:#fff;border-radius:24px;padding:24px 20px;width:280px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.rn-title{font-size:17px;font-weight:700;color:#1e293b;margin-bottom:16px}
+.rn-option{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;margin-bottom:8px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;font-size:14px;color:#1e293b;cursor:pointer;text-align:left;transition:all 0.2s}
+.rn-option:hover{border-color:#0ea5e9;background:#f0f9ff}
+.rn-option .rn-icon{font-size:28px;flex-shrink:0}
+.rn-option .rn-label{font-weight:600;font-size:14px}
+.rn-option .rn-desc{font-size:11px;color:#94a3b8;margin-top:2px}
+.rn-close{display:block;width:100%;margin-top:8px;padding:10px;background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer}
+.rntab-bar{display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:16px}
+.rntab{flex:1;padding:10px 0;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8;transition:all 0.2s}
+.rntab.active{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff}
+.rn-panel{display:none}
+.rn-panel.active{display:block}
+
+/* Lake model card (was energy model) */
+.emodel{background:#fff;border-radius:14px;padding:12px 16px;margin-top:10px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.emodel-title{font-size:12px;color:#94a3b8;margin-bottom:6px;letter-spacing:1px}
+
+/* MOOD / 涟漪 */
+.mtime-tag{font-size:11px;padding:4px 10px;border-radius:12px;background:#fff;color:#6366f1;display:inline-block;margin-bottom:12px}
+.mood-mode{display:flex;background:#fff;border-radius:12px;padding:3px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.mmode{flex:1;padding:8px;text-align:center;font-size:12px;color:#94a3b8;cursor:pointer;border-radius:10px;transition:all 0.2s}
+.mmode.active{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-weight:600}
+.mood-q{font-size:15px;font-weight:600;color:#1e293b;margin-bottom:10px}
+.mood-g{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.m-card{background:#fff;border-radius:14px;padding:10px 8px;display:flex;align-items:center;gap:8px;cursor:pointer;border:2px solid transparent;transition:all 0.2s}
+.m-card:hover{border-color:#7dd3fc}
+.m-card.selected{border-color:#0ea5e9;background:#f0f9ff}
+.m-card .e{font-size:24px}
+.m-card .n{font-size:12px;font-weight:600;color:#1e293b}
+.m-submit{width:100%;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+
+/* Ripple log (was energy log) */
+.elog{background:#fff;border-radius:18px;padding:14px 16px;margin-top:16px;max-height:260px;overflow-y:auto}
+.elog::-webkit-scrollbar{width:3px}
+.elog::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+.elog-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.elog-main-title{font-size:13px;font-weight:600;color:#1e293b}
+.elog-toggle{font-size:10px;color:#0ea5e9;cursor:pointer;font-weight:400}
+.elog-summary{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.elog-period{font-size:10px;color:#94a3b8}
+.elog-net{font-size:11px;font-weight:600;color:#10b981}
+.elog-list{display:flex;flex-direction:column;gap:2px}
+.elog-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f8fafc}
+.elog-item:last-child{border-bottom:none}
+.elog-time{font-size:10px;color:#94a3b8;min-width:38px}
+.elog-icon{font-size:14px;text-align:center;min-width:20px}
+.elog-label{font-size:11px;color:#64748b;flex:1}
+.elog-src{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:500}
+.elog-src.self-src{background:#eff6ff;color:#3b82f6}
+.elog-src.mark-src{background:#f0fdf4;color:#10b981}
+.elog-src.transfer-src{background:#fffbeb;color:#d97706}
+.elog-src.neg-src{background:#fef2f2;color:#ef4444}
+.elog-more{text-align:center;padding:8px;font-size:10px;color:#cbd5e1}
+
+/* Ripple timeline items — concentric circle styling */
+.ripple-timeline-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f8fafc;position:relative}
+.ripple-timeline-item:last-child{border-bottom:none}
+.ripple-ring{width:28px;height:28px;border-radius:50%;border:2px solid #bae6fd;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;position:relative}
+.ripple-ring::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(14,165,233,0.2)}
+
+/* Chart */
+.mchart{background:#fff;border-radius:18px;padding:16px;margin-top:16px}
+.mchart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mchart-title{font-size:13px;font-weight:600;color:#1e293b}
+.mchart-tabs{display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:2px}
+.mchart-tab{padding:4px 10px;border-radius:6px;font-size:10px;color:#94a3b8;cursor:pointer}
+.mchart-tab.active{background:#fff;color:#1e293b;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.06)}
+.mchart-avg{font-size:11px;color:#94a3b8;margin-bottom:10px}
+.mchart-bars{display:flex;gap:3px;align-items:flex-end;min-height:120px;padding:0 4px}
+.bar-group{display:flex;flex-direction:column;gap:1px;min-width:14px}
+.bar-seg{border-radius:1px}
+.bar-label{font-size:8px;color:#94a3b8;text-align:center;margin-top:3px;white-space:nowrap}
+.mchart-legend{display:flex;gap:10px;margin-top:10px;font-size:10px;color:#94a3b8;flex-wrap:wrap;justify-content:center}
+.mchart-legend span{display:flex;align-items:center;gap:4px}
+.mchart-legend .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+/* Valence axis */
+.valence-section{text-align:center;margin-top:12px}
+.valence-label{font-size:10px;color:#94a3b8;margin-bottom:6px}
+.valence-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:9px;color:#94a3b8}
+.valence-bar{width:160px;height:6px;border-radius:3px;background:linear-gradient(90deg,#6366f1,#a78bfa,#fcd34d,#f59e0b,#10b981);position:relative}
+.valence-dot{position:absolute;top:-3px;left:65%;width:12px;height:12px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.valence-note{font-size:9px;color:#cbd5e1;margin-top:4px}
+
+/* ECHO tab / 回响 */
+.echo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.echo-title{font-size:18px;font-weight:700;color:#1e293b}
+.msg-item{padding:14px;border-radius:16px;margin-bottom:8px;transition:all 0.2s}
+.msg-item:hover{transform:translateX(3px)}
+.msg-item.unread{background:#fff;border-left:3px solid #0ea5e9}
+.msg-item.read{background:#f8fafc;opacity:0.7}
+.msg-from{font-size:13px;font-weight:600;color:#1e293b}
+.msg-body{font-size:12px;color:#64748b;margin-top:2px}
+.msg-time{font-size:10px;color:#cbd5e1;margin-top:4px}
+.msg-tag{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:9px}
+.msg-tag.emotion{background:#e8f4fd;color:#6366f1}
+.msg-tag.accepted{background:#ecfdf5;color:#10b981}
+.msg-tag.rejected{background:#fef2f2;color:#ef4444}
+.msg-actions{display:flex;gap:6px;margin-top:6px}
+.msg-accept,.msg-reject{padding:6px 16px;border-radius:12px;border:1.5px solid;font-size:11px;cursor:pointer;font-weight:500;transition:all 0.2s;background:#fff}
+.msg-accept{border-color:#10b981;color:#10b981}
+.msg-accept:hover{background:#ecfdf5}
+.msg-reject{border-color:#94a3b8;color:#94a3b8}
+.msg-reject:hover{background:#f8fafc}
+
+/* BOND / 宿缘 */
+.btab-bar{display:flex;background:#fff;border-radius:14px;padding:3px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.btab{flex:1;padding:8px;text-align:center;font-size:12px;color:#94a3b8;cursor:pointer;border-radius:11px;transition:all 0.2s}
+.btab.active{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-weight:600}
+.blist{display:flex;flex-direction:column;gap:8px}
+.bitem{background:#fff;border-radius:16px;padding:14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,0.03);position:relative}
+.bav{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;flex-shrink:0}
+.binfo{flex:1}
+.bnm{font-size:14px;font-weight:600;color:#1e293b;display:flex;align-items:center;gap:6px}
+.blevel{font-size:9px;padding:2px 8px;border-radius:8px;font-weight:500}
+.blevel.lv1{background:#f1f5f9;color:#94a3b8}
+.blevel.lv2{background:#e8f4fd;color:#6366f1}
+.blevel.lv3{background:#eff6ff;color:#3b82f6}
+.blevel.lv4{background:#fef3c7;color:#d97706}
+.btags{display:flex;gap:4px;margin-top:2px}
+.btag{font-size:9px;padding:2px 7px;border-radius:8px}
+.btag.pub{background:#ecfdf5;color:#10b981}
+.btag.q{background:#eff6ff;color:#3b82f6}
+.btag.rel{background:#e8f4fd;color:#6366f1}
+.bst{font-size:11px;color:#94a3b8}
+.bact-group{display:flex;gap:4px;flex-direction:column;align-items:flex-end}
+.bact{padding:5px 12px;border-radius:14px;border:1.5px solid;background:#fff;font-size:11px;cursor:pointer;white-space:nowrap}
+.bact.flower{border-color:#6366f1;color:#6366f1}
+.bact.kiss{border-color:#f59e0b;color:#f59e0b}
+.bact.energy-btn{border-color:#10b981;color:#10b981}
+
+/* Diminishing returns */
+.dim-indicator{font-size:9px;color:#94a3b8;text-align:right;margin-top:2px}
+.dim-indicator .dim-bar{display:inline-flex;gap:1px}
+.dim-indicator .dim-seg{width:6px;height:8px;border-radius:1px}
+.dim-seg.used{background:#10b981}.dim-seg.unused{background:#cbd5e1}
+
+/* Energy popup */
+.energy-popup{display:none;position:absolute;bottom:120px;left:24px;right:24px;background:#fff;border-radius:20px;padding:20px;z-index:50;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
+.energy-popup.active{display:block}
+.ep-title{font-size:15px;font-weight:600;color:#1e293b;margin-bottom:10px}
+.ep-info{font-size:11px;color:#64748b;margin-bottom:10px}
+.ep-info .ep-hl{color:#0ea5e9;font-weight:600}
+.ep-slider{width:100%;margin:6px 0}
+.ep-labels{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:10px}
+.ep-dim{font-size:10px;color:#94a3b8;text-align:center;margin-bottom:10px}
+.ep-confirm{width:100%;padding:10px;border-radius:12px;border:none;background:#10b981;color:#fff;font-size:14px;cursor:pointer}
+.ep-cancel{width:100%;padding:8px;margin-top:6px;background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer}
+
+/* Warmth popup */
+.warmth-popup{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;border-radius:40px;align-items:center;justify-content:center}
+.warmth-popup.active{display:flex}
+.warmth-card{background:#fff;border-radius:24px;padding:24px 20px;width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.warmth-card .wc-emoji{font-size:48px;margin-bottom:12px}
+.warmth-card .wc-title{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:8px}
+.warmth-card .wc-sub{font-size:13px;color:#64748b;line-height:1.8;margin-bottom:16px}
+.warmth-card .wc-feel{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.warmth-card .wc-feel button{padding:10px 18px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;cursor:pointer;transition:all 0.2s}
+.warmth-card .wc-feel button:hover{border-color:#0ea5e9;background:#f0f9ff}
+.warmth-card .wc-close{padding:12px 30px;border-radius:14px;border:none;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+
+.badd{text-align:center;padding:13px;margin-top:10px;border-radius:14px;border:2px dashed #7dd3fc;color:#0ea5e9;font-size:13px;cursor:pointer}
+
+/* Bottom Nav */
+.btm-nav{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(237,244,250,0.95);backdrop-filter:blur(10px);border-top:1px solid #e2e8f0;padding:6px 0 20px;z-index:80}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#94a3b8;cursor:pointer;padding:4px 0;transition:all 0.2s}
+.ni.active{color:#0ea5e9}
+.ni .ico{font-size:20px}
+
+/* Profile */
+.profile-panel{display:none;position:absolute;top:0;right:0;width:280px;height:100%;background:#fff;z-index:90;border-radius:0 40px 40px 0;padding:60px 20px 30px;box-shadow:-4px 0 30px rgba(0,0,0,0.1)}
+.profile-panel.active{display:block}
+.pclose{position:absolute;top:50px;right:20px;font-size:20px;cursor:pointer;color:#94a3b8}
+.pname{font-size:18px;font-weight:700;color:#1e293b}
+.ptags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 16px}
+.ptag{font-size:10px;padding:3px 8px;border-radius:10px;background:#f0f9ff;color:#0ea5e9}
+.prow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#64748b}
+
+.toast{position:absolute;top:50px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="header">
+    <span>20:35</span>
+    <div class="header-right">
+      <button style="font-size:17px;cursor:pointer;background:none;border:none" onclick="showToast('📤 状态链接已复制')">📤</button>
+      <button class="profile-btn" onclick="toggleProfile()">我</button>
+    </div>
+  </div>
+
+  <!-- ========== ONBOARDING — 2 steps ========== -->
+  <div class="ob-overlay active" id="onboard">
+    <div class="ob-dots" id="dots">
+      <span class="done" onclick="obJump(1)"></span>
+      <span onclick="obJump(2)"></span>
+    </div>
+
+    <!-- Step 1/2: 你的底色 -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-title">🧬 你的底色</div>
+      <div class="ob-sub" style="margin-bottom:12px">让我们先了解你——这些选择会让心湖更懂你</div>
+
+      <!-- 人格 -->
+      <div class="slbl">你觉得自己最像哪一种？</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto2(this)">INTJ 建筑师<span class="chip-desc">战略型思考者</span></div>
+        <div class="chip" onclick="pickAuto2(this)">INTP 逻辑学家<span class="chip-desc">热爱探索本质</span></div>
+        <div class="chip" onclick="pickAuto2(this)">ENTJ 指挥官<span class="chip-desc">果断且高效</span></div>
+        <div class="chip" onclick="pickAuto2(this)">INFJ 提倡者<span class="chip-desc">内心有光</span></div>
+        <div class="chip" onclick="pickAuto2(this)">INFP 调停者<span class="chip-desc">敏感富有同理心</span></div>
+        <div class="chip" onclick="pickAuto2(this)">ENFP 竞选者<span class="chip-desc">热情洋溢</span></div>
+        <div class="chip" onclick="pickAuto2(this)">ISTJ 物流师<span class="chip-desc">务实可靠</span></div>
+        <div class="chip" onclick="pickAuto2(this)">ISFJ 守卫者<span class="chip-desc">温柔守护</span></div>
+      </div>
+
+      <!-- 情感 -->
+      <div class="slbl">现在的你，属于哪种状态？</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto2(this)">💍 已婚</div><div class="chip" onclick="pickAuto2(this)">💑 热恋中</div>
+        <div class="chip" onclick="pickAuto2(this)">🧊 冷战期</div><div class="chip" onclick="pickAuto2(this)">💔 刚失恋</div>
+        <div class="chip" onclick="pickAuto2(this)">🧍 单身快乐</div><div class="chip" onclick="pickAuto2(this)">🔍 寻觅中</div>
+        <div class="chip" onclick="pickAuto2(this)">⏳ 空窗期</div><div class="chip" onclick="pickAuto2(this)">🏠 分居中</div>
+        <div class="chip" onclick="pickAuto2(this)">👴 空巢期</div>
+      </div>
+
+      <!-- 角色 -->
+      <div class="slbl">上班的你</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto3(this,'work')">🏢 在职稳定</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🚀 创业中</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🎒 学生党</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">👶 全职带娃</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🔍 求职中</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🌴 Gap期</div>
+      </div>
+      <div class="slbl">在家的你</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto3(this,'fam')">👨‍👩‍👧 有娃父母</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">💑 二人世界</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">🧍 独居自由</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">🐾 宠物家长</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">👴 照顾老人</div>
+      </div>
+
+      <!-- 盼头 -->
+      <div class="slbl">有没有一件让你期待的事？</div>
+      <div class="chip-grid col2">
+        <div class="chip" onclick="pickAuto2(this)">🎯 有清晰目标，稳步推进</div>
+        <div class="chip" onclick="pickAuto2(this)">🧭 有方向但进展模糊</div>
+        <div class="chip" onclick="pickAuto2(this)">🌫️ 暂时迷茫，没方向</div>
+        <div class="chip" onclick="pickAuto2(this)">🏁 刚完成大目标，空虚期</div>
+      </div>
+    </div>
+
+    <!-- Step 2/2: 你的此刻 -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-title">🌙 你的此刻</div>
+      <div class="ob-sub">今天的你，和平时有什么不同？</div>
+      <div class="chip-grid col2" style="margin-bottom:16px">
+        <div class="chip selected" onclick="pickAuto(this)">📈 状态在线</div>
+        <div class="chip" onclick="pickAuto(this)">😴 状态不在线</div>
+        <div class="chip" onclick="pickAuto(this)">🔥 高压冲刺</div>
+        <div class="chip" onclick="pickAuto(this)">🧘 佛系摸鱼</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:#fff;border-radius:12px;font-size:11px;color:#64748b;line-height:1.8;margin-bottom:12px">
+        🔮 你将拥有专属湖面映照<br>📊 随时查看每日涟漪变化<br>💫 与在意的人建立温暖守望
+      </div>
+      <button class="ob-btn" id="bFinish" onclick="finishOB()">✨ 开启心湖之旅</button>
+      <span class="ob-skip" onclick="finishOB()">跳过</span>
+    </div>
+  </div>
+
+  <!-- ========== PROFILE ========== -->
+  <div class="profile-panel" id="profile">
+    <span class="pclose" onclick="toggleProfile()">✕</span>
+    <div class="pname">小守</div>
+    <div class="ptags"><span class="ptag">INFP</span><span class="ptag">💑 热恋中</span><span class="ptag">🚀 创业中</span><span class="ptag">🧭 有方向</span></div>
+    <div class="prow"><span>湖面节奏</span><span style="color:#0ea5e9;font-weight:600">上午平静 · 午后微澜</span></div>
+    <div class="prow"><span>情绪敏感度</span><span>中等敏感 · 容易受小事影响</span></div>
+    <div class="prow"><span>涟漪来源</span><span>独处安静 · 被关怀时回满</span></div>
+    <div class="prow"><span>湖面峰值</span><span style="color:#6366f1">偶尔会超出常规状态</span></div>
+    <div class="prow"><span>守望</span><span>3 人 · 1 守护光点</span></div>
+    <div class="prow"><span>获得涟漪</span><span style="color:#10b981">高 · 本周被关怀 8 次</span></div>
+  </div>
+
+  <!-- ========== 心湖 (HOME) ========== -->
+  <div class="screen" id="sc-home">
+    <div class="mode-row"><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot future"></div></div>
+    <div class="m-label">单人模式 · 第 6 天 · 明天解锁守望</div>
+
+    <div class="lake-wrap lake-overflow" id="batwrap">
+      <div class="lake">
+        <div class="lake-body">
+          <div class="lake-ripples">
+            <div class="lake-ripple"></div>
+            <div class="lake-ripple"></div>
+            <div class="lake-ripple"></div>
+          </div>
+        </div>
+        <div class="lake-num">平静如镜<span class="lake-unit">心湖 · 盈满状态</span></div>
+      </div>
+      <div class="trend up">▲ 较昨日更充盈 · 今天特别好</div>
+      <div class="lake-status" id="batStatusLine" style="color:#6366f1">🔮 湖面澄澈 — 今天状态极佳！</div>
+      <div class="src-tags" id="srcTags">
+        <span class="src-tag"><span class="src-dot self"></span>自在 38%</span>
+        <span class="src-tag"><span class="src-dot mark"></span>印记 32%</span>
+        <span class="src-tag"><span class="src-dot transfer"></span>回响 12%</span>
+      </div>
+    </div>
+
+    <!-- Low energy warning -->
+    <div class="warn-bar" id="warn-low">
+      <div class="warn-title">⚠️ 湖面波澜预警</div>
+      <div>你的心湖波动较大，需要平静一下吗？</div>
+      <div class="warn-actions"><button onclick="showToast('🌿 推荐：湖边静坐 10min')">🎵 平静活动</button><button onclick="startMoodNow()">💧 投入石子</button></div>
+    </div>
+
+    <!-- 投一颗石子 -->
+    <button class="rec-btn" onclick="openRecordNow()">💧 投一颗石子</button>
+
+    <!-- 湖面解读卡片 -->
+    <div class="emodel">
+      <div class="emodel-title">💬 今日湖面映照</div>
+      <div style="font-size:12px;color:#64748b;line-height:1.9;font-style:italic">
+        「今天的你像一片静谧的湖水——白天有过一阵涟漪的波动（14:00 印记低落），
+        但傍晚的平静和满足让一切都柔和下来。你被 2 个人关心过，
+        其中 1 份温暖还在彼岸。明天醒来，又将是新的一天。」
+      </div>
+      <div style="font-size:10px;color:#94a3b8;margin-top:8px;text-align:right">湖面映照着你的状态</div>
+    </div>
+
+    <!-- Chart moved to 涟漪 tab -->
+    <div style="text-align:center;padding:8px;margin-top:6px">
+      <span style="font-size:11px;color:#0ea5e9;cursor:pointer" onclick="navTo('mood',1)">📊 查看涟漪趋势 →</span>
+    </div>
+  </div>
+
+  <!-- ========== 涟漪 (MOOD) ========== -->
+  <div class="screen" id="sc-mood">
+    <div style="font-size:16px;font-weight:700;color:#1e293b;margin-bottom:4px">💧 涟漪印记</div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:14px">记录入口在首页「💧 投一颗石子」</div>
+
+    <!-- Mood history timeline — ripple style -->
+    <div style="background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:10px">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;letter-spacing:1px">📋 石子落入的痕迹</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="ripple-timeline-item">
+          <div class="ripple-ring">😌</div>
+          <span style="font-size:11px;color:#64748b;flex:1">平静放松</span>
+          <span style="font-size:10px;color:#94a3b8">今天 20:35</span>
+        </div>
+        <div class="ripple-timeline-item">
+          <div class="ripple-ring">😟</div>
+          <span style="font-size:11px;color:#64748b;flex:1">焦虑不安</span>
+          <span style="font-size:10px;color:#94a3b8">今天 14:00</span>
+        </div>
+        <div class="ripple-timeline-item">
+          <div class="ripple-ring">😊</div>
+          <span style="font-size:11px;color:#64748b;flex:1">元气满满</span>
+          <span style="font-size:10px;color:#94a3b8">今天 08:20</span>
+        </div>
+        <div class="ripple-timeline-item">
+          <div class="ripple-ring">🥰</div>
+          <span style="font-size:11px;color:#64748b;flex:1">幸福满足</span>
+          <span style="font-size:10px;color:#94a3b8">昨天 18:10</span>
+        </div>
+        <div class="ripple-timeline-item">
+          <div class="ripple-ring">😢</div>
+          <span style="font-size:11px;color:#64748b;flex:1">低落难过</span>
+          <span style="font-size:10px;color:#94a3b8">昨天 10:30</span>
+        </div>
+      </div>
+      <div style="text-align:center;padding:6px;font-size:10px;color:#cbd5e1">—— 下拉加载更多 ——</div>
+    </div>
+
+    <!-- 涟漪趋势 chart -->
+    <div class="mchart">
+      <div class="mchart-header">
+        <span class="mchart-title">📊 涟漪趋势</span>
+        <div class="mchart-tabs"><span class="mchart-tab active">今日</span><span class="mchart-tab">本周</span><span class="mchart-tab">本月</span></div>
+      </div>
+      <div class="mchart-avg">今日情绪主调：偏向积极 · 投石 4 次</div>
+      <div class="mchart-area">
+        <div class="mchart-bars">
+          <div class="bar-group"><div class="bar-seg" style="height:20px;background:#fcd34d"></div><div class="bar-seg" style="height:8px;background:#f97316"></div><div class="bar-label">06</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:35px;background:#f97316"></div><div class="bar-label">08</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:15px;background:#fcd34d"></div><div class="bar-seg" style="height:22px;background:#10b981"></div><div class="bar-label">10</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:12px;background:#d1d5db"></div><div class="bar-seg" style="height:28px;background:#fcd34d"></div><div class="bar-label">12</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:40px;background:#ef4444"></div><div class="bar-label">14</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:10px;background:#d1d5db"></div><div class="bar-seg" style="height:18px;background:#fcd34d"></div><div class="bar-label">16</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:25px;background:#f97316"></div><div class="bar-label">18</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:15px;background:#fcd34d"></div><div class="bar-label">20</div></div>
+        </div>
+      </div>
+      <div class="mchart-legend">
+        <span><span class="dot" style="background:#10b981"></span>元气/幸福</span>
+        <span><span class="dot" style="background:#f97316"></span>期待/兴奋</span>
+        <span><span class="dot" style="background:#fcd34d"></span>平静/中性</span>
+        <span><span class="dot" style="background:#ef4444"></span>焦虑/低落</span>
+        <span><span class="dot" style="background:#d1d5db"></span>暂无</span>
+      </div>
+    </div>
+
+    <!-- 涟漪印记 log -->
+    <div class="elog" id="energyLog">
+      <div class="elog-title-row">
+        <span class="elog-main-title">💧 涟漪印记 · 今日波纹</span>
+        <span class="elog-toggle" onclick="showToast('📅 已切换至本周视图（原型展示）')">本周 ▼</span>
+      </div>
+      <div class="elog-summary">
+        <span class="elog-period">时间倒序 · 下拉查看更多</span>
+        <span class="elog-net">净变化 +25% ↑</span>
+      </div>
+      <div class="elog-list">
+        <div class="elog-item">
+          <span class="elog-time">20:35</span><span class="elog-icon">😌</span>
+          <span class="elog-label">平静放松</span>
+          <span class="elog-src mark-src">印记 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">19:30</span><span class="elog-icon">💫</span>
+          <span class="elog-label">张小明 · 彼岸回响</span>
+          <span class="elog-src transfer-src">回响 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">17:15</span><span class="elog-icon">💐</span>
+          <span class="elog-label">李小花送花 · 被认可</span>
+          <span class="elog-src transfer-src">回响 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">14:00</span><span class="elog-icon">😟</span>
+          <span class="elog-label">焦虑不安</span>
+          <span class="elog-src neg-src">印记 -5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">12:00</span><span class="elog-icon">🍜</span>
+          <span class="elog-label">美食享受</span>
+          <span class="elog-src self-src">自在 +5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">09:20</span><span class="elog-icon">💤</span>
+          <span class="elog-label">睡眠 8h · 深度 2h</span>
+          <span class="elog-src self-src">自在 +10%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">08:00</span><span class="elog-icon">🏃</span>
+          <span class="elog-label">晨跑 30min · 8000 步</span>
+          <span class="elog-src self-src">自在 +5%</span>
+        </div>
+      </div>
+      <div class="elog-more">—— 下拉加载更早记录 ——</div>
+    </div>
+  </div>
+
+  <!-- ========== 回响 (ECHO) ========== -->
+  <div class="screen" id="sc-echo">
+    <div class="echo-header"><span class="echo-title">🫧 回响</span><span style="font-size:11px;color:#94a3b8">彼岸传来的波纹</span></div>
+
+    <!-- Message with accept/reject -->
+    <div class="msg-item unread" id="msg1">
+      <div class="msg-from">张小明 · 男友 · 🛡️ 守护光点</div>
+      <div class="msg-body">守护光点 ⚡ 免费向你传来一缕波纹（不消耗自身）</div>
+      <div class="msg-time">19:30</div>
+      <span class="msg-tag emotion" id="msg1-tag">待回应 · 第1次接收</span>
+      <div class="msg-actions" id="msg1-actions">
+        <button class="msg-accept" onclick="acceptMsg('msg1')">🤝 接纳这份回响</button>
+        <button class="msg-reject" onclick="rejectMsg('msg1')">让它散去</button>
+      </div>
+    </div>
+
+    <!-- Flower message (auto-accept) -->
+    <div class="msg-item unread" id="msg2">
+      <div class="msg-from">李小花 · 闺蜜 · 🤝 相伴</div>
+      <div class="msg-body">给你投来一朵涟漪 💐「今天也在闪闪发光」</div>
+      <div class="msg-time">17:15</div>
+      <span class="msg-tag accepted" id="msg2-tag">已自然接纳 · 被认可</span>
+    </div>
+
+    <!-- Read message -->
+    <div class="msg-item read" id="msg3">
+      <div class="msg-from">老爸 · 家人 · 🌸 遥望</div>
+      <div class="msg-body">你的湖面有波澜… 发来问候 👋</div>
+      <div class="msg-time">昨天 20:05</div>
+      <span class="msg-tag accepted">已自然接纳</span>
+    </div>
+  </div>
+
+  <!-- ========== 宿缘 (BOND) ========== -->
+  <div class="screen" id="sc-bond">
+    <div class="btab-bar">
+      <div class="btab active" onclick="swBond('mutual',this)">🤍 相望之缘</div>
+      <div class="btab" onclick="swBond('quiet',this)">🌙 静默守望</div>
+    </div>
+    <div id="bond-mutual" class="blist">
+      <!-- Lv4 守护光点 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#fef3c7)">
+        <div style="position:absolute;top:6px;right:10px;font-size:18px">🛡️</div>
+        <div class="bav" style="background:linear-gradient(135deg,#d97706,#f59e0b)">张</div>
+        <div class="binfo">
+          <div class="bnm">张小明 <span class="blevel lv4">守护光点</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">伴侣 2.0×</span></div>
+          </div>
+          <div class="bst">🟢 湖面澄澈 · 累计 98 天 · 回响 53 次</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第1次 (+5%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" style="border-color:#d97706;color:#d97706" onclick="showToast('🛡️ 守护光点免费回响！（今日1/1）')">⚡ 免费传</button>
+          <button class="bact flower" onclick="showToast('💐 已投花')">💐</button>
+        </div>
+      </div>
+
+      <!-- Lv3 相伴 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">李</div>
+        <div class="binfo">
+          <div class="bnm">李小花 <span class="blevel lv3">相伴</span>
+            <div class="btags"><span class="btag q">静默</span><span class="btag rel">密友 1.3×</span></div>
+          </div>
+          <div class="bst">🟡 湖面微澜 · 累计 35 天 · 可查看周趋势</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第2次 (+4%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" onclick="openEnergyPopup()">💧 回响</button>
+        </div>
+      </div>
+
+      <!-- Lv2 遥望 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#10b981,#059669)">爸</div>
+        <div class="binfo">
+          <div class="bnm">老爸 <span class="blevel lv2">遥望</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">家人 1.5×</span></div>
+          </div>
+          <div class="bst">🟢 状态良好 · 累计 12 天 · 已投花/飞吻</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg used"></span></span> 第3次 (+3%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact flower" onclick="showToast('💐 已投花')">💐</button>
+          <button class="bact kiss" onclick="showToast('😘 已飞吻')">😘</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:#94a3b8;text-align:center;padding:4px">
+        💡 回响不限总次数 · 同一对象≤3次/天 · 衰减 5%→4%→3%→2%→1%→0.5%
+      </div>
+    </div>
+
+    <div id="bond-quiet" class="blist" style="display:none">
+      <!-- 静默守望 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#94a3b8,#64748b)">王</div>
+        <div class="binfo">
+          <div class="bnm">王阿姨 <span class="blevel lv1">微光</span>
+            <div class="btags"><span class="btag rel">前同事</span></div>
+          </div>
+          <div class="bst">静默守望 28 天 · 已回响 2 次 · 已慰问 5 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已静默问候')">静默慰问</button>
+        </div>
+      </div>
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#cbd5e1,#94a3b8)">刘</div>
+        <div class="binfo">
+          <div class="bnm">刘老师 <span class="blevel lv2">遥望</span>
+            <div class="btags"><span class="btag rel">导师</span></div>
+          </div>
+          <div class="bst">静默守望 56 天 · 已回响 8 次 · 已慰问 12 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已静默慰问')">静默慰问</button>
+        </div>
+      </div>
+      <div style="text-align:center;padding:18px;color:#cbd5e1;font-size:11px">
+        💡 静默守望：你看得到对方<br>对方不知道你在守望 · 最高 Lv.2<br>
+        <span style="color:#94a3b8">仅可见等级、守望时间、回响次数</span>
+      </div>
+    </div>
+
+    <div class="badd" onclick="showToast('📋 邀请链接已复制')">+ 建立新的守望</div>
+
+    <!-- Energy Transfer Popup -->
+    <div class="energy-popup" id="epopup">
+      <div class="ep-title">💧 回响给 李小花</div>
+      <div class="ep-info">守望等级：<span class="ep-hl">🤝 相伴</span> · 回响效率 ×1.3 · 被守望方额外 +1%</div>
+      <div class="ep-info">你当前湖面状态：<span class="ep-hl">充盈</span> · 今日已向她回响 2 次 · 剩余 1 次</div>
+      <input type="range" class="ep-slider" min="0" max="30" value="10" step="5" oninput="updateEPSlider(this.value)">
+      <div class="ep-labels"><span>0%</span><span>5%</span><span>10%</span><span>20%</span><span>30%</span></div>
+      <div style="text-align:center;font-size:13px;color:#0ea5e9;margin-bottom:8px">回响 <b id="epval">10%</b> 涟漪</div>
+      <div class="ep-dim" id="epdim">她将收到 <b>13%</b>（10% × 1.3 相伴加成）· 本次接收衰减后 +3%</div>
+      <button class="ep-confirm" onclick="closeEP();checkWarmthUser()">确认回响</button>
+      <button class="ep-cancel" onclick="closeEP()">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== WARMTH POPUP ========== -->
+  <div class="warmth-popup" id="wpopup">
+    <div class="warmth-card">
+      <div class="wc-emoji">🔆</div>
+      <div class="wc-title">你把今天的涟漪都散出去了</div>
+      <div class="wc-sub">你给 张小明、李小花、老爸 传递了回响<br>虽然自己只剩很少，但你选择了分享 ✨</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:14px">现在感觉怎么样？</div>
+      <div class="wc-feel">
+        <button onclick="submitWarmth('happy')">😊 我很开心</button>
+        <button onclick="submitWarmth('tired')">😴 有点累</button>
+        <button onclick="submitWarmth('neutral')">🤷 没想那么多</button>
+      </div>
+      <button class="wc-close" onclick="closeWarmth()">知道了</button>
+    </div>
+  </div>
+
+  <!-- ========== RECORD NOW MODAL (tab-based) ========== -->
+  <div class="rn-overlay" id="rnOverlay">
+    <div class="rn-card">
+      <div class="rn-title">💧 投一颗石子</div>
+      <!-- Tab bar -->
+      <div class="rntab-bar">
+        <button class="rntab active" id="rnTabNow" onclick="rnSwitchTab('now')">此刻的石子</button>
+        <button class="rntab" id="rnTabDay" onclick="rnSwitchTab('day')">今日湖面</button>
+      </div>
+      <!-- Now panel -->
+      <div class="rn-panel active" id="rnPanelNow">
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">🕘 此刻 · 现在</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😊</span><span class="n">元气满满</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😌</span><span class="n">平静放松</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">🥰</span><span class="n">幸福满足</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">🤩</span><span class="n">紧张期待</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😴</span><span class="n">疲惫乏力</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😟</span><span class="n">焦虑不安</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😢</span><span class="n">低落难过</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😤</span><span class="n">烦躁易怒</span></div>
+        </div>
+        <button class="m-submit" id="rnSubmitNow" onclick="rnSubmit('now')" disabled style="opacity:0.4">投入石子</button>
+      </div>
+      <!-- Day panel -->
+      <div class="rn-panel" id="rnPanelDay">
+        <div style="font-size:36px;margin-bottom:8px">🌤️</div>
+        <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:4px">今天湖面整体是 ______</div>
+        <div style="font-size:10px;color:#94a3b8;margin-bottom:10px">基于今天的石子投入</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😊</span><span class="n">元气满满</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😌</span><span class="n">平静放松</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">🥰</span><span class="n">幸福满足</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😟</span><span class="n">焦虑不安</span></div>
+        </div>
+        <button class="m-submit" id="rnSubmitDay" onclick="rnSubmit('day')" disabled style="opacity:0.4">完成今日凝望</button>
+      </div>
+      <button class="rn-close" onclick="closeRecordNow()">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== BOTTOM NAV (4 tabs) ========== -->
+  <div class="btm-nav">
+    <div class="ni" onclick="navTo('home',0)"><span class="ico">🔵</span><span>心湖</span></div>
+    <div class="ni" onclick="navTo('mood',1)"><span class="ico">💧</span><span>涟漪</span></div>
+    <div class="ni" onclick="navTo('echo',2)"><span class="ico">🫧</span><span>回响</span></div>
+    <div class="ni" onclick="navTo('bond',3)"><span class="ico">🤍</span><span>宿缘</span></div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ========== Onboarding — 2 steps ==========
+let obCurrent = 1
+let obAutoPicked = {s1count:0, s1need:5}
+let obRolePicked = {work:false, fam:false}
+
+function pickAuto(el){
+  // Used in Step 2 only (micro-state) — auto-advances
+  let grid = el.parentElement
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+  setTimeout(()=>obAdvance(), 300)
+}
+
+function pickAuto2(el){
+  // Step 1 single-group picker: just highlight
+  let grid = el.parentElement
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+}
+
+function pickAuto3(el, group){
+  // Step 1 role dual-group picker
+  let grid = el.parentElement
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+  if(group==='work') obRolePicked.work = true
+  if(group==='fam') obRolePicked.fam = true
+}
+
+function obAdvance(){
+  if(obCurrent >= 2) return
+  obCurrent++
+  obJump(obCurrent)
+}
+
+function obJump(n){
+  obCurrent = n
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'))
+  let step = document.getElementById('ob'+n)
+  if(step) step.classList.add('active')
+  document.querySelectorAll('#dots span').forEach((d,i)=>d.classList.toggle('done', i<n))
+}
+
+function finishOB(){
+  document.getElementById('onboard').classList.remove('active')
+  document.getElementById('dots').style.display='none'
+  document.getElementById('sc-home').classList.add('active')
+  navAct(0)
+  showToast('🎉 湖面映照已建立 · 欢迎来到心湖')
+}
+
+function showRoleDetail(type){}
+
+// ========== Navigation (4 tabs) ==========
+function navTo(n,i){
+  ['home','mood','echo','bond'].forEach(s=>document.getElementById('sc-'+s).classList.remove('active'))
+  document.getElementById('sc-'+n).classList.add('active')
+  navAct(i)
+}
+function navAct(i){document.querySelectorAll('.ni').forEach((n,j)=>n.classList.toggle('active',j===i))}
+function toggleProfile(){document.getElementById('profile').classList.toggle('active')}
+
+// ========== Record Now Modal ==========
+function openRecordNow(){
+  document.getElementById('rnOverlay').classList.add('active')
+  rnSwitchTab('now')
+}
+function closeRecordNow(){
+  document.getElementById('rnOverlay').classList.remove('active')
+}
+let _rnPicked = {now:null, day:null}
+function rnSwitchTab(tab){
+  document.getElementById('rnPanelNow').classList.toggle('active', tab==='now')
+  document.getElementById('rnPanelDay').classList.toggle('active', tab==='day')
+  document.getElementById('rnTabNow').classList.toggle('active', tab==='now')
+  document.getElementById('rnTabDay').classList.toggle('active', tab==='day')
+}
+function rnPickMood(el, tab){
+  el.parentElement.querySelectorAll('.m-card').forEach(m=>m.classList.remove('selected'))
+  el.classList.add('selected')
+  _rnPicked[tab] = el.querySelector('.n').textContent
+  let submitBtn = document.getElementById(tab==='now' ? 'rnSubmitNow' : 'rnSubmitDay')
+  submitBtn.disabled = false
+  submitBtn.style.opacity = '1'
+}
+function rnSubmit(tab){
+  let mood = _rnPicked[tab]
+  if(!mood){showToast('请先选择一个心情');return}
+  closeRecordNow()
+  if(tab==='now') showToast('✅ '+mood+' · 石子已投入湖中')
+  else showToast('🌙 今日湖面：'+mood+' · 已凝望')
+  _rnPicked = {now:null, day:null}
+  // Reset buttons
+  document.getElementById('rnSubmitNow').disabled = true
+  document.getElementById('rnSubmitNow').style.opacity = '0.4'
+  document.getElementById('rnSubmitDay').disabled = true
+  document.getElementById('rnSubmitDay').style.opacity = '0.4'
+}
+function startMoodNow(){
+  closeRecordNow()
+  swMoodModeInline('now')
+  navTo('mood',1)
+}
+
+function startMoodDay(){
+  closeRecordNow()
+  swMoodModeInline('day')
+  navTo('mood',1)
+}
+
+function swMoodModeInline(m){
+  document.getElementById('mood-now').style.display=m==='now'?'block':'none'
+  document.getElementById('mood-day').style.display=m==='day'?'block':'none'
+  document.querySelectorAll('.mmode').forEach((b,i)=>{
+    b.classList.toggle('active',(m==='now'&&i===0)||(m==='day'&&i===1))
+  })
+}
+
+// ========== Mood ==========
+function selMood(el){
+  el.parentElement.querySelectorAll('.m-card').forEach(m=>m.classList.remove('selected'))
+  el.classList.add('selected')
+}
+
+function swMoodMode(m,el){
+  document.getElementById('mood-now').style.display=m==='now'?'block':'none'
+  document.getElementById('mood-day').style.display=m==='day'?'block':'none'
+  document.querySelectorAll('.mmode').forEach(b=>b.classList.remove('active'))
+  el.classList.add('active')
+}
+
+// ========== Echo / Messages ==========
+function acceptMsg(id){
+  let tag=document.getElementById(id+'-tag')
+  let actions=document.getElementById(id+'-actions')
+  if(tag) tag.textContent='已接纳 +8%'; tag.className='msg-tag accepted'
+  if(actions) actions.style.display='none'
+  let item=document.getElementById(id)
+  item.classList.remove('unread'); item.classList.add('read')
+  showToast('🤝 已接纳这份回响')
+  updateMsgBadge()
+}
+
+function rejectMsg(id){
+  let tag=document.getElementById(id+'-tag')
+  let actions=document.getElementById(id+'-actions')
+  if(tag) tag.textContent='已散去'; tag.className='msg-tag rejected'
+  if(actions) actions.style.display='none'
+  let item=document.getElementById(id)
+  item.classList.remove('unread'); item.classList.add('read')
+  showToast('🌫️ 回响已散去')
+  updateMsgBadge()
+}
+
+function updateMsgBadge(){
+  let unread=document.querySelectorAll('#sc-echo .msg-item.unread').length
+  let badge=document.querySelector('.msg-badge')
+  badge.textContent=unread
+  if(unread===0) badge.style.display='none'
+  else badge.style.display='flex'
+}
+
+// ========== Bond ==========
+function swBond(t,el){
+  document.getElementById('bond-mutual').style.display=t==='mutual'?'flex':'none'
+  document.getElementById('bond-quiet').style.display=t==='quiet'?'flex':'none'
+  document.querySelectorAll('.btab').forEach(b=>b.classList.remove('active'))
+  el.classList.add('active')
+}
+
+function openEnergyPopup(){document.getElementById('epopup').classList.add('active')}
+function closeEP(){document.getElementById('epopup').classList.remove('active')}
+
+function updateEPSlider(v){
+  document.getElementById('epval').textContent=v+'%'
+  document.getElementById('epdim').innerHTML='她将收到 <b>'+(v*1.3).toFixed(0)+'%</b>（'+v+'% × 1.3 相伴加成）· 本次接收衰减后 +3%'
+}
+
+function checkWarmthUser(){
+  let v=parseInt(document.getElementById('epval').textContent)
+  if(82-v<10) document.getElementById('wpopup').classList.add('active')
+  else showToast('💧 已回响 · 自身 -'+v+'%')
+}
+
+function submitWarmth(feel){
+  let msgs={happy:'😊 你的快乐来自分享！系统已记录：利他型快乐模式',tired:'😴 下次回响前会提醒「留一点给自己哦」',neutral:'🤷 系统已记录，将在月末总结中回顾'}
+  showToast(msgs[feel]);closeWarmth()
+}
+
+function closeWarmth(){document.getElementById('wpopup').classList.remove('active')}
+
+// ========== Toast ==========
+function showToast(m){
+  let t=document.getElementById('toast')
+  t.textContent=m;t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),2500)
+}
+
+// ========== Lake Surface Toggle (was Battery Toggle) ==========
+let overflowMode=true
+document.getElementById('batwrap').onclick=function(){
+  overflowMode=!overflowMode
+  let b=document.getElementById('batwrap')
+  let num=b.querySelector('.lake-num')
+  let trend=b.querySelector('.trend')
+  let statusLine=document.getElementById('batStatusLine')
+  let srcTags=document.getElementById('srcTags')
+  if(overflowMode){
+    b.classList.add('lake-overflow')
+    num.innerHTML='平静如镜<span class="lake-unit">心湖 · 盈满状态</span>'
+    num.style.color='#fff'
+    trend.textContent='▲ 较昨日更充盈 · 今天特别好';trend.className='trend up'
+    statusLine.textContent='🔮 湖面澄澈 — 今天状态极佳！';statusLine.style.color='#6366f1'
+    srcTags.innerHTML='<span class="src-tag"><span class="src-dot self"></span>自在 38%</span><span class="src-tag"><span class="src-dot mark"></span>印记 32%</span><span class="src-tag"><span class="src-dot transfer"></span>回响 12%</span>'
+    document.getElementById('warn-low').classList.remove('show')
+  }else{
+    b.classList.remove('lake-overflow')
+    num.innerHTML='风起浪涌<span class="lake-unit">心湖 · 波澜状态</span>'
+    num.style.color='#fff'
+    trend.textContent='▼ 较昨日波动 · 湖面不稳';trend.className='trend down'
+    statusLine.textContent='⚠️ 湖面波澜较大';statusLine.style.color='#ef4444'
+    srcTags.innerHTML='<span class="src-tag"><span class="src-dot self"></span>自在 10%</span><span class="src-tag"><span class="src-dot mark"></span>印记 5%</span><span class="src-tag"><span class="src-dot transfer"></span>回响 3%</span>'
+    document.getElementById('warn-low').classList.add('show')
+    setTimeout(()=>document.getElementById('warn-low').classList.remove('show'),5000)
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>心汐 · 心湖</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary-fixed-dim": "#b1ccc5",
+        "primary-container": "#2c2c2c",
+        "surface-container-high": "#ebe7e7",
+        "error": "#ba1a1a",
+        "on-tertiary-fixed-variant": "#334b46",
+        "secondary-container": "#e2e2e2",
+        "inverse-primary": "#c8c6c5",
+        "on-secondary": "#ffffff",
+        "on-primary-fixed": "#1b1c1c",
+        "on-background": "#1c1b1b",
+        "surface": "#fdf8f8",
+        "on-error": "#ffffff",
+        "surface-container-highest": "#e5e2e1",
+        "surface-tint": "#5f5e5e",
+        "primary": "#171818",
+        "on-error-container": "#93000a",
+        "on-secondary-fixed-variant": "#454747",
+        "inverse-surface": "#313030",
+        "primary-fixed": "#e4e2e1",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#f7f3f2",
+        "surface-container": "#f1edec",
+        "on-primary-fixed-variant": "#474747",
+        "outline": "#747878",
+        "surface-bright": "#fdf8f8",
+        "tertiary-fixed": "#cde8e1",
+        "on-tertiary": "#ffffff",
+        "surface-dim": "#ddd9d8",
+        "surface-variant": "#e5e2e1",
+        "secondary": "#5d5e5f",
+        "on-primary-container": "#949393",
+        "on-tertiary-fixed": "#06201b",
+        "on-tertiary-container": "#7e9992",
+        "inverse-on-surface": "#f4f0ef",
+        "on-surface-variant": "#444748",
+        "outline-variant": "#c4c7c7",
+        "tertiary": "#021b17",
+        "secondary-fixed-dim": "#c6c6c6",
+        "on-secondary-fixed": "#1a1c1c",
+        "on-primary": "#ffffff",
+        "secondary-fixed": "#e2e2e2",
+        "error-container": "#ffdad6",
+        "background": "#fdf8f8",
+        "on-secondary-container": "#636465",
+        "tertiary-container": "#18302b",
+        "on-surface": "#1c1b1b",
+        "primary-fixed-dim": "#c8c6c5"
+      },
+      borderRadius: {
+        DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", "2xl": "1rem", "3xl": "1.5rem", full: "9999px"
+      },
+      spacing: {
+        "breath-xs": "0.5rem", "breath-sm": "1rem", "breath-md": "2rem", "breath-lg": "4rem", "breath-xl": "8rem", "gutter": "1.5rem", "max-width": "1140px"
+      },
+      fontFamily: {
+        "headline-lg": ["Playfair Display", "serif"],
+        "body-md": ["Manrope", "sans-serif"],
+        "body-lg": ["Manrope", "sans-serif"],
+        "headline-lg-mobile": ["Playfair Display", "serif"],
+        "display-zen": ["Playfair Display", "serif"],
+        "label-poetic": ["Manrope", "sans-serif"]
+      },
+      fontSize: {
+        "headline-lg": ["32px", { lineHeight: "1.3", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0.01em", fontWeight: "400" }],
+        "headline-lg-mobile": ["28px", { lineHeight: "1.3", fontWeight: "400" }],
+        "display-zen": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "400" }],
+        "label-poetic": ["14px", { lineHeight: "1.4", letterSpacing: "0.05em", fontWeight: "500" }],
+        "micro": ["11px", { lineHeight: "1.3", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<link rel="stylesheet" href="base.css"/>
+<link rel="stylesheet" href="lake-states.css"/>
+<style>
+  body {
+    background-color: #fdf8f8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .ink-wash-glow {
+    box-shadow: 0 0 60px 20px rgba(211, 211, 211, 0.4);
+  }
+  .ink-wash-border {
+    border: 1px solid #D3D3D3;
+    box-shadow: 0 0 15px rgba(211, 211, 211, 0.2);
+    transition: all 0.7s ease-in-out;
+  }
+  .ink-wash-border:hover {
+    box-shadow: 0 0 25px rgba(211, 211, 211, 0.4);
+    border-color: #747878;
+  }
+  .ink-wash-gradient {
+    background: radial-gradient(circle, rgba(211, 211, 211, 0.2) 0%, rgba(253, 248, 248, 0) 70%);
+  }
+  .ink-wash-bg {
+    background: radial-gradient(circle at 50% 50%, #fdf8f8 0%, #f1edec 100%);
+    position: relative; overflow: hidden;
+  }
+  .ink-bleed {
+    box-shadow: 0 0 40px 10px rgba(211, 211, 211, 0.15);
+    border: 1px solid rgba(211, 211, 211, 0.2);
+  }
+  .pebble-chip {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(116, 120, 120, 0.15);
+  }
+  .pebble-chip:hover {
+    border-color: #171818;
+    background: rgba(23, 24, 24, 0.02);
+  }
+  .pebble-chip.selected {
+    border-color: #171818;
+    background: rgba(23, 24, 24, 0.04);
+  }
+  .pebble-button {
+    transition: all 0.5s ease-in-out;
+    border: 1px solid rgba(116, 120, 120, 0.2);
+  }
+  .pebble-button:hover {
+    border-color: #171818;
+    background: radial-gradient(circle, rgba(177, 204, 197, 0.1) 0%, transparent 100%);
+  }
+  .ink-stroke {
+    border: 1.5px solid rgba(23, 24, 24, 0.15);
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ink-stroke:hover { border-color: rgba(23, 24, 24, 0.8); box-shadow: 0 0 0 8px rgba(23, 24, 24, 0.02); }
+  .ink-stroke.selected { border-color: #171818; background: rgba(23, 24, 24, 0.04); }
+  .ripple-bg {
+    background: radial-gradient(circle, rgba(211, 211, 211, 0.15) 0%, transparent 70%);
+  }
+  .ripple-deco {
+    position: absolute; border: 1px solid rgba(211, 211, 211, 0.3);
+    border-radius: 50%; pointer-events: none;
+  }
+  .mist-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(211, 211, 211, 0.5) 50%, transparent 100%);
+    margin: 2rem 0;
+  }
+  .brush-stroke {
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(to right, transparent, #747878, transparent);
+    border-image-slice: 1;
+  }
+  @keyframes splash-ripple {
+    0% { transform: scale(1); opacity: 0.8; border-width: 4px; }
+    100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+  }
+  .splash-active { animation: splash-ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) forwards; }
+
+  /* Screen toggle */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; }
+  /* Overlay toggle */
+  .ob-overlay, .record-overlay, .warmth-overlay { display: none; }
+  .ob-overlay.active, .record-overlay.active, .warmth-overlay.active { display: flex; }
+  /* Profile panel */
+  .profile-panel { transform: translateX(100%); transition: transform 0.4s ease; }
+  .profile-panel.active { transform: translateX(0); }
+  /* Energy popup */
+  .energy-popup { display: none; }
+  .energy-popup.active { display: block; }
+  /* Toast */
+  .toast { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  /* Ink drop/seal animations */
+  @keyframes ink-drop-fall {
+    0% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes ink-ripple-expand {
+    0% { transform: scale(0.1); opacity: 0.6; border-width: 3px; }
+    100% { transform: scale(4.5); opacity: 0; border-width: 0.5px; }
+  }
+  @keyframes ink-droplet-splash {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+    100% { transform: translate(var(--tw-x), var(--tw-y)) scale(0); opacity: 0; }
+  }
+  @keyframes seal-float-fade {
+    0% { transform: scale(0.8); opacity: 0; filter: blur(8px); }
+    20% { transform: scale(1.05); opacity: 0.4; filter: blur(0px); }
+    80% { transform: scale(1); opacity: 0.3; filter: blur(1px); }
+    100% { transform: scale(1.1); opacity: 0; filter: blur(4px); }
+  }
+  .ink-drop {
+    position: absolute; width: 10px; height: 18px; background: #171818;
+    border-radius: 50% 50% 40% 40%; pointer-events: none;
+    animation: ink-drop-fall 0.4s cubic-bezier(.17,.67,.83,.67) forwards;
+  }
+  .ink-ripple-anim {
+    position: absolute; border-radius: 50%; border: 1.5px solid #171818;
+    pointer-events: none; animation: ink-ripple-expand 2.5s ease-out forwards;
+  }
+  .ink-droplet {
+    position: absolute; width: 2.5px; height: 2.5px; background: #171818;
+    border-radius: 50%; pointer-events: none;
+    animation: ink-droplet-splash 0.8s ease-out forwards;
+  }
+  .ink-seal {
+    position: absolute; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid #171818; color: #171818; font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; pointer-events: none;
+    animation: seal-float-fade 3s ease-in-out forwards; background: transparent;
+    writing-mode: vertical-rl; padding: 8px;
+  }
+</style>
+</head>
+
+<body class="min-h-screen flex flex-col font-body-md text-on-background selection:bg-tertiary-fixed-dim/30">
+
+<!-- ========== TopAppBar ========== -->
+<header class="w-full top-0 sticky bg-background/80 backdrop-blur-sm z-50">
+  <div class="flex justify-between items-center px-breath-md py-breath-sm max-w-max-width mx-auto">
+    <div class="flex items-center gap-breath-xs">
+      <span class="material-symbols-outlined text-primary" data-icon="spa">spa</span>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-widest">心汐</h1>
+    </div>
+    <div class="flex gap-breath-sm items-center">
+      <button class="relative text-secondary hover:text-primary transition-colors duration-500" id="msgBtn" aria-label="消息">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-error text-on-error text-[9px] font-medium flex items-center justify-center" id="msgBadge">2</span>
+      </button>
+      <button class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-[13px] cursor-pointer" id="profileBtn" aria-label="个人资料">我</button>
+    </div>
+  </div>
+</header>
+
+<!-- ========== 引导页 (Onboarding) ========== -->
+<div class="fixed inset-0 z-[100] bg-background ink-wash-bg overflow-y-auto" id="onboard">
+  <!-- Decorative Ripples -->
+  <div class="ripple-deco w-[600px] h-[600px] -top-20 -left-20 opacity-40"></div>
+  <div class="ripple-deco w-[400px] h-[400px] top-1/4 -right-10 opacity-20"></div>
+  <div class="ripple-deco w-[800px] h-[800px] -bottom-40 left-1/3 opacity-30"></div>
+
+  <!-- Step 1/2: 你的底色 -->
+  <div class="ob-step active" id="ob1">
+    <header class="w-full sticky top-0 bg-background/80 backdrop-blur-sm z-40">
+      <div class="flex justify-between items-center px-breath-md py-breath-sm max-w-max-width mx-auto">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">spa</span>
+          <h1 class="font-headline-lg text-primary tracking-widest">心汐</h1>
+        </div>
+        <div class="text-secondary font-label-poetic"><span class="text-primary font-bold">01</span> / 02</div>
+      </div>
+    </header>
+    <main class="max-w-3xl mx-auto px-gutter py-breath-lg relative z-10">
+      <section class="mb-breath-xl text-center">
+        <h2 class="font-display-zen text-display-zen mb-breath-xs">你的底色</h2>
+        <p class="text-secondary font-body-lg italic opacity-70">让我们先了解你——这些选择会让心湖更懂你</p>
+      </section>
+      <div class="space-y-breath-xl">
+        <!-- 人格底色 -->
+        <section class="group" id="mbtiGroup">
+          <div class="flex items-center gap-4 mb-breath-md">
+            <h3 class="font-headline-lg text-primary">人格底色</h3>
+            <div class="h-px flex-grow bg-surface-container-highest/50"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button class="ob-mbti-chip pebble-chip p-6 rounded-xl text-left bg-surface-container-lowest" data-mbti="INFP">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-headline-lg text-primary">INFP</span>
+                <span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">water_drop</span>
+              </div>
+              <p class="text-on-surface-variant font-body-md italic leading-relaxed">治愈者，在静谧中编织灵魂的诗意。</p>
+            </button>
+            <button class="ob-mbti-chip pebble-chip p-6 rounded-xl text-left bg-surface-container-lowest" data-mbti="ENFJ">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-headline-lg text-primary">ENFJ</span>
+                <span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">waves</span>
+              </div>
+              <p class="text-on-surface-variant font-body-md italic leading-relaxed">感召者，点燃他人内心未竟的火焰。</p>
+            </button>
+            <button class="ob-mbti-chip pebble-chip p-6 rounded-xl text-left bg-surface-container-lowest" data-mbti="INTJ">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-headline-lg text-primary">INTJ</span>
+                <span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">mountain_flag</span>
+              </div>
+              <p class="text-on-surface-variant font-body-md italic leading-relaxed">建筑师，于万物寂静中构建理性的秩序。</p>
+            </button>
+            <button class="ob-mbti-chip pebble-chip p-6 rounded-xl text-left bg-surface-container-lowest" data-mbti="ESFP">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-headline-lg text-primary">ESFP</span>
+                <span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">celebration</span>
+              </div>
+              <p class="text-on-surface-variant font-body-md italic leading-relaxed">表演者，生命是一场永不落幕的墨舞。</p>
+            </button>
+          </div>
+        </section>
+        <div class="mist-line"></div>
+        <!-- 情感状态 -->
+        <section id="emotionGroup">
+          <div class="flex items-center gap-4 mb-breath-md">
+            <h3 class="font-headline-lg text-primary">情感状态</h3>
+            <div class="h-px flex-grow bg-surface-container-highest/50"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">已婚</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">热恋</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">空窗期</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">单身主义</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">模糊地带</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">暗恋中</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">长跑中</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">分居中</button>
+            <button class="ob-emotion-chip pebble-chip py-4 text-center rounded-lg bg-surface-container-lowest font-body-md">开放关系</button>
+          </div>
+        </section>
+        <div class="mist-line"></div>
+        <!-- 当下角色 -->
+        <section id="roleGroup">
+          <div class="flex items-center gap-4 mb-breath-md">
+            <h3 class="font-headline-lg text-primary">当下角色</h3>
+            <div class="h-px flex-grow bg-surface-container-highest/50"></div>
+          </div>
+          <div class="flex flex-col md:flex-row gap-4">
+            <button class="ob-role-chip flex-1 pebble-chip p-6 rounded-2xl flex items-center gap-6 bg-surface-container-low" data-role="work">
+              <div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container-highest flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary text-3xl">work</span>
+              </div>
+              <div class="text-left">
+                <p class="font-headline-lg text-lg text-primary">上班的你</p>
+                <p class="text-secondary text-sm">游走于规则与创造之间的旅者</p>
+              </div>
+            </button>
+            <button class="ob-role-chip flex-1 pebble-chip p-6 rounded-2xl flex items-center gap-6 bg-surface-container-low" data-role="home">
+              <div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container-highest flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary text-3xl">home</span>
+              </div>
+              <div class="text-left">
+                <p class="font-headline-lg text-lg text-primary">在家的你</p>
+                <p class="text-secondary text-sm">卸下甲胄，回归最质朴的留白</p>
+              </div>
+            </button>
+          </div>
+        </section>
+        <div class="mist-line"></div>
+        <!-- 心中盼头 -->
+        <section class="pb-breath-xl" id="hopeGroup">
+          <div class="flex items-center gap-4 mb-breath-md">
+            <h3 class="font-headline-lg text-primary">心中盼头</h3>
+            <div class="h-px flex-grow bg-surface-container-highest/50"></div>
+          </div>
+          <div class="bg-surface-container p-2 rounded-full flex max-w-md mx-auto border border-outline-variant/20">
+            <button class="ob-hope-chip flex-1 py-4 px-6 rounded-full font-body-md transition-all duration-500 bg-primary text-on-primary" data-hope="far">远方的朝露</button>
+            <button class="ob-hope-chip flex-1 py-4 px-6 rounded-full font-body-md transition-all duration-500 hover:bg-surface-variant/50 text-secondary" data-hope="near">当下的灯火</button>
+          </div>
+        </section>
+      </div>
+    </main>
+    <!-- Floating next button -->
+    <div class="fixed bottom-24 right-12 z-50">
+      <button class="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xl hover:scale-110 transition-transform duration-500 group opacity-30 pointer-events-none" id="bNext">
+        <span class="material-symbols-outlined text-3xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        <div class="absolute inset-0 rounded-full animate-ping bg-primary opacity-20"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2/2: 你的此刻 -->
+  <div class="ob-step" id="ob2">
+    <header class="w-full sticky top-0 bg-background/80 backdrop-blur-sm z-40">
+      <div class="flex justify-between items-center px-breath-md py-breath-sm max-w-max-width mx-auto">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">spa</span>
+          <h1 class="font-headline-lg text-primary tracking-widest">心汐</h1>
+        </div>
+        <div class="text-secondary font-label-poetic"><span class="text-primary font-bold">02</span> / 02</div>
+      </div>
+    </header>
+    <main class="max-w-3xl mx-auto px-gutter py-breath-lg relative z-10">
+      <section class="mb-breath-xl text-center">
+        <h2 class="font-display-zen text-display-zen mb-breath-xs">你的此刻</h2>
+        <p class="text-secondary font-body-lg italic opacity-70">今天的你，和平时有什么不同？</p>
+      </section>
+      <!-- 微状态选择 -->
+      <div class="grid grid-cols-2 gap-4 mb-breath-lg" id="microGroup">
+        <button class="ob-micro-chip ink-stroke p-6 rounded-2xl text-center bg-surface-container-lowest cursor-pointer" data-micro="online">
+          <span class="material-symbols-outlined text-primary text-4xl mb-2 block">bolt</span>
+          <p class="font-label-poetic text-primary">状态在线</p>
+          <p class="text-secondary text-xs mt-1">元气满满，思路清晰</p>
+        </button>
+        <button class="ob-micro-chip ink-stroke p-6 rounded-2xl text-center bg-surface-container-lowest cursor-pointer" data-micro="offline">
+          <span class="material-symbols-outlined text-secondary text-4xl mb-2 block">bedtime</span>
+          <p class="font-label-poetic text-primary">状态不在线</p>
+          <p class="text-secondary text-xs mt-1">倦怠疲惫，有些滞重</p>
+        </button>
+        <button class="ob-micro-chip ink-stroke p-6 rounded-2xl text-center bg-surface-container-lowest cursor-pointer" data-micro="high">
+          <span class="material-symbols-outlined text-secondary text-4xl mb-2 block">local_fire_department</span>
+          <p class="font-label-poetic text-primary">高压冲刺</p>
+          <p class="text-secondary text-xs mt-1">Deadline 驱动，全力输出</p>
+        </button>
+        <button class="ob-micro-chip ink-stroke p-6 rounded-2xl text-center bg-surface-container-lowest cursor-pointer" data-micro="chill">
+          <span class="material-symbols-outlined text-secondary text-4xl mb-2 block">spa</span>
+          <p class="font-label-poetic text-primary">佛系摸鱼</p>
+          <p class="text-secondary text-xs mt-1">顺其自然，慢慢来</p>
+        </button>
+      </div>
+      <!-- 功能预览 -->
+      <div class="text-center p-breath-md rounded-xl bg-surface-container-low border border-surface-container-highest/30 font-body-md text-on-surface-variant mb-breath-lg">
+        你将拥有专属湖面映照<br>随时查看每日涟漪变化<br>与在意的人建立温暖守望
+      </div>
+      <button class="w-full py-breath-sm rounded-full bg-primary text-on-primary font-label-poetic tracking-wider opacity-30 pointer-events-none transition-all duration-500" id="bFinish" disabled>开始</button>
+      <span class="block text-center mt-breath-sm font-label-poetic text-secondary opacity-60 cursor-pointer" id="skipBtn">跳过</span>
+    </main>
+  </div>
+</div>
+
+<!-- ========== 心湖屏 (Home) ========== -->
+<div class="screen active flex-grow flex flex-col items-center px-gutter relative overflow-y-auto pb-24 pt-4" id="sc-home">
+  <!-- Lake state bar -->
+  <div class="flex items-center gap-1 mb-3 flex-wrap justify-center">
+    <span class="lake-state-dot w-2 h-2 rounded-full bg-surface-container-high cursor-pointer transition-all active" data-state="mirror"></span>
+    <span class="lake-state-dot w-2 h-2 rounded-full bg-surface-container-high cursor-pointer transition-all" data-state="breeze"></span>
+    <span class="lake-state-dot w-2 h-2 rounded-full bg-surface-container-high cursor-pointer transition-all" data-state="ripples"></span>
+    <span class="lake-state-dot w-2 h-2 rounded-full bg-surface-container-high cursor-pointer transition-all" data-state="storm"></span>
+    <span class="w-full text-center font-label-poetic text-micro text-secondary mt-1 lake-state-label">湖面如镜</span>
+  </div>
+  <!-- Zen Water Surface -->
+  <div class="relative flex items-center justify-center mb-6" id="homeLakeWrap">
+    <div class="lake-container">
+      <div class="lake-ripple"></div>
+      <div class="lake-ripple"></div>
+      <div class="lake-ripple"></div>
+      <div class="lake-surface w-40 h-40 rounded-full relative overflow-hidden border border-outline-variant/20 ink-wash-glow bg-gradient-to-br from-surface-container-low via-surface-container-highest to-surface-dim">
+        <div class="absolute inset-0 opacity-30 mix-blend-multiply bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent"></div>
+        <div class="absolute inset-0 bg-no-repeat bg-center bg-cover opacity-60" id="lakePhoto"
+          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHnm0kD0zPt4hIxfP7VtViGbUQ7HQPAhfIQqWtY-SLhfcPbhjx0fVj1Eoa96KRRqRI8DaVfdgz6iIFY4_2vrq2bfhClHO4xSg7ZpIZh9gbRio6FgFTa5ogzotNL1luQkzj4sBN_ch9zop2ZfuG7ZoAEPCPdlZuVDhZ5JvvKIqRh8R2Im-S_lJlNVzDijQqvejRlsooRFv0gOXIIuW5PZhzYv5ZeSr6yIqxVl4JhB0z091NIZrLnD1qR4RpBZraRZfL2VtTqPsNuJ8'); background-size: cover; background-position: center;">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- State Text -->
+  <div class="text-center mb-4">
+    <h2 class="font-display-zen text-display-zen text-primary mb-breath-xs lake-text-main">湖面如镜</h2>
+    <div class="w-16 h-px bg-outline-variant mx-auto opacity-50"></div>
+    <p class="font-label-poetic text-on-surface-variant mt-breath-xs italic lake-text-sub">心湖澄澈，波澜不惊</p>
+  </div>
+  <!-- Interaction Buttons -->
+  <div class="flex flex-col items-center gap-3">
+    <button class="group relative px-breath-lg py-breath-sm rounded-full border border-primary/40 hover:border-primary transition-all duration-700 bg-transparent overflow-hidden" id="recordBtn" onclick="openRecordNow()">
+      <span class="relative z-10 font-label-poetic text-primary flex items-center gap-2">
+        <span class="material-symbols-outlined">water_drop</span> 记录此刻
+      </span>
+      <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+    </button>
+    <button class="pebble-button px-6 py-2 rounded-full font-label-poetic text-primary flex items-center gap-2" id="viewRippleBtn" onclick="navTo('echoes')">
+      <span class="material-symbols-outlined text-sm">water_ripple</span> 查看涟漪
+    </button>
+    <p class="font-label-poetic text-secondary opacity-80 tracking-wide">有 3 人听见你的回响</p>
+  </div>
+  <!-- Insight Card -->
+  <div class="mt-breath-md max-w-lg w-full bg-surface-container-lowest rounded-xl p-breath-sm shadow-sm">
+    <div class="font-label-poetic text-micro text-secondary mb-breath-xs tracking-wider">今日湖面映照</div>
+    <p class="font-label-poetic text-on-surface-variant italic leading-relaxed">「今天的你像一片静谧的湖水——白天有过一阵涟漪的波动，但傍晚的平静和满足让一切都柔和下来。」</p>
+    <div class="font-label-poetic text-micro text-secondary mt-breath-xs text-right opacity-70">湖面映照着你的状态</div>
+  </div>
+  <!-- Warn Bar -->
+  <div class="hidden mt-breath-sm max-w-lg w-full bg-error-container border-l-3 border-l-[3px] border-error rounded-lg p-breath-xs" id="warn-low">
+    <div class="font-label-poetic font-medium text-on-error-container">湖面波澜预警</div>
+    <p class="text-on-error-container text-sm">你的心湖波动较大，需要平静一下吗？</p>
+    <div class="flex gap-2 mt-breath-xs">
+      <button class="px-3 py-1 rounded-md border border-error bg-surface-container-lowest text-error text-xs cursor-pointer">平静活动</button>
+      <button class="px-3 py-1 rounded-md border border-error bg-surface-container-lowest text-error text-xs cursor-pointer" id="warnStoneBtn">投入石子</button>
+    </div>
+  </div>
+  <!-- Trend Link -->
+  <div class="mt-breath-xs font-label-poetic text-primary opacity-70 cursor-pointer tracking-wide" id="trendLink">查看涟漪趋势 →</div>
+  <!-- Mist Effect -->
+  <div class="absolute -bottom-20 left-0 w-full h-64 bg-gradient-to-t from-surface-dim/40 to-transparent pointer-events-none"></div>
+</div>
+
+<!-- ========== 涟漪屏 (Echoes) ========== -->
+<div class="screen flex-grow px-gutter py-breath-md overflow-y-auto pb-24" id="sc-echoes">
+  <div class="max-w-max-width mx-auto">
+    <div class="flex justify-between items-end mb-breath-md">
+      <span class="font-headline-lg text-headline-lg-mobile text-primary">涟漪</span>
+      <span class="font-label-poetic text-micro text-secondary">石子落入的痕迹</span>
+    </div>
+    <!-- Ink-wash Chart -->
+    <div class="bg-surface-container-lowest rounded-xl p-breath-sm mb-breath-md shadow-sm ink-wash-gradient relative overflow-hidden w-full">
+      <div class="font-label-poetic text-micro text-secondary mb-breath-xs tracking-wider">涟漪趋势 · 今日波纹</div>
+      <div class="flex items-end gap-2 h-24">
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:40%"><div class="absolute bottom-0 w-full bg-primary/30 rounded-t-sm" style="height:60%"></div></div>
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:70%"><div class="absolute bottom-0 w-full bg-tertiary-fixed-dim/50 rounded-t-sm" style="height:50%"></div></div>
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:55%"><div class="absolute bottom-0 w-full bg-primary/30 rounded-t-sm" style="height:80%"></div></div>
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:85%"><div class="absolute bottom-0 w-full bg-error/20 rounded-t-sm" style="height:40%"></div></div>
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:30%"><div class="absolute bottom-0 w-full bg-tertiary-fixed-dim/50 rounded-t-sm" style="height:90%"></div></div>
+        <div class="flex-1 bg-primary/10 rounded-t-sm relative" style="height:60%"><div class="absolute bottom-0 w-full bg-primary/30 rounded-t-sm" style="height:70%"></div></div>
+      </div>
+      <div class="flex justify-between mt-2">
+        <span class="text-[10px] text-secondary">8:20</span>
+        <span class="text-[10px] text-secondary">10:00</span>
+        <span class="text-[10px] text-secondary">12:00</span>
+        <span class="text-[10px] text-secondary">14:00</span>
+        <span class="text-[10px] text-secondary">16:00</span>
+        <span class="text-[10px] text-secondary">18:00</span>
+      </div>
+    </div>
+    <div class="mist-line"></div>
+    <!-- Timeline -->
+    <div class="font-label-poetic text-micro text-secondary mb-breath-xs tracking-wider">涟漪印记 · 今日波纹</div>
+    <div class="bg-surface-container-lowest rounded-xl p-breath-sm shadow-sm">
+      <div class="flex items-center gap-breath-xs py-breath-xs border-b border-surface-container">
+        <div class="w-7 h-7 rounded-full border border-primary flex items-center justify-center flex-shrink-0 relative"><span class="material-symbols-outlined text-sm">self_care</span><span class="absolute -inset-0.5 rounded-full border border-primary/15"></span></div>
+        <span class="font-label-poetic text-on-surface-variant flex-1">平静放松</span>
+        <span class="font-label-poetic text-micro text-secondary">今天 20:35</span>
+      </div>
+      <div class="flex items-center gap-breath-xs py-breath-xs border-b border-surface-container">
+        <div class="w-7 h-7 rounded-full border border-outline flex items-center justify-center flex-shrink-0 relative"><span class="material-symbols-outlined text-sm text-secondary">waves</span><span class="absolute -inset-0.5 rounded-full border border-outline/15"></span></div>
+        <span class="font-label-poetic text-on-surface-variant flex-1">焦虑不安</span>
+        <span class="font-label-poetic text-micro text-secondary">今天 14:00</span>
+      </div>
+      <div class="flex items-center gap-breath-xs py-breath-xs border-b border-surface-container">
+        <div class="w-7 h-7 rounded-full border border-outline flex items-center justify-center flex-shrink-0 relative"><span class="material-symbols-outlined text-sm text-secondary">water_drop</span><span class="absolute -inset-0.5 rounded-full border border-outline/15"></span></div>
+        <span class="font-label-poetic text-on-surface-variant flex-1">元气满满</span>
+        <span class="font-label-poetic text-micro text-secondary">今天 08:20</span>
+      </div>
+      <div class="flex items-center gap-breath-xs py-breath-xs border-b border-surface-container">
+        <div class="w-7 h-7 rounded-full border border-outline flex items-center justify-center flex-shrink-0 relative"><span class="material-symbols-outlined text-sm text-secondary">waves</span><span class="absolute -inset-0.5 rounded-full border border-outline/15"></span></div>
+        <span class="font-label-poetic text-on-surface-variant flex-1">幸福满足</span>
+        <span class="font-label-poetic text-micro text-secondary">昨天 18:10</span>
+      </div>
+      <div class="flex items-center gap-breath-xs py-breath-xs">
+        <div class="w-7 h-7 rounded-full border border-error/50 flex items-center justify-center flex-shrink-0 relative"><span class="material-symbols-outlined text-sm" style="color:rgba(186,26,26,0.6)">storm</span><span class="absolute -inset-0.5 rounded-full border border-error/15"></span></div>
+        <span class="font-label-poetic text-on-surface-variant flex-1">低落难过</span>
+        <span class="font-label-poetic text-micro text-secondary">昨天 10:30</span>
+      </div>
+      <div class="text-center py-breath-xs font-label-poetic text-micro text-surface-container-highest">—— 下拉加载更多 ——</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 回响屏 (Echo-back) ========== -->
+<div class="screen flex-grow px-gutter py-breath-md overflow-y-auto pb-24" id="sc-echoback">
+  <div class="max-w-max-width mx-auto">
+    <div class="flex justify-between items-end mb-breath-md">
+      <span class="font-headline-lg text-headline-lg-mobile text-primary">回响</span>
+      <span class="font-label-poetic text-micro text-secondary">彼岸传来的波纹</span>
+    </div>
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Highlight Card -->
+      <div class="md:row-span-2 bg-surface-container-lowest rounded-xl p-breath-md ink-wash-border" id="msg1">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-10 h-10 rounded-full bg-tertiary-fixed-dim flex items-center justify-center font-body-md text-on-tertiary-fixed-variant font-bold">张</div>
+          <div>
+            <div class="font-label-poetic font-medium text-primary">张小明 · 男友 · 守护光点</div>
+            <div class="text-micro text-secondary">19:30</div>
+          </div>
+        </div>
+        <p class="font-body-md text-on-surface-variant mb-3">守护光点向你传来一缕波纹（不消耗自身）</p>
+        <span class="inline-block px-2 py-1 rounded-md text-micro bg-surface-container text-primary mb-2" id="msg1-tag">待回应 · 第1次接收</span>
+        <div class="flex gap-2" id="msg1-actions">
+          <button class="px-4 py-2 rounded-lg border border-tertiary-fixed-dim text-on-tertiary-fixed-variant font-label-poetic text-sm cursor-pointer bg-surface-container-lowest hover:bg-tertiary-fixed transition-all">接纳这份回响</button>
+          <button class="px-4 py-2 rounded-lg border border-outline-variant text-secondary font-label-poetic text-sm cursor-pointer bg-surface-container-lowest hover:bg-surface-container transition-all">让它散去</button>
+        </div>
+      </div>
+      <!-- Normal Cards -->
+      <div class="bg-surface-container-lowest rounded-xl p-breath-sm ink-wash-border border-l-3 border-l-primary" id="msg2">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center font-body-md text-on-primary-fixed-variant text-sm font-bold">李</div>
+          <div>
+            <div class="font-label-poetic font-medium text-primary">李小花 · 闺蜜 · 相伴</div>
+            <div class="text-micro text-secondary">17:15</div>
+          </div>
+        </div>
+        <p class="font-label-poetic text-on-surface-variant">给你投来一朵涟漪 「今天也在闪闪发光」</p>
+        <span class="inline-block px-2 py-1 rounded-md text-micro bg-tertiary-fixed text-on-tertiary-fixed mt-2" id="msg2-tag">已自然接纳 · 被认可</span>
+      </div>
+      <div class="bg-surface-container-low rounded-xl p-breath-sm opacity-75" id="msg3">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center font-body-md text-secondary text-sm font-bold">爸</div>
+          <div>
+            <div class="font-label-poetic text-secondary">老爸 · 家人 · 遥望</div>
+            <div class="text-micro text-secondary">昨天 20:05</div>
+          </div>
+        </div>
+        <p class="font-label-poetic text-on-surface-variant">你的湖面有波澜… 发来问候</p>
+        <span class="inline-block px-2 py-1 rounded-md text-micro bg-tertiary-fixed text-on-tertiary-fixed mt-2">已自然接纳</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 宿缘屏 (Destiny) ========== -->
+<div class="screen flex-grow px-gutter py-breath-md overflow-y-auto pb-24" id="sc-destiny">
+  <div class="max-w-max-width mx-auto">
+    <div class="mb-breath-md">
+      <span class="font-headline-lg text-headline-lg-mobile text-primary">宿缘</span>
+      <span class="block font-label-poetic text-micro text-secondary">守望连接</span>
+    </div>
+    <!-- Profile Summary -->
+    <section class="mb-breath-lg relative overflow-hidden p-breath-md rounded-xl bg-surface-container-low border border-surface-container-highest/30">
+      <div class="flex items-center gap-breath-md">
+        <div class="relative">
+          <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-primary-fixed p-1 bg-surface-container-highest flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-3xl">person</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <h2 class="font-headline-lg text-headline-lg-mobile text-primary mb-2">小守</h2>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1 rounded-full border border-outline-variant font-label-poetic bg-surface/50">INFP</span>
+            <span class="px-3 py-1 rounded-full border border-outline-variant font-label-poetic bg-surface/50">热恋中</span>
+            <span class="px-3 py-1 rounded-full border border-outline-variant font-label-poetic bg-surface/50">创业中</span>
+          </div>
+        </div>
+      </div>
+      <div class="absolute top-0 right-0 w-64 h-64 ripple-bg -mr-20 -mt-20 rounded-full opacity-50"></div>
+    </section>
+    <!-- Tabs -->
+    <nav class="flex justify-center gap-breath-lg mb-breath-md border-b border-surface-container-highest/30">
+      <button class="pb-4 font-body-lg text-primary border-b-2 border-primary px-4 transition-all duration-500 bond-tab active" data-tab="mutual">相望之缘</button>
+      <button class="pb-4 font-body-lg text-secondary opacity-60 px-4 hover:opacity-100 transition-all duration-500 bond-tab" data-tab="quiet">静默守望</button>
+    </nav>
+    <!-- Mutual Bonds -->
+    <div class="space-y-breath-sm" id="bond-mutual">
+      <!-- 守护光点 -->
+      <div class="group relative bg-surface p-breath-md rounded-xl hover:bg-surface-container transition-all duration-700 flex items-center justify-between gap-gutter bg-gradient-to-br from-surface-container-lowest to-tertiary-fixed/20">
+        <span class="absolute top-1.5 right-2.5 text-lg">✨</span>
+        <div class="flex items-center gap-breath-sm">
+          <div class="w-14 h-14 rounded-full overflow-hidden relative border border-outline-variant/30 bg-gradient-to-br from-on-tertiary-fixed-variant to-tertiary-fixed-dim flex items-center justify-center text-xl text-on-primary font-bold">张</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-body-lg text-primary font-bold">张小明</span>
+              <span class="px-2 py-0.5 rounded-full text-micro bg-tertiary-fixed text-on-tertiary-fixed">守护光点</span>
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-micro text-secondary">湖面澄澈 · 累计 98 天 · 回响 53 次</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-breath-sm">
+          <button class="bond-action shield pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">免费传</button>
+          <button class="bond-action flower pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">💐 花</button>
+        </div>
+      </div>
+      <!-- 相伴 -->
+      <div class="group relative bg-surface p-breath-md rounded-xl hover:bg-surface-container transition-all duration-700 flex items-center justify-between gap-gutter">
+        <div class="flex items-center gap-breath-sm">
+          <div class="w-14 h-14 rounded-full overflow-hidden border border-outline-variant/30 bg-gradient-to-br from-on-primary-fixed-variant to-primary-fixed-dim flex items-center justify-center text-xl text-on-primary font-bold">李</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-body-lg text-primary font-bold">李小花</span>
+              <span class="px-2 py-0.5 rounded-full text-micro bg-primary-fixed-dim text-on-primary-fixed-variant">相伴</span>
+            </div>
+            <span class="text-micro text-secondary">湖面微澜 · 累计 35 天 · 可查看趋势</span>
+          </div>
+        </div>
+        <button class="bond-action echo pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">🫧 回响</button>
+      </div>
+      <!-- 遥望 -->
+      <div class="group relative bg-surface p-breath-md rounded-xl hover:bg-surface-container transition-all duration-700 flex items-center justify-between gap-gutter">
+        <div class="flex items-center gap-breath-sm">
+          <div class="w-14 h-14 rounded-full overflow-hidden border border-outline-variant/30 bg-gradient-to-br from-tertiary-fixed-dim to-on-tertiary-fixed-variant flex items-center justify-center text-xl text-on-primary font-bold">爸</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-body-lg text-primary font-bold">老爸</span>
+              <span class="px-2 py-0.5 rounded-full text-micro bg-primary-fixed text-on-primary-fixed-variant">遥望</span>
+            </div>
+            <span class="text-micro text-secondary">状态良好 · 累计 12 天 · 已投花</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="bond-action flower pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">💐 花</button>
+          <button class="bond-action kiss pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">😘 吻</button>
+        </div>
+      </div>
+      <div class="font-label-poetic text-micro text-secondary text-center py-breath-xs opacity-60">回响不限总次数 · 同一对象≤3次/天 · 衰减 5%→4%→3%→2%→1%→0.5%</div>
+    </div>
+    <!-- Quiet Bonds (hidden) -->
+    <div class="space-y-breath-sm hidden" id="bond-quiet">
+      <div class="group relative bg-surface p-breath-md rounded-xl hover:bg-surface-container transition-all duration-700 flex items-center justify-between gap-gutter">
+        <div class="flex items-center gap-breath-sm">
+          <div class="w-14 h-14 rounded-full overflow-hidden border border-outline-variant/30 bg-gradient-to-br from-secondary to-outline flex items-center justify-center text-xl text-on-primary font-bold">王</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-body-lg text-primary font-bold">王阿姨</span>
+              <span class="px-2 py-0.5 rounded-full text-micro bg-surface-container text-secondary">微光</span>
+            </div>
+            <span class="text-micro text-secondary">静默守望 28 天 · 已回响 2 次</span>
+          </div>
+        </div>
+        <button class="bond-action echo pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">静默慰问</button>
+      </div>
+      <div class="group relative bg-surface p-breath-md rounded-xl hover:bg-surface-container transition-all duration-700 flex items-center justify-between gap-gutter">
+        <div class="flex items-center gap-breath-sm">
+          <div class="w-14 h-14 rounded-full overflow-hidden border border-outline-variant/30 bg-gradient-to-br from-outline-variant to-secondary flex items-center justify-center text-xl text-on-primary font-bold">刘</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-body-lg text-primary font-bold">刘老师</span>
+              <span class="px-2 py-0.5 rounded-full text-micro bg-primary-fixed text-on-primary-fixed-variant">遥望</span>
+            </div>
+            <span class="text-micro text-secondary">静默守望 56 天 · 已回响 8 次</span>
+          </div>
+        </div>
+        <button class="bond-action echo pebble-button flex items-center gap-1 px-4 py-2 rounded-full font-label-poetic text-primary text-sm">静默慰问</button>
+      </div>
+      <div class="font-label-poetic text-micro text-secondary text-center py-breath-xs opacity-60">静默守望：你看得到对方，对方不知道你在守望 · 最高 Lv.2</div>
+    </div>
+    <div class="mt-breath-sm text-center py-breath-sm rounded-xl border-dashed border-2 border-primary-fixed-dim text-primary font-label-poetic cursor-pointer opacity-70 hover:opacity-100 transition-opacity">+ 建立新的守望</div>
+  </div>
+</div>
+
+<!-- ========== BottomNavBar ========== -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-gutter pb-8 pt-4 bg-surface/95 backdrop-blur-sm border-t border-surface-container-highest/30">
+  <div class="nav-item flex flex-col items-center gap-1 text-primary cursor-pointer active" data-screen="home" onclick="navTo('home', this)">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1">water_full</span>
+    <span class="font-label-poetic text-label-poetic">心湖</span>
+  </div>
+  <div class="nav-item flex flex-col items-center gap-1 text-secondary opacity-60 cursor-pointer" data-screen="echoes" onclick="navTo('echoes', this)">
+    <span class="material-symbols-outlined">radio_button_checked</span>
+    <span class="font-label-poetic text-label-poetic">涟漪</span>
+  </div>
+  <div class="nav-item flex flex-col items-center gap-1 text-secondary opacity-60 cursor-pointer" data-screen="echoback" onclick="navTo('echoback', this)">
+    <span class="material-symbols-outlined">hearing</span>
+    <span class="font-label-poetic text-label-poetic">回响</span>
+  </div>
+  <div class="nav-item flex flex-col items-center gap-1 text-secondary opacity-60 cursor-pointer" data-screen="destiny" onclick="navTo('destiny', this)">
+    <span class="material-symbols-outlined">auto_awesome</span>
+    <span class="font-label-poetic text-label-poetic">宿缘</span>
+  </div>
+</nav>
+
+<!-- ========== Modal: 记录此刻 ========== -->
+<div class="record-overlay fixed inset-0 bg-black/30 z-[200] items-center justify-center" id="recordOverlay">
+  <section class="bg-surface ink-bleed rounded-3xl w-full max-w-md mx-4 p-8 z-10 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-surface-dim to-transparent opacity-30"></div>
+    <h2 class="font-headline-lg text-headline-lg-mobile text-primary text-center mb-8">投一颗石子</h2>
+    <!-- Tab -->
+    <div class="flex justify-center gap-8 mb-8">
+      <button class="record-tab font-label-poetic text-primary relative pb-2 after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-primary active" data-rntab="now">[⚡ 此刻的石子]</button>
+      <button class="record-tab font-label-poetic text-secondary opacity-60 hover:opacity-100 transition-opacity pb-2" data-rntab="day">[🌙 今日湖面]</button>
+    </div>
+    <!-- Now Panel -->
+    <div class="record-panel active" id="recordPanelNow">
+      <p class="font-label-poetic text-secondary tracking-widest text-center mb-6">此刻的心境如何？</p>
+      <div class="grid grid-cols-3 md:grid-cols-6 gap-4 justify-items-center mb-6">
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="开心">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">sentiment_very_satisfied</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">开心</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="平静">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">self_care</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">平静</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="疲惫">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">bedtime</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">疲惫</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="焦虑">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">waves</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">焦虑</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="低落">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">water_drop</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">低落</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex flex-col items-center gap-2" data-mood="充满活力">
+          <div class="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center group-hover:bg-surface-container transition-all duration-700">
+            <span class="material-symbols-outlined text-secondary opacity-70">bolt</span>
+          </div>
+          <span class="font-label-poetic text-xs text-secondary">充满活力</span>
+        </div>
+      </div>
+      <div class="mist-line opacity-40"></div>
+      <div class="relative mb-6">
+        <textarea class="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:ring-0 px-0 py-4 resize-none font-body-lg text-on-surface placeholder:text-outline/40 h-24 transition-colors duration-700" maxlength="50" placeholder="将思绪化作石子，投向湖心..." id="recordTextarea"></textarea>
+        <div class="absolute bottom-4 right-0 font-label-poetic text-[10px] text-outline/50 tracking-widest"><span id="charCount">0</span> / 50</div>
+      </div>
+      <button class="w-full py-breath-xs rounded-lg bg-primary text-on-primary font-label-poetic tracking-wider opacity-35 cursor-not-allowed transition-all duration-500" id="recordSubmitNow" disabled>投入石子</button>
+    </div>
+    <!-- Day Panel -->
+    <div class="record-panel hidden" id="recordPanelDay">
+      <div class="text-center mb-6">
+        <span class="material-symbols-outlined text-primary text-4xl mb-2 block">self_care</span>
+        <p class="font-label-poetic text-primary font-medium">今天湖面整体是 ______</p>
+        <p class="text-secondary text-sm">基于今天的石子投入</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="record-mood-item group cursor-pointer flex items-center gap-3 p-3 rounded-lg border border-outline-variant group-hover:bg-surface-container transition-all" data-mood="平静放松">
+          <span class="material-symbols-outlined text-secondary">self_care</span>
+          <span class="font-label-poetic text-primary">平静放松</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex items-center gap-3 p-3 rounded-lg border border-outline-variant group-hover:bg-surface-container transition-all" data-mood="略有波动">
+          <span class="material-symbols-outlined text-secondary">waves</span>
+          <span class="font-label-poetic text-primary">略有波动</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex items-center gap-3 p-3 rounded-lg border border-outline-variant group-hover:bg-surface-container transition-all" data-mood="期待兴奋">
+          <span class="material-symbols-outlined text-secondary">bolt</span>
+          <span class="font-label-poetic text-primary">期待兴奋</span>
+        </div>
+        <div class="record-mood-item group cursor-pointer flex items-center gap-3 p-3 rounded-lg border border-outline-variant group-hover:bg-surface-container transition-all" data-mood="焦虑不安">
+          <span class="material-symbols-outlined text-secondary">sentiment_dissatisfied</span>
+          <span class="font-label-poetic text-primary">焦虑不安</span>
+        </div>
+      </div>
+      <button class="w-full py-breath-xs rounded-lg bg-primary text-on-primary font-label-poetic tracking-wider opacity-35 cursor-not-allowed transition-all duration-500" id="recordSubmitDay" disabled>完成今日凝望</button>
+    </div>
+    <button class="w-full mt-breath-sm py-breath-xs bg-transparent border-none text-secondary font-label-poetic cursor-pointer">取消</button>
+  </section>
+</div>
+
+<!-- ========== Modal: 能量详情 ========== -->
+<div class="energy-popup fixed bottom-24 left-gutter right-gutter bg-surface-container-lowest rounded-xl p-gutter z-50 shadow-xl" id="energyPopup">
+  <div class="font-headline-lg text-body-lg text-primary mb-breath-xs">回响给 李小花</div>
+  <p class="font-body-md text-micro text-on-surface-variant mb-breath-xs">守望等级：<strong class="text-primary">相伴</strong> · 回响效率 ×1.3</p>
+  <p class="font-body-md text-micro text-on-surface-variant mb-breath-xs">你当前湖面状态：<strong class="text-primary">充盈</strong> · 今日已向她回响 2 次 · 剩余 1 次</p>
+  <input type="range" class="w-full my-breath-xs accent-primary" min="0" max="30" value="10" step="5" id="energySlider"/>
+  <div class="flex justify-between font-body-md text-micro text-secondary mb-breath-xs"><span>0%</span><span>5%</span><span>10%</span><span>20%</span><span>30%</span></div>
+  <div class="text-center font-body-md font-label-poetic text-primary mb-breath-xs">回响 <strong id="energyVal">10%</strong> 涟漪</div>
+  <div class="text-center font-body-md text-micro text-secondary mb-breath-xs">她将收到 <strong>13%</strong>（10% × 1.3 相伴加成）· 本次接收衰减后 +3%</div>
+  <button class="w-full py-breath-xs rounded-lg bg-primary text-on-primary font-label-poetic cursor-pointer energy-confirm">确认回响</button>
+  <button class="w-full mt-breath-xs py-breath-xs bg-transparent border-none text-secondary font-label-poetic cursor-pointer energy-cancel">取消</button>
+</div>
+
+<!-- ========== Modal: 温暖回应 ========== -->
+<div class="warmth-overlay fixed inset-0 bg-black/30 z-[200] items-center justify-center" id="warmthOverlay">
+  <div class="bg-surface-container-lowest rounded-xl p-breath-md max-w-xs w-full text-center shadow-xl">
+    <div class="text-5xl mb-breath-sm">🫧</div>
+    <div class="font-headline-lg text-body-lg text-primary mb-breath-xs">你把今天的涟漪都散出去了</div>
+    <p class="font-label-poetic text-on-surface-variant mb-breath-sm leading-relaxed">你给 张小明、李小花、老爸 传递了回响<br>虽然自己只剩很少，但你选择了分享</p>
+    <p class="font-label-poetic text-on-surface-variant mb-breath-sm">现在感觉怎么样？</p>
+    <div class="flex gap-breath-xs justify-center mb-breath-sm">
+      <button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest font-label-poetic cursor-pointer hover:border-primary transition-all warmth-feel-btn">我很开心</button>
+      <button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest font-label-poetic cursor-pointer hover:border-primary transition-all warmth-feel-btn">有点累</button>
+      <button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest font-label-poetic cursor-pointer hover:border-primary transition-all warmth-feel-btn">没想那么多</button>
+    </div>
+    <button class="px-6 py-breath-xs rounded-lg bg-primary text-on-primary font-label-poetic cursor-pointer warmth-close">知道了</button>
+  </div>
+</div>
+
+<!-- ========== 个人资料面板 ========== -->
+<div class="profile-panel fixed top-0 right-0 w-72 h-full bg-surface-container-lowest z-[90] shadow-[-4px_0_30px_rgba(0,0,0,0.08)] rounded-l-3xl p-16 pt-14 overflow-y-auto" id="profile">
+  <button class="absolute top-12 right-gutter text-xl cursor-pointer text-secondary material-symbols-outlined profile-close">close</button>
+  <div class="font-headline-lg text-headline-lg-mobile text-primary">小守</div>
+  <div class="flex flex-wrap gap-1 my-breath-xs">
+    <span class="px-2 py-0.5 rounded-md text-micro bg-surface-container text-primary">INFP</span>
+    <span class="px-2 py-0.5 rounded-md text-micro bg-surface-container text-primary">热恋中</span>
+    <span class="px-2 py-0.5 rounded-md text-micro bg-surface-container text-primary">创业中</span>
+    <span class="px-2 py-0.5 rounded-md text-micro bg-surface-container text-primary">有方向</span>
+  </div>
+  <div class="flex justify-between py-breath-xs border-b border-surface-container font-label-poetic text-on-surface-variant"><span>湖面节奏</span><span class="text-primary">上午平静 · 午后微澜</span></div>
+  <div class="flex justify-between py-breath-xs border-b border-surface-container font-label-poetic text-on-surface-variant"><span>情绪敏感度</span><span>中等敏感</span></div>
+  <div class="flex justify-between py-breath-xs border-b border-surface-container font-label-poetic text-on-surface-variant"><span>涟漪来源</span><span>独处安静</span></div>
+  <div class="flex justify-between py-breath-xs border-b border-surface-container font-label-poetic text-on-surface-variant"><span>宿缘</span><span>3 人 · 1 守护光点</span></div>
+  <div class="flex justify-between py-breath-xs font-label-poetic text-on-surface-variant"><span>获得涟漪</span><span class="text-on-tertiary-fixed-variant">高 · 本周 8 次</span></div>
+</div>
+
+
+<!-- Toast -->
+<div class="fixed top-16 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container px-breath-sm py-breath-xs rounded-full font-label-poetic z-[200] toast" id="toast"></div>
+
+<!-- Splash Container (for stone-throw animation) -->
+<div class="fixed inset-0 z-[60] pointer-events-none" id="splash-container"></div>
+
+<script>
+// ============================================================
+// 心汐 v9 · 全部 JS
+// ============================================================
+
+// ========== 全局状态 ==========
+let obCurrent = 1;
+let obPicked = { mbti: false, emotion: false, role: false, hope: false, micro: false };
+let _rnPicked = { now: null, day: null };
+var _lakeStates = {
+  mirror:  { main: '湖面如镜', sub: '心湖澄澈，波澜不惊' },
+  breeze:  { main: '微风微澜', sub: '微风吹过，泛起浅浅涟漪' },
+  ripples: { main: '涟漪频密', sub: '石子落下，波纹交织' },
+  storm:   { main: '风起浪涌', sub: '风雨将至，湖面激荡' }
+};
+var _currentLakeState = 'mirror';
+var _sealChars = ['平', '悦', '忧', '定', '悟', '寂', '闲'];
+var _screenMap = {
+  home: 'sc-home', mood: 'sc-echoes', echoes: 'sc-echoes',
+  echo: 'sc-echoback', echoback: 'sc-echoback',
+  bond: 'sc-destiny', destiny: 'sc-destiny'
+};
+
+// ============================================================
+// 引导页
+// ============================================================
+
+function selectInGroup(selector, el) {
+  el.closest('section, #microGroup').querySelectorAll(selector).forEach(function(c) {
+    c.classList.remove('selected', 'border-primary', 'bg-primary', 'text-on-primary');
+    c.classList.remove('border-primary', 'bg-surface-container');
+  });
+  el.classList.add('selected');
+  if (el.classList.contains('pebble-chip')) el.classList.add('border-primary');
+  if (el.classList.contains('ink-stroke')) { el.classList.add('border-primary', 'bg-surface-container'); }
+}
+
+function checkStep1() {
+  var done = obPicked.mbti && obPicked.emotion && obPicked.role && obPicked.hope;
+  var btn = document.getElementById('bNext');
+  if (btn) { btn.classList.toggle('opacity-30', !done); btn.classList.toggle('pointer-events-none', !done); btn.classList.toggle('opacity-100', done); btn.classList.toggle('pointer-events-auto', done); }
+}
+
+function checkStep2() {
+  var btn = document.getElementById('bFinish');
+  if (btn) { btn.disabled = !obPicked.micro; btn.classList.toggle('opacity-30', !obPicked.micro); btn.classList.toggle('cursor-not-allowed', !obPicked.micro); btn.classList.toggle('opacity-100', obPicked.micro); btn.classList.toggle('pointer-events-auto', obPicked.micro); }
+}
+
+function obAdvance() {
+  if (obCurrent >= 2) return;
+  obCurrent++;
+  document.getElementById('ob1').classList.remove('active');
+  document.getElementById('ob1').style.display = 'none';
+  document.getElementById('ob2').classList.add('active');
+}
+
+function finishOB() {
+  document.getElementById('onboard').classList.remove('active');
+  document.getElementById('onboard').style.display = 'none';
+  navTo('home', 0);
+  showToast('湖面映照已建立 · 欢迎来到心湖');
+}
+
+// ============================================================
+// 导航
+// ============================================================
+
+function navTo(n, i) {
+  var targetId = _screenMap[n] || ('sc-' + n);
+  var screens = ['sc-home', 'sc-echoes', 'sc-echoback', 'sc-destiny'];
+  screens.forEach(function(s) { var el = document.getElementById(s); if (el) el.classList.remove('active'); });
+  var target = document.getElementById(targetId);
+  if (target) target.classList.add('active');
+  if (typeof i === 'number') navAct(i);
+}
+
+function navAct(i) {
+  document.querySelectorAll('.nav-item').forEach(function(n, j) {
+    n.classList.toggle('active', j === i);
+    n.classList.toggle('text-primary', j === i);
+    n.classList.toggle('opacity-100', j === i);
+    n.classList.toggle('text-secondary', j !== i);
+    n.classList.toggle('opacity-60', j !== i);
+  });
+}
+
+function toggleProfile() {
+  var p = document.getElementById('profile');
+  if (p) p.classList.toggle('active');
+}
+
+// ============================================================
+// 记录面板
+// ============================================================
+
+function openRecordNow() { document.getElementById('recordOverlay').classList.add('active'); rnSwitchTab('now'); }
+function closeRecordNow() { document.getElementById('recordOverlay').classList.remove('active'); }
+
+function rnSwitchTab(tab) {
+  document.getElementById('recordPanelNow').classList.toggle('hidden', tab !== 'now');
+  document.getElementById('recordPanelDay').classList.toggle('hidden', tab !== 'day');
+  document.querySelectorAll('.record-tab').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-rntab') === tab;
+    btn.classList.toggle('text-primary', isActive);
+    btn.classList.toggle('opacity-100', isActive);
+    btn.classList.toggle('text-secondary', !isActive);
+    btn.classList.toggle('opacity-60', !isActive);
+  });
+}
+
+function rnPickMood(el, tab) {
+  var panel = el.closest('.record-panel');
+  panel.querySelectorAll('.record-mood-item').forEach(function(m) {
+    m.querySelector('div, .w-14')?.classList.remove('border-primary', 'bg-surface-container');
+    m.querySelector('.material-symbols-outlined')?.classList.remove('text-primary');
+    m.querySelector('.material-symbols-outlined')?.classList.add('text-secondary', 'opacity-70');
+  });
+  var circle = el.querySelector('.w-14, .flex.items-center');
+  if (circle) { circle.classList.add('border-primary', 'bg-surface-container'); }
+  var icon = el.querySelector('.material-symbols-outlined');
+  if (icon) { icon.classList.remove('text-secondary', 'opacity-70'); icon.classList.add('text-primary'); }
+  var nameEl = el.querySelector('.font-label-poetic');
+  _rnPicked[tab] = nameEl ? nameEl.textContent.trim() : '';
+  var submitBtn = document.getElementById(tab === 'now' ? 'recordSubmitNow' : 'recordSubmitDay');
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('opacity-35', 'cursor-not-allowed'); submitBtn.classList.add('opacity-100', 'cursor-pointer'); }
+}
+
+function rnSubmit(tab) {
+  var mood = _rnPicked[tab];
+  if (!mood) { showToast('请先选择一种心境'); return; }
+  closeRecordNow();
+  if (tab === 'now') { showToast(mood + ' · 石子已投入湖中'); throwStone(); }
+  else showToast('今日湖面：' + mood + ' · 已凝望');
+  _rnPicked = { now: null, day: null };
+}
+
+// ============================================================
+// 回响
+// ============================================================
+
+function acceptMsg(id) {
+  var tag = document.getElementById(id + '-tag');
+  var actions = document.getElementById(id + '-actions');
+  if (tag) { tag.textContent = '已接纳 +8%'; tag.className = 'inline-block px-2 py-1 rounded-md text-micro bg-tertiary-fixed text-on-tertiary-fixed mt-2'; }
+  if (actions) actions.style.display = 'none';
+  var item = document.getElementById(id);
+  if (item) { item.classList.remove('border-l-primary'); item.style.opacity = '0.75'; }
+  showToast('已接纳这份回响');
+  updateMsgBadge();
+}
+
+function rejectMsg(id) {
+  var tag = document.getElementById(id + '-tag');
+  var actions = document.getElementById(id + '-actions');
+  if (tag) { tag.textContent = '已散去'; tag.className = 'inline-block px-2 py-1 rounded-md text-micro bg-error-container text-on-error-container mt-2'; }
+  if (actions) actions.style.display = 'none';
+  var item = document.getElementById(id);
+  if (item) { item.style.opacity = '0.6'; }
+  showToast('回响已散去');
+  updateMsgBadge();
+}
+
+function updateMsgBadge() {
+  var unread = document.querySelectorAll('#sc-echoback .border-l-primary, #sc-echoback [class*="border-l-primary"]').length;
+  var badge = document.getElementById('msgBadge');
+  if (!badge) return;
+  badge.textContent = unread;
+  badge.style.display = unread === 0 ? 'none' : 'flex';
+}
+
+// ============================================================
+// 宿缘
+// ============================================================
+
+function swBond(t, el) {
+  var mutual = document.getElementById('bond-mutual');
+  var quiet = document.getElementById('bond-quiet');
+  if (mutual) { mutual.classList.toggle('hidden', t !== 'mutual'); }
+  if (quiet) { quiet.classList.toggle('hidden', t !== 'quiet'); }
+  document.querySelectorAll('.bond-tab').forEach(function(b) {
+    var isActive = b.getAttribute('data-tab') === t;
+    b.classList.toggle('text-primary', isActive);
+    b.classList.toggle('border-b-2', isActive);
+    b.classList.toggle('border-primary', isActive);
+    b.classList.toggle('opacity-100', isActive);
+    b.classList.toggle('text-secondary', !isActive);
+    b.classList.toggle('opacity-60', !isActive);
+    b.classList.toggle('border-b-0', !isActive);
+  });
+}
+
+// ============================================================
+// 能量弹窗
+// ============================================================
+
+function openEnergyPopup() { document.getElementById('energyPopup').classList.add('active'); }
+function closeEP() { document.getElementById('energyPopup').classList.remove('active'); }
+
+function updateEPSlider(v) {
+  var valEl = document.getElementById('energyVal');
+  if (valEl) valEl.textContent = v + '%';
+}
+
+function checkWarmthUser() {
+  var valEl = document.getElementById('energyVal');
+  var v = valEl ? parseInt(valEl.textContent) : 10;
+  var popup = document.getElementById('warmthOverlay');
+  if (82 - v < 10 && popup) { popup.classList.add('active'); }
+  else { showToast('已送出回响'); }
+}
+
+function submitWarmth(feel) {
+  var msgs = { happy: '你的快乐来自分享！', tired: '下次回响前会提醒「留一点给自己哦」', neutral: '系统已记录' };
+  showToast(msgs[feel] || '已记录');
+  closeWarmth();
+}
+
+function closeWarmth() { document.getElementById('warmthOverlay').classList.remove('active'); }
+
+// ============================================================
+// Toast
+// ============================================================
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// 湖面状态切换
+// ============================================================
+
+var _splashContainer = document.getElementById('homeLakeWrap');
+
+function switchLakeState(state) {
+  if (!_lakeStates[state]) return;
+  _currentLakeState = state;
+  // Update dots
+  document.querySelectorAll('.lake-state-dot').forEach(function(dot) {
+    dot.classList.toggle('bg-primary', dot.getAttribute('data-state') === state);
+    dot.classList.toggle('bg-surface-container-high', dot.getAttribute('data-state') !== state);
+  });
+  // Update text
+  var mainEl = document.querySelector('.lake-text-main');
+  var subEl = document.querySelector('.lake-text-sub');
+  var barLabel = document.querySelector('.lake-state-label');
+  if (mainEl) mainEl.textContent = _lakeStates[state].main;
+  if (subEl) subEl.textContent = _lakeStates[state].sub;
+  if (barLabel) barLabel.textContent = _lakeStates[state].main;
+  // Update lake photo
+  var photos = {
+    mirror: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDHnm0kD0zPt4hIxfP7VtViGbUQ7HQPAhfIQqWtY-SLhfcPbhjx0fVj1Eoa96KRRqRI8DaVfdgz6iIFY4_2vrq2bfhClHO4xSg7ZpIZh9gbRio6FgFTa5ogzotNL1luQkzj4sBN_ch9zop2ZfuG7ZoAEPCPdlZuVDhZ5JvvKIqRh8R2Im-S_lJlNVzDijQqvejRlsooRFv0gOXIIuW5PZhzYv5ZeSr6yIqxVl4JhB0z091NIZrLnD1qR4RpBZraRZfL2VtTqPsNuJ8',
+    breeze: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD_5XzAVQFuOf9ICbD1NWUdspUOUohjDA-Y5bDuC5QysHlfIIdCfb85oXWNKVJ_2r1ymTxnpdoIWfmkMbGBAlijtxtTBkixmYiCIKe7oRDA1r2yp7za51eGQ8LpyBmEWnN1aQpnY_DorpXVmKPaH0r6m39qhhzO1fHePtzXDD8-83DwVSm-VNZa7whOiZSXaieL8nnkJeOMDrQVQYYVq67BZHkMaguAKSbRSUmerN8LMc7X1BxK1CJIqz_dJ2ljodtJAjlAh4OPIxY',
+    ripples: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCcEglC2GLm74BjpTdAob7iTQln6UeQa42amucxG9yWYkTxtyap_qWKI5zgQYIeP_nLoMR3ffEdb_lEdq7xTZaRiaHJeObxCNa0ZNi_8YChPGglRi3_ygTGfFMfVvZUM5ieoTiVjOcCvRaWZiXwb9P-j5XNdun9QRC4w8dUAbFa_Wd0qS6K7lbnTFyb0bVnxwbl8WWHeFj68sV9YfyIX4ZqNHIKYRwqWXdoSp4gy-Vp7U5_ux-nWsaV-gq9MTl2plUD9ZkWOtmkVic',
+    storm: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDwlWMZZJIu6HdE4JdhwTPOVNO50Rz8I5dOAJktlsWbixglCTy4vdUFvJoTrDyQ2-OIDfWcIZs44mXhsm_LAHxNv0-X1pFUFLQLIpICZMefDVU348jgkxEpX3SDrKg_Nm0kxYhHaAjbjjk6Mqe8t-FaGe4RALWDSeqZ1BpDrofpdUDCnbxLS5RxS2zYIMA7jguE0Ryz7kXGLzxQHxDfiqTELYG-9jT9KWsK3QW7rCeOxolbJUkw0zGZRqOFzlxXqQiO7w2AUZm7p2s'
+  };
+  var photo = document.getElementById('lakePhoto');
+  if (photo) photo.style.backgroundImage = "url('" + (photos[state] || photos.breeze) + "')";
+  // Update homeLakeWrap class
+  var wrap = document.getElementById('homeLakeWrap');
+  if (wrap) {
+    Object.keys(_lakeStates).forEach(function(s) { wrap.classList.remove('lake--' + s); });
+    wrap.classList.add('lake--' + state);
+  }
+}
+
+// ============================================================
+// 投石入水
+// ============================================================
+
+function throwStone() {
+  var wrap = document.getElementById('homeLakeWrap');
+  var lake = wrap ? wrap.querySelector('.lake-surface') : null;
+  if (!lake) { showToast('湖面未就绪'); return; }
+  // Audio
+  try {
+    var ac = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ac.createOscillator(); var gain = ac.createGain();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(800, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ac.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.3, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.5);
+    osc.connect(gain); gain.connect(ac.destination); osc.start(); osc.stop(ac.currentTime + 0.5);
+  } catch(e) {}
+  // Drop — centered on lake-surface
+  var drop = document.createElement('div');
+  drop.className = 'ink-drop';
+  var lr = lake.getBoundingClientRect();
+  var cx = lr.left + lr.width / 2, cy = lr.top + lr.height / 2;
+  drop.style.left = (cx - 5) + 'px'; drop.style.top = (cy - 20) + 'px';
+  wrap.appendChild(drop);
+  setTimeout(function() {
+    drop.remove();
+    // Seal
+    var seal = document.createElement('div');
+    seal.className = 'ink-seal';
+    seal.textContent = _sealChars[Math.floor(Math.random() * _sealChars.length)];
+    seal.style.left = (cx - 40) + 'px'; seal.style.top = (cy - 120) + 'px';
+    wrap.appendChild(seal);
+    setTimeout(function() { seal.remove(); }, 3000);
+    // Ripples
+    for (var i = 0; i < 4; i++) {
+      (function(delay) {
+        setTimeout(function() {
+          var r = document.createElement('div');
+          r.className = 'ink-ripple-anim';
+          r.style.width = '120px'; r.style.height = '60px';
+          r.style.left = (cx - 60) + 'px'; r.style.top = (cy - 30) + 'px';
+          wrap.appendChild(r);
+          setTimeout(function() { r.remove(); }, 2500);
+        }, delay * 400);
+      })(i);
+    }
+    // Droplets
+    for (var j = 0; j < 12; j++) {
+      var d = document.createElement('div');
+      d.className = 'ink-droplet';
+      d.style.left = cx + 'px'; d.style.top = cy + 'px';
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 15 + Math.random() * 50;
+      d.style.setProperty('--tw-x', Math.cos(angle) * dist + 'px');
+      d.style.setProperty('--tw-y', Math.sin(angle) * dist * 0.4 - 40 + 'px');
+      wrap.appendChild(d);
+      setTimeout(function() { d.remove(); }, 800);
+    }
+  }, 450);
+}
+
+// ============================================================
+// 引导页补充函数
+// ============================================================
+
+function obJump(n) {
+  obCurrent = n;
+  document.querySelectorAll('.ob-step').forEach(function(s) { s.classList.remove('active'); });
+  var step = document.getElementById('ob' + n);
+  if (step) step.classList.add('active');
+}
+
+function pickAuto(el) {
+  var grid = el.parentElement;
+  grid.querySelectorAll('.ob-micro-chip').forEach(function(c) { c.classList.remove('ring-2','ring-primary'); });
+  el.classList.add('ring-2','ring-primary');
+  setTimeout(function() { obAdvance(); }, 300);
+}
+
+function pickAuto2(el) {
+  var grid = el.parentElement;
+  grid.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function pickAuto3(el, group) {
+  var grid = el.parentElement;
+  grid.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  if (group === 'work') obRolePicked.work = true;
+  if (group === 'fam') obRolePicked.fam = true;
+}
+
+function selMood(mood) {
+  document.querySelectorAll('.record-mood-item').forEach(function(item) {
+    var nameEl = item.querySelector('.font-label-poetic');
+    var isMatch = nameEl && nameEl.textContent.trim() === mood;
+    var circle = item.querySelector('.w-14, .flex.items-center');
+    var icon = item.querySelector('.material-symbols-outlined');
+    if (isMatch) {
+      if (circle) { circle.classList.add('border-primary', 'bg-surface-container'); }
+      if (icon) { icon.classList.remove('text-secondary', 'opacity-70'); icon.classList.add('text-primary'); }
+    } else {
+      if (circle) circle.classList.remove('border-primary', 'bg-surface-container');
+      if (icon) { icon.classList.add('text-secondary', 'opacity-70'); icon.classList.remove('text-primary'); }
+    }
+  });
+}
+
+function startMoodNow() {
+  openRecordNow();
+}
+
+function startMoodDay() {
+  document.getElementById('recordOverlay').classList.add('active');
+  rnSwitchTab('day');
+}
+
+function swMoodMode(mode) {
+  rnSwitchTab(mode);
+}
+
+function swMoodModeInline(mode) {
+  rnSwitchTab(mode);
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+
+function initApp() {
+  // --- Step 1: MBTI chips ---
+  document.querySelectorAll('.ob-mbti-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectInGroup('.ob-mbti-chip', chip);
+      obPicked.mbti = true; checkStep1();
+    });
+  });
+  // --- Step 1: Emotion chips ---
+  document.querySelectorAll('.ob-emotion-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectInGroup('.ob-emotion-chip', chip);
+      obPicked.emotion = true; checkStep1();
+    });
+  });
+  // --- Step 1: Role chips ---
+  document.querySelectorAll('.ob-role-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectInGroup('.ob-role-chip', chip);
+      obPicked.role = true; checkStep1();
+    });
+  });
+  // --- Step 1: Hope chips (capsule toggle) ---
+  document.querySelectorAll('.ob-hope-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.ob-hope-chip').forEach(function(c) {
+        c.classList.remove('bg-primary', 'text-on-primary');
+        c.classList.add('text-secondary');
+      });
+      chip.classList.add('bg-primary', 'text-on-primary');
+      chip.classList.remove('text-secondary');
+      obPicked.hope = true; checkStep1();
+    });
+  });
+  // --- Next button ---
+  document.getElementById('bNext')?.addEventListener('click', function() { obAdvance(); });
+  // --- Step 2: Micro chips ---
+  document.querySelectorAll('.ob-micro-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      selectInGroup('.ob-micro-chip', chip);
+      obPicked.micro = true; checkStep2();
+    });
+  });
+  document.getElementById('bFinish')?.addEventListener('click', function() { finishOB(); });
+  document.getElementById('skipBtn')?.addEventListener('click', function() { finishOB(); });
+
+  // --- Navigation ---
+  document.querySelectorAll('.nav-item').forEach(function(nav, i) {
+    nav.addEventListener('click', function() { navTo(nav.getAttribute('data-screen'), i); });
+  });
+  // --- Profile ---
+  document.getElementById('profileBtn')?.addEventListener('click', function() { toggleProfile(); });
+  document.querySelector('.profile-close')?.addEventListener('click', function() { toggleProfile(); });
+  // --- Lake state ---
+  document.querySelectorAll('.lake-state-dot').forEach(function(dot) {
+    dot.addEventListener('click', function() { switchLakeState(dot.getAttribute('data-state')); });
+  });
+  // --- Record button (merged: opens record modal, submission triggers stone animation) ---
+  document.getElementById('recordBtn')?.addEventListener('click', function() { openRecordNow(); });
+  document.getElementById('viewRippleBtn')?.addEventListener('click', function() { navTo('echoes', 1); });
+  document.getElementById('trendLink')?.addEventListener('click', function() { navTo('echoes', 1); });
+  // --- Record panel tabs ---
+  document.querySelectorAll('.record-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() { var t = tab.getAttribute('data-rntab'); if (t) rnSwitchTab(t); });
+  });
+  // --- Record mood items ---
+  document.querySelectorAll('#recordPanelNow .record-mood-item').forEach(function(item) {
+    item.addEventListener('click', function() { rnPickMood(item, 'now'); });
+  });
+  document.querySelectorAll('#recordPanelDay .record-mood-item').forEach(function(item) {
+    item.addEventListener('click', function() { rnPickMood(item, 'day'); });
+  });
+  document.getElementById('recordSubmitNow')?.addEventListener('click', function() { rnSubmit('now'); });
+  document.getElementById('recordSubmitDay')?.addEventListener('click', function() { rnSubmit('day'); });
+  // --- Textarea counter ---
+  var ta = document.getElementById('recordTextarea');
+  if (ta) { ta.addEventListener('input', function() { document.getElementById('charCount').textContent = ta.value.length; }); }
+  // --- Close record ---
+  document.querySelector('.record-overlay .bg-transparent.border-none')?.addEventListener('click', function() { closeRecordNow(); });
+  // --- Warn bar ---
+  document.getElementById('warnStoneBtn')?.addEventListener('click', function() { openRecordNow(); });
+  // --- Message accept/reject ---
+  ['msg1', 'msg2', 'msg3'].forEach(function(id) {
+    document.querySelectorAll('#' + id + '-actions .border-tertiary-fixed-dim')?.forEach?.(function(btn) { btn.addEventListener('click', function() { acceptMsg(id); }); });
+    document.querySelectorAll('#' + id + '-actions .border-outline-variant')?.forEach?.(function(btn) { btn.addEventListener('click', function() { rejectMsg(id); }); });
+  });
+  // msg1 specific
+  document.querySelector('#msg1-actions button:first-child')?.addEventListener('click', function() { acceptMsg('msg1'); });
+  document.querySelector('#msg1-actions button:last-child')?.addEventListener('click', function() { rejectMsg('msg1'); });
+  // --- Bond tabs ---
+  document.querySelectorAll('.bond-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() { var t = tab.getAttribute('data-tab'); if (t) swBond(t, tab); });
+  });
+  // --- Bond actions ---
+  document.querySelectorAll('.bond-action.echo').forEach(function(btn) { btn.addEventListener('click', function() { openEnergyPopup(); }); });
+  document.querySelectorAll('.bond-action.shield').forEach(function(btn) { btn.addEventListener('click', function() { showToast('守护光点免费回响！（今日1/1）'); }); });
+  document.querySelectorAll('.bond-action.flower').forEach(function(btn) { btn.addEventListener('click', function() { showToast('已投花'); }); });
+  document.querySelectorAll('.bond-action.kiss').forEach(function(btn) { btn.addEventListener('click', function() { showToast('已飞吻'); }); });
+  // --- Energy slider ---
+  document.getElementById('energySlider')?.addEventListener('input', function() { updateEPSlider(this.value); });
+  document.querySelector('.energy-confirm')?.addEventListener('click', function() { closeEP(); checkWarmthUser(); });
+  document.querySelector('.energy-cancel')?.addEventListener('click', function() { closeEP(); });
+  // --- Warmth ---
+  var feels = ['happy', 'tired', 'neutral'];
+  document.querySelectorAll('.warmth-feel-btn').forEach(function(btn, i) { btn.addEventListener('click', function() { submitWarmth(feels[i] || 'neutral'); }); });
+  document.querySelector('.warmth-close')?.addEventListener('click', function() { closeWarmth(); });
+  // --- Add bond ---
+  document.querySelector('.border-dashed')?.addEventListener('click', function() { showToast('邀请链接已复制'); });
+  // --- Msg btn ---
+  document.getElementById('msgBtn')?.addEventListener('click', function() { navTo('echoback', 2); });
+
+  // --- Init ---
+  updateMsgBadge();
+  switchLakeState('mirror');
+}
+
+document.addEventListener('DOMContentLoaded', function() { initApp(); });
+</script>
+</body>
+</html>

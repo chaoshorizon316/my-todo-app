@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>守望电量 LifePower v7 — 设计迭代</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:375px;height:750px;background:linear-gradient(180deg,#fef7f2 0%,#faf5ff 50%,#fef7f2 100%);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.header{padding:50px 24px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#9ca3af}
+.header-right{display:flex;align-items:center;gap:10px}
+.profile-btn{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:none}
+.msg-btn{position:relative;font-size:18px;cursor:pointer;background:none;border:none}
+.msg-badge{position:absolute;top:-4px;right:-6px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center}
+.screen{display:none;height:calc(100% - 130px);overflow-y:auto;padding:0 24px}
+.screen.active{display:block}
+.screen::-webkit-scrollbar{width:0}
+
+/* Onboarding */
+.ob-overlay{display:none;position:absolute;inset:0;z-index:100;background:linear-gradient(180deg,#fdf2f8,#f0f9ff,#fdf2f8);border-radius:40px;padding:60px 24px 30px;overflow-y:auto}
+.ob-overlay.active{display:block}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+.ob-dots span{width:20px;height:4px;border-radius:2px;background:#e5e7eb}
+.ob-dots span.done{background:linear-gradient(90deg,#f97316,#ec4899)}
+.ob-title{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px}
+.ob-sub{font-size:13px;color:#9ca3af;margin-bottom:20px;line-height:1.6}
+.ob-step{display:none}
+.ob-step.active{display:block}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{padding:10px 14px;border-radius:14px;border:1.5px solid #f3f4f6;background:#fff;font-size:12px;color:#6b7280;cursor:pointer;transition:all 0.2s}
+.chip:hover{border-color:#f97316}
+.chip.selected{border-color:#f97316;background:#fff7ed;color:#f97316;font-weight:600}
+.chip-grid.col2 .chip{width:calc(50% - 4px);text-align:center}
+.chip .chip-desc{display:block;font-size:9px;color:#9ca3af;font-weight:400;margin-top:2px;line-height:1.3}
+.chip.selected .chip-desc{color:#f97316;opacity:0.7}
+.slbl{font-size:11px;color:#d1d5db;margin:14px 0 8px;letter-spacing:1px}
+.ob-btn{width:100%;padding:14px;margin-top:20px;border-radius:16px;border:none;background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.ob-btn:disabled{opacity:0.4;cursor:not-allowed}
+.ob-skip{display:block;text-align:center;margin-top:10px;font-size:12px;color:#9ca3af;cursor:pointer}
+.ob-step5-top{font-size:12px;color:#9ca3af;margin-bottom:6px;text-align:center}
+.ob-step5-val{font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.6}
+.ob-step5-preview{font-size:11px;color:#6b7280;text-align:center;margin-top:12px;line-height:1.8;background:#fff;border-radius:12px;padding:10px 14px}
+
+/* HOME / 心汐 */
+.battery-wrap{text-align:center;padding:8px 0}
+.mode-row{display:flex;justify-content:center;gap:6px;margin-bottom:12px}
+.m-dot{width:8px;height:8px;border-radius:50%;background:#f97316}
+.m-dot.future{background:#e5e7eb}
+.m-label{font-size:10px;color:#9ca3af;text-align:center}
+.battery{position:relative;width:110px;height:200px;margin:0 auto 8px}
+.bat-body{width:110px;height:180px;border-radius:18px;border:5px solid #e5e7eb;background:#f9fafb;position:relative;overflow:hidden}
+.bat-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#10b981 0%,#f59e0b 50%,#ef4444 100%);border-radius:0 0 13px 13px;transition:height 1s}
+.bat-cap{width:36px;height:9px;background:#d1d5db;border-radius:3px 3px 0 0;margin:0 auto}
+.bat-num{font-size:38px;font-weight:800;color:#f59e0b;margin-top:-155px;position:relative;z-index:1}
+.bat-unit{font-size:12px;color:#9ca3af}
+.trend{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;margin:4px 0}
+.trend.down{background:#fef2f2;color:#ef4444}
+.trend.up{background:#ecfdf5;color:#10b981}
+.bat-status{font-size:10px;margin-top:2px}
+
+/* Battery overflow */
+.bat-overflow .bat-fill{background:linear-gradient(180deg,#a78bfa,#f59e0b 50%,#10b981 100%)!important}
+.bat-overflow .bat-body{border-color:#a78bfa;box-shadow:0 0 20px rgba(167,139,250,0.3)}
+.bat-overflow .bat-num{color:#8b5cf6}
+
+/* Energy source tags */
+.src-tags{display:flex;justify-content:center;gap:14px;margin-top:6px;font-size:9px}
+.src-tag{display:flex;align-items:center;gap:3px;color:#6b7280}
+.src-dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.src-dot.self{background:#3b82f6}
+.src-dot.mark{background:#10b981}
+.src-dot.transfer{background:#f59e0b}
+
+/* Warning bar */
+.warn-bar{background:#fef2f2;border-left:3px solid #ef4444;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:12px;color:#991b1b;display:none}
+.warn-bar.show{display:block}
+.warn-bar .warn-title{font-weight:600;margin-bottom:4px}
+.warn-bar .warn-actions{display:flex;gap:6px;margin-top:8px}
+.warn-bar .warn-actions button{padding:5px 12px;border-radius:10px;border:1px solid #fca5a5;background:#fff;color:#ef4444;font-size:11px;cursor:pointer}
+
+/* Record-now button */
+.rec-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;margin:8px 0 12px;border-radius:16px;border:none;background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(249,115,22,0.25)}
+
+/* Record-now modal */
+.rn-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;border-radius:40px;align-items:center;justify-content:center}
+.rn-overlay.active{display:flex}
+.rn-card{background:#fff;border-radius:24px;padding:24px 20px;width:280px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.rn-title{font-size:17px;font-weight:700;color:#1f2937;margin-bottom:16px}
+.rn-option{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;margin-bottom:8px;border-radius:14px;border:1.5px solid #f3f4f6;background:#fff;font-size:14px;color:#1f2937;cursor:pointer;text-align:left;transition:all 0.2s}
+.rn-option:hover{border-color:#f97316;background:#fff7ed}
+.rn-option .rn-icon{font-size:28px;flex-shrink:0}
+.rn-option .rn-label{font-weight:600;font-size:14px}
+.rn-option .rn-desc{font-size:11px;color:#9ca3af;margin-top:2px}
+.rn-close{display:block;width:100%;margin-top:8px;padding:10px;background:none;border:none;color:#9ca3af;font-size:13px;cursor:pointer}
+.rntab-bar{display:flex;background:#f3f4f6;border-radius:12px;padding:4px;margin-bottom:16px}
+.rntab{flex:1;padding:10px 0;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#9ca3af;transition:all 0.2s}
+.rntab.active{background:linear-gradient(135deg,#f97316,#ec4899);color:#fff}
+.rn-panel{display:none}
+.rn-panel.active{display:block}
+
+/* Energy model card */
+.emodel{background:#fff;border-radius:14px;padding:12px 16px;margin-top:10px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.emodel-title{font-size:12px;color:#9ca3af;margin-bottom:6px;letter-spacing:1px}
+
+/* MOOD */
+.mtime-tag{font-size:11px;padding:4px 10px;border-radius:12px;background:#fff;color:#ec4899;display:inline-block;margin-bottom:12px}
+.mood-mode{display:flex;background:#fff;border-radius:12px;padding:3px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.mmode{flex:1;padding:8px;text-align:center;font-size:12px;color:#9ca3af;cursor:pointer;border-radius:10px;transition:all 0.2s}
+.mmode.active{background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-weight:600}
+.mood-q{font-size:15px;font-weight:600;color:#1f2937;margin-bottom:10px}
+.mood-g{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.m-card{background:#fff;border-radius:14px;padding:10px 8px;display:flex;align-items:center;gap:8px;cursor:pointer;border:2px solid transparent;transition:all 0.2s}
+.m-card:hover{border-color:#fcd34d}
+.m-card.selected{border-color:#f97316;background:#fff7ed}
+.m-card .e{font-size:24px}
+.m-card .n{font-size:12px;font-weight:600;color:#1f2937}
+.m-submit{width:100%;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+
+/* Energy log */
+.elog{background:#fff;border-radius:18px;padding:14px 16px;margin-top:16px;max-height:260px;overflow-y:auto}
+.elog::-webkit-scrollbar{width:3px}
+.elog::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+.elog-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.elog-main-title{font-size:13px;font-weight:600;color:#1f2937}
+.elog-toggle{font-size:10px;color:#f97316;cursor:pointer;font-weight:400}
+.elog-summary{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.elog-period{font-size:10px;color:#9ca3af}
+.elog-net{font-size:11px;font-weight:600;color:#10b981}
+.elog-list{display:flex;flex-direction:column;gap:2px}
+.elog-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f9fafb}
+.elog-item:last-child{border-bottom:none}
+.elog-time{font-size:10px;color:#9ca3af;min-width:38px}
+.elog-icon{font-size:14px;text-align:center;min-width:20px}
+.elog-label{font-size:11px;color:#6b7280;flex:1}
+.elog-src{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:500}
+.elog-src.self-src{background:#eff6ff;color:#3b82f6}
+.elog-src.mark-src{background:#f0fdf4;color:#10b981}
+.elog-src.transfer-src{background:#fffbeb;color:#d97706}
+.elog-src.neg-src{background:#fef2f2;color:#ef4444}
+.elog-more{text-align:center;padding:8px;font-size:10px;color:#d1d5db}
+
+/* Chart */
+.mchart{background:#fff;border-radius:18px;padding:16px;margin-top:16px}
+.mchart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mchart-title{font-size:13px;font-weight:600;color:#1f2937}
+.mchart-tabs{display:flex;gap:2px;background:#f3f4f6;border-radius:8px;padding:2px}
+.mchart-tab{padding:4px 10px;border-radius:6px;font-size:10px;color:#9ca3af;cursor:pointer}
+.mchart-tab.active{background:#fff;color:#1f2937;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.06)}
+.mchart-avg{font-size:11px;color:#9ca3af;margin-bottom:10px}
+.mchart-bars{display:flex;gap:3px;align-items:flex-end;min-height:120px;padding:0 4px}
+.bar-group{display:flex;flex-direction:column;gap:1px;min-width:14px}
+.bar-seg{border-radius:1px}
+.bar-label{font-size:8px;color:#9ca3af;text-align:center;margin-top:3px;white-space:nowrap}
+.mchart-legend{display:flex;gap:10px;margin-top:10px;font-size:10px;color:#9ca3af;flex-wrap:wrap;justify-content:center}
+.mchart-legend span{display:flex;align-items:center;gap:4px}
+.mchart-legend .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+/* Valence axis */
+.valence-section{text-align:center;margin-top:12px}
+.valence-label{font-size:10px;color:#9ca3af;margin-bottom:6px}
+.valence-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:9px;color:#9ca3af}
+.valence-bar{width:160px;height:6px;border-radius:3px;background:linear-gradient(90deg,#6366f1,#a78bfa,#fcd34d,#f59e0b,#10b981);position:relative}
+.valence-dot{position:absolute;top:-3px;left:65%;width:12px;height:12px;border-radius:50%;background:#f97316;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.valence-note{font-size:9px;color:#d1d5db;margin-top:4px}
+
+/* ECHO tab */
+.echo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.echo-title{font-size:18px;font-weight:700;color:#1f2937}
+.msg-item{padding:14px;border-radius:16px;margin-bottom:8px;transition:all 0.2s}
+.msg-item:hover{transform:translateX(3px)}
+.msg-item.unread{background:#fff;border-left:3px solid #f97316}
+.msg-item.read{background:#f9fafb;opacity:0.7}
+.msg-from{font-size:13px;font-weight:600;color:#1f2937}
+.msg-body{font-size:12px;color:#6b7280;margin-top:2px}
+.msg-time{font-size:10px;color:#d1d5db;margin-top:4px}
+.msg-tag{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:9px}
+.msg-tag.emotion{background:#fdf2f8;color:#ec4899}
+.msg-tag.accepted{background:#ecfdf5;color:#10b981}
+.msg-tag.rejected{background:#fef2f2;color:#ef4444}
+.msg-actions{display:flex;gap:6px;margin-top:6px}
+.msg-accept,.msg-reject{padding:6px 16px;border-radius:12px;border:1.5px solid;font-size:11px;cursor:pointer;font-weight:500;transition:all 0.2s;background:#fff}
+.msg-accept{border-color:#10b981;color:#10b981}
+.msg-accept:hover{background:#ecfdf5}
+.msg-reject{border-color:#ef4444;color:#ef4444}
+.msg-reject:hover{background:#fef2f2}
+
+/* BOND */
+.btab-bar{display:flex;background:#fff;border-radius:14px;padding:3px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.btab{flex:1;padding:8px;text-align:center;font-size:12px;color:#9ca3af;cursor:pointer;border-radius:11px;transition:all 0.2s}
+.btab.active{background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-weight:600}
+.blist{display:flex;flex-direction:column;gap:8px}
+.bitem{background:#fff;border-radius:16px;padding:14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,0.03);position:relative}
+.bav{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;flex-shrink:0}
+.binfo{flex:1}
+.bnm{font-size:14px;font-weight:600;color:#1f2937;display:flex;align-items:center;gap:6px}
+.blevel{font-size:9px;padding:2px 8px;border-radius:8px;font-weight:500}
+.blevel.lv1{background:#f3f4f6;color:#9ca3af}
+.blevel.lv2{background:#fdf2f8;color:#ec4899}
+.blevel.lv3{background:#eff6ff;color:#6366f1}
+.blevel.lv4{background:#fef3c7;color:#d97706}
+.btags{display:flex;gap:4px;margin-top:2px}
+.btag{font-size:9px;padding:2px 7px;border-radius:8px}
+.btag.pub{background:#ecfdf5;color:#10b981}
+.btag.q{background:#eff6ff;color:#6366f1}
+.btag.rel{background:#fdf2f8;color:#ec4899}
+.bst{font-size:11px;color:#9ca3af}
+.bact-group{display:flex;gap:4px;flex-direction:column;align-items:flex-end}
+.bact{padding:5px 12px;border-radius:14px;border:1.5px solid;background:#fff;font-size:11px;cursor:pointer;white-space:nowrap}
+.bact.flower{border-color:#ec4899;color:#ec4899}
+.bact.kiss{border-color:#f59e0b;color:#f59e0b}
+.bact.energy-btn{border-color:#10b981;color:#10b981}
+
+/* Diminishing returns */
+.dim-indicator{font-size:9px;color:#9ca3af;text-align:right;margin-top:2px}
+.dim-indicator .dim-bar{display:inline-flex;gap:1px}
+.dim-indicator .dim-seg{width:6px;height:8px;border-radius:1px}
+.dim-seg.used{background:#10b981}.dim-seg.unused{background:#e5e7eb}
+
+/* Energy popup */
+.energy-popup{display:none;position:absolute;bottom:120px;left:24px;right:24px;background:#fff;border-radius:20px;padding:20px;z-index:50;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
+.energy-popup.active{display:block}
+.ep-title{font-size:15px;font-weight:600;color:#1f2937;margin-bottom:10px}
+.ep-info{font-size:11px;color:#6b7280;margin-bottom:10px}
+.ep-info .ep-hl{color:#f97316;font-weight:600}
+.ep-slider{width:100%;margin:6px 0}
+.ep-labels{display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-bottom:10px}
+.ep-dim{font-size:10px;color:#9ca3af;text-align:center;margin-bottom:10px}
+.ep-confirm{width:100%;padding:10px;border-radius:12px;border:none;background:#10b981;color:#fff;font-size:14px;cursor:pointer}
+.ep-cancel{width:100%;padding:8px;margin-top:6px;background:none;border:none;color:#9ca3af;font-size:12px;cursor:pointer}
+
+/* Warmth popup */
+.warmth-popup{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;border-radius:40px;align-items:center;justify-content:center}
+.warmth-popup.active{display:flex}
+.warmth-card{background:#fff;border-radius:24px;padding:24px 20px;width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.warmth-card .wc-emoji{font-size:48px;margin-bottom:12px}
+.warmth-card .wc-title{font-size:18px;font-weight:700;color:#1f2937;margin-bottom:8px}
+.warmth-card .wc-sub{font-size:13px;color:#6b7280;line-height:1.8;margin-bottom:16px}
+.warmth-card .wc-feel{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.warmth-card .wc-feel button{padding:10px 18px;border-radius:14px;border:1.5px solid #f3f4f6;background:#fff;font-size:13px;cursor:pointer;transition:all 0.2s}
+.warmth-card .wc-feel button:hover{border-color:#f97316;background:#fff7ed}
+.warmth-card .wc-close{padding:12px 30px;border-radius:14px;border:none;background:linear-gradient(135deg,#f97316,#ec4899);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+
+.badd{text-align:center;padding:13px;margin-top:10px;border-radius:14px;border:2px dashed #fcd34d;color:#f97316;font-size:13px;cursor:pointer}
+
+/* Bottom Nav */
+.btm-nav{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-top:1px solid #f3f4f6;padding:6px 0 20px;z-index:80}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#d1d5db;cursor:pointer;padding:4px 0;transition:all 0.2s}
+.ni.active{color:#f97316}
+.ni .ico{font-size:20px}
+
+/* Profile */
+.profile-panel{display:none;position:absolute;top:0;right:0;width:280px;height:100%;background:#fff;z-index:90;border-radius:0 40px 40px 0;padding:60px 20px 30px;box-shadow:-4px 0 30px rgba(0,0,0,0.1)}
+.profile-panel.active{display:block}
+.pclose{position:absolute;top:50px;right:20px;font-size:20px;cursor:pointer;color:#9ca3af}
+.pname{font-size:18px;font-weight:700;color:#1f2937}
+.ptags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 16px}
+.ptag{font-size:10px;padding:3px 8px;border-radius:10px;background:#fff7ed;color:#f97316}
+.prow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f9fafb;font-size:12px;color:#6b7280}
+
+.toast{position:absolute;top:50px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="header">
+    <span>20:35</span>
+    <div class="header-right">
+      <button style="font-size:17px;cursor:pointer;background:none;border:none" onclick="showToast('📤 状态链接已复制')">📤</button>
+      <button class="profile-btn" onclick="toggleProfile()">我</button>
+    </div>
+  </div>
+
+  <!-- ========== ONBOARDING — 2 steps ========== -->
+  <div class="ob-overlay active" id="onboard">
+    <div class="ob-dots" id="dots">
+      <span class="done" onclick="obJump(1)"></span>
+      <span onclick="obJump(2)"></span>
+    </div>
+
+    <!-- Step 1/2: 你的底色 (personality + relationship + role + goals) -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-title">🧬 你的底色</div>
+      <div class="ob-sub" style="margin-bottom:12px">让我们先了解你——这些选择会让心汐更懂你</div>
+
+      <!-- 人格 -->
+      <div class="slbl">你觉得自己最像哪一种？</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto(this)">INTJ 建筑师<span class="chip-desc">战略型思考者</span></div>
+        <div class="chip" onclick="pickAuto(this)">INTP 逻辑学家<span class="chip-desc">热爱探索本质</span></div>
+        <div class="chip" onclick="pickAuto(this)">ENTJ 指挥官<span class="chip-desc">果断且高效</span></div>
+        <div class="chip" onclick="pickAuto(this)">INFJ 提倡者<span class="chip-desc">内心有光</span></div>
+        <div class="chip" onclick="pickAuto(this)">INFP 调停者<span class="chip-desc">敏感富有同理心</span></div>
+        <div class="chip" onclick="pickAuto(this)">ENFP 竞选者<span class="chip-desc">热情洋溢</span></div>
+        <div class="chip" onclick="pickAuto(this)">ISTJ 物流师<span class="chip-desc">务实可靠</span></div>
+        <div class="chip" onclick="pickAuto(this)">ISFJ 守卫者<span class="chip-desc">温柔守护</span></div>
+      </div>
+
+      <!-- 情感 -->
+      <div class="slbl">现在的你，属于哪种状态？</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto2(this)">💍 已婚</div><div class="chip" onclick="pickAuto2(this)">💑 热恋中</div>
+        <div class="chip" onclick="pickAuto2(this)">🧊 冷战期</div><div class="chip" onclick="pickAuto2(this)">💔 刚失恋</div>
+        <div class="chip" onclick="pickAuto2(this)">🧍 单身快乐</div><div class="chip" onclick="pickAuto2(this)">🔍 寻觅中</div>
+        <div class="chip" onclick="pickAuto2(this)">⏳ 空窗期</div><div class="chip" onclick="pickAuto2(this)">🏠 分居中</div>
+        <div class="chip" onclick="pickAuto2(this)">👴 空巢期</div>
+      </div>
+
+      <!-- 角色 -->
+      <div class="slbl">上班的你</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto3(this,'work')">🏢 在职稳定</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🚀 创业中</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🎒 学生党</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">👶 全职带娃</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🔍 求职中</div>
+        <div class="chip" onclick="pickAuto3(this,'work')">🌴 Gap期</div>
+      </div>
+      <div class="slbl">在家的你</div>
+      <div class="chip-grid" style="margin-bottom:4px">
+        <div class="chip" onclick="pickAuto3(this,'fam')">👨‍👩‍👧 有娃父母</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">💑 二人世界</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">🧍 独居自由</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">🐾 宠物家长</div>
+        <div class="chip" onclick="pickAuto3(this,'fam')">👴 照顾老人</div>
+      </div>
+
+      <!-- 盼头 -->
+      <div class="slbl">有没有一件让你期待的事？</div>
+      <div class="chip-grid col2">
+        <div class="chip" onclick="pickAuto2(this)">🎯 有清晰目标，稳步推进</div>
+        <div class="chip" onclick="pickAuto2(this)">🧭 有方向但进展模糊</div>
+        <div class="chip" onclick="pickAuto2(this)">🌫️ 暂时迷茫，没方向</div>
+        <div class="chip" onclick="pickAuto2(this)">🏁 刚完成大目标，空虚期</div>
+      </div>
+    </div>
+
+    <!-- Step 2/2: 你的此刻 -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-title">🌙 你的此刻</div>
+      <div class="ob-sub">今天的你，和平时有什么不同？</div>
+      <div class="chip-grid col2" style="margin-bottom:16px">
+        <div class="chip selected" onclick="pickAuto(this)">📈 状态在线</div>
+        <div class="chip" onclick="pickAuto(this)">😴 状态不在线</div>
+        <div class="chip" onclick="pickAuto(this)">🔥 高压冲刺</div>
+        <div class="chip" onclick="pickAuto(this)">🧘 佛系摸鱼</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:#fff;border-radius:12px;font-size:11px;color:#6b7280;line-height:1.8;margin-bottom:12px">
+        🔮 你将拥有专属心情模型<br>📊 随时查看每日能量变化<br>💫 与在意的人建立温暖羁绊
+      </div>
+      <button class="ob-btn" id="bFinish" onclick="finishOB()">✨ 开启守望之旅</button>
+      <span class="ob-skip" onclick="finishOB()">跳过</span>
+    </div>
+  </div><!-- ========== PROFILE ========== -->
+  <div class="profile-panel" id="profile">
+    <span class="pclose" onclick="toggleProfile()">✕</span>
+    <div class="pname">小守</div>
+    <div class="ptags"><span class="ptag">INFP</span><span class="ptag">💑 热恋中</span><span class="ptag">🚀 创业中</span><span class="ptag">🧭 有方向</span></div>
+    <div class="prow"><span>能量节奏</span><span style="color:#f97316;font-weight:600">上午平静 · 午后高涨</span></div>
+    <div class="prow"><span>情绪敏感度</span><span>中等敏感 · 容易受小事影响</span></div>
+    <div class="prow"><span>充电方式</span><span>独处安静 · 被关怀时回满</span></div>
+    <div class="prow"><span>能量峰值</span><span style="color:#8b5cf6">偶尔会超出常规状态</span></div>
+    <div class="prow"><span>羁绊</span><span>3 人 · 1守护神</span></div>
+    <div class="prow"><span>获得感</span><span style="color:#10b981">高 · 本周被关怀 8 次</span></div>
+  </div>
+
+  <!-- ========== 心汐 (HOME) ========== -->
+  <div class="screen" id="sc-home">
+    <div class="mode-row"><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot future"></div></div>
+    <div class="m-label">单人模式 · 第 6 天 · 明天解锁羁绊</div>
+
+    <div class="battery-wrap bat-overflow" id="batwrap">
+      <div class="battery">
+        <div class="bat-cap"></div>
+        <div class="bat-body"><div class="bat-fill" style="height:82%"></div></div>
+        <div class="bat-num">82%</div>
+        <div class="bat-unit">心汐 · 溢出状态 ✨</div>
+      </div>
+      <div class="trend up">▲ 较昨日 +12% · 今天特别好</div>
+      <div class="bat-status" id="batStatusLine" style="color:#8b5cf6">🔮 溢出上限 95% — 今天状态爆棚！</div>
+      <div class="src-tags" id="srcTags">
+        <span class="src-tag"><span class="src-dot self"></span>自有 38%</span>
+        <span class="src-tag"><span class="src-dot mark"></span>标注 32%</span>
+        <span class="src-tag"><span class="src-dot transfer"></span>传递 12%</span>
+      </div>
+    </div>
+
+    <!-- Low energy warning -->
+    <div class="warn-bar" id="warn-low">
+      <div class="warn-title">⚠️ 电量低于 20% 预警</div>
+      <div>你的心汐偏低，需要充充电吗？</div>
+      <div class="warn-actions"><button onclick="showToast('🌿 推荐：倾听森林 10min +5%')">🎵 充电活动</button><button onclick="startMoodNow()">💭 记录心情</button></div>
+    </div>
+
+    <!-- 记录此刻 -->
+    <button class="rec-btn" onclick="openRecordNow()">✍️ 记录此刻</button>
+
+    <!-- 心情解读卡片 -->
+    <div class="emodel">
+      <div class="emodel-title">💬 今日心情解读</div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.9;font-style:italic">
+        「今天的你像一杯温热的茶——白天有过一阵焦虑的苦涩（14:00 标注低落），
+        但傍晚的平静和满足让一切都柔和下来。你被 2 个人关心过，
+        其中 1 份温暖还在路上。明天醒来，又将是新的一天。」
+      </div>
+      <div style="font-size:10px;color:#9ca3af;margin-top:8px;text-align:right">基于您专属的心情模型生成</div>
+    </div>
+
+    <!-- Chart moved to 心情 tab -->
+    <div style="text-align:center;padding:8px;margin-top:6px">
+      <span style="font-size:11px;color:#f97316;cursor:pointer" onclick="navTo('mood',1)">📊 查看心情趋势 →</span>
+    </div>
+  </div>
+
+  <!-- ==========
+
+  <!-- ========== 心情 (MOOD) — 纯浏览：日志 + 回顾 ========== -->
+  <div class="screen" id="sc-mood">
+    <div style="font-size:16px;font-weight:700;color:#1f2937;margin-bottom:4px">💭 心情回顾</div>
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">记录入口在首页「✍️ 记录此刻」</div>
+
+    <!-- Mood history timeline -->
+    <div style="background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:10px">
+      <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;letter-spacing:1px">📋 近期心情</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😌</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">平静放松</span>
+          <span style="font-size:10px;color:#9ca3af">今天 20:35</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😟</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">焦虑不安</span>
+          <span style="font-size:10px;color:#9ca3af">今天 14:00</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😊</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">元气满满</span>
+          <span style="font-size:10px;color:#9ca3af">今天 08:20</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">🥰</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">幸福满足</span>
+          <span style="font-size:10px;color:#9ca3af">昨天 18:10</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😢</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">低落难过</span>
+          <span style="font-size:10px;color:#9ca3af">昨天 10:30</span>
+        </div>
+      </div>
+      <div style="text-align:center;padding:6px;font-size:10px;color:#d1d5db">—— 下拉加载更多 ——</div>
+    </div>
+
+    <!-- 心情趋势 (moved from homepage) -->
+    <div class="mchart">
+      <div class="mchart-header">
+        <span class="mchart-title">📊 心情趋势</span>
+        <div class="mchart-tabs"><span class="mchart-tab active">今日</span><span class="mchart-tab">本周</span><span class="mchart-tab">本月</span></div>
+      </div>
+      <div class="mchart-avg">今日情绪主调：偏向积极 · 标注 4 次</div>
+      <div class="mchart-area">
+        <div class="mchart-bars">
+          <div class="bar-group"><div class="bar-seg" style="height:20px;background:#fcd34d"></div><div class="bar-seg" style="height:8px;background:#f97316"></div><div class="bar-label">06</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:35px;background:#f97316"></div><div class="bar-label">08</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:15px;background:#fcd34d"></div><div class="bar-seg" style="height:22px;background:#10b981"></div><div class="bar-label">10</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:12px;background:#d1d5db"></div><div class="bar-seg" style="height:28px;background:#fcd34d"></div><div class="bar-label">12</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:40px;background:#ef4444"></div><div class="bar-label">14</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:10px;background:#d1d5db"></div><div class="bar-seg" style="height:18px;background:#fcd34d"></div><div class="bar-label">16</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:25px;background:#f97316"></div><div class="bar-label">18</div></div>
+          <div class="bar-group"><div class="bar-seg" style="height:15px;background:#fcd34d"></div><div class="bar-label">20</div></div>
+        </div>
+      </div>
+      <div class="mchart-legend">
+        <span><span class="dot" style="background:#10b981"></span>元气/幸福</span>
+        <span><span class="dot" style="background:#f97316"></span>期待/兴奋</span>
+        <span><span class="dot" style="background:#fcd34d"></span>平静/中性</span>
+        <span><span class="dot" style="background:#ef4444"></span>焦虑/低落</span>
+        <span><span class="dot" style="background:#d1d5db"></span>暂无</span>
+      </div>
+    </div>
+
+
+    <!-- Energy log (replaces static energy conservation card) -->
+    <div class="elog" id="energyLog">
+      <div class="elog-title-row">
+        <span class="elog-main-title">⚡ 能量日志 · 今日收支</span>
+        <span class="elog-toggle" onclick="showToast('📅 已切换至本周视图（原型展示）')">本周 ▼</span>
+      </div>
+      <div class="elog-summary">
+        <span class="elog-period">时间倒序 · 下拉查看更多</span>
+        <span class="elog-net">净变化 +25% ↑</span>
+      </div>
+      <div class="elog-list">
+        <div class="elog-item">
+          <span class="elog-time">20:35</span><span class="elog-icon">😌</span>
+          <span class="elog-label">平静放松</span>
+          <span class="elog-src mark-src">标注 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">19:30</span><span class="elog-icon">💫</span>
+          <span class="elog-label">张小明 · 传递能量</span>
+          <span class="elog-src transfer-src">传递 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">17:15</span><span class="elog-icon">💐</span>
+          <span class="elog-label">李小花送花 · 被认可</span>
+          <span class="elog-src transfer-src">传递 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">14:00</span><span class="elog-icon">😟</span>
+          <span class="elog-label">焦虑不安</span>
+          <span class="elog-src neg-src">标注 -5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">12:00</span><span class="elog-icon">🍜</span>
+          <span class="elog-label">美食享受</span>
+          <span class="elog-src self-src">自有 +5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">09:20</span><span class="elog-icon">💤</span>
+          <span class="elog-label">睡眠 8h · 深度 2h</span>
+          <span class="elog-src self-src">自有 +10%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">08:00</span><span class="elog-icon">🏃</span>
+          <span class="elog-label">晨跑 30min · 8000 步</span>
+          <span class="elog-src self-src">自有 +5%</span>
+        </div>
+      </div>
+      <div class="elog-more">—— 下拉加载更早记录 ——</div>
+    </div>
+  </div>
+
+  <!-- ========== 回声 (ECHO) ========== -->
+  <div class="screen" id="sc-echo">
+    <div class="echo-header"><span class="echo-title">💬 回声</span></div>
+
+    <!-- Energy transfer message with accept/reject -->
+    <div class="msg-item unread" id="msg1">
+      <div class="msg-from">张小明 · 男友 · 🛡️ 守护神</div>
+      <div class="msg-body">守护神特权 ⚡ 免费传递了 8% 能量给你（不消耗自身）</div>
+      <div class="msg-time">19:30</div>
+      <span class="msg-tag emotion" id="msg1-tag">待处理 · 第1次接收</span>
+      <div class="msg-actions" id="msg1-actions">
+        <button class="msg-accept" onclick="acceptMsg('msg1')">🤝 接收</button>
+        <button class="msg-reject" onclick="rejectMsg('msg1')">✕ 婉拒</button>
+      </div>
+    </div>
+
+    <!-- Flower message (auto-accept) -->
+    <div class="msg-item unread" id="msg2">
+      <div class="msg-from">李小花 · 闺蜜 · 🤝 陪伴</div>
+      <div class="msg-body">给你发送了一朵花 💐「今天也在闪闪发光」</div>
+      <div class="msg-time">17:15</div>
+      <span class="msg-tag accepted" id="msg2-tag">已自动接收 · 被认可</span>
+    </div>
+
+    <!-- Read message -->
+    <div class="msg-item read" id="msg3">
+      <div class="msg-from">老爸 · 家人 · 🌸 欣赏</div>
+      <div class="msg-body">你的电量偏低… 发来问候 👋</div>
+      <div class="msg-time">昨天 20:05</div>
+      <span class="msg-tag accepted">已自动接收</span>
+    </div>
+  </div>
+
+  <!-- ========== 羁绊 (BOND) ========== -->
+  <div class="screen" id="sc-bond">
+    <div class="btab-bar">
+      <div class="btab active" onclick="swBond('mutual',this)">🤝 双向羁绊</div>
+      <div class="btab" onclick="swBond('quiet',this)">🌙 默默守护</div>
+    </div>
+    <div id="bond-mutual" class="blist">
+      <!-- Lv4 守护神 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#fef3c7)">
+        <div style="position:absolute;top:6px;right:10px;font-size:18px">🛡️</div>
+        <div class="bav" style="background:linear-gradient(135deg,#d97706,#f59e0b)">张</div>
+        <div class="binfo">
+          <div class="bnm">张小明 <span class="blevel lv4">守护神</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">伴侣 2.0×</span></div>
+          </div>
+          <div class="bst">🟢 精力充沛 · 累计 98 天 · 传递 53 次</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第1次 (+5%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" style="border-color:#d97706;color:#d97706" onclick="showToast('🛡️ 守护神免费传递！（今日1/1）')">⚡ 免费传</button>
+          <button class="bact flower" onclick="showToast('💐 已送花')">💐</button>
+        </div>
+      </div>
+
+      <!-- Lv3 陪伴 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">李</div>
+        <div class="binfo">
+          <div class="bnm">李小花 <span class="blevel lv3">陪伴</span>
+            <div class="btags"><span class="btag q">默默</span><span class="btag rel">密友 1.3×</span></div>
+          </div>
+          <div class="bst">🟡 电量偏低 · 累计 35 天 · 可查看周趋势</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第2次 (+4%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" onclick="openEnergyPopup()">⚡ 传递</button>
+        </div>
+      </div>
+
+      <!-- Lv2 欣赏 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#10b981,#059669)">爸</div>
+        <div class="binfo">
+          <div class="bnm">老爸 <span class="blevel lv2">欣赏</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">家人 1.5×</span></div>
+          </div>
+          <div class="bst">🟢 状态良好 · 累计 12 天 · 已发送花/飞吻</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg used"></span></span> 第3次 (+3%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact flower" onclick="showToast('💐 已送花')">💐</button>
+          <button class="bact kiss" onclick="showToast('😘 已飞吻')">😘</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:#9ca3af;text-align:center;padding:4px">
+        💡 传递不限总次数 · 同一对象≤3次/天 · 衰减 5%→4%→3%→2%→1%→0.5%
+      </div>
+    </div>
+
+    <div id="bond-quiet" class="blist" style="display:none">
+      <!-- 默默守护：不展示对方能量状态，仅显示等级、天数、传递次数、交互按钮 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#94a3b8,#64748b)">王</div>
+        <div class="binfo">
+          <div class="bnm">王阿姨 <span class="blevel lv1">关注</span>
+            <div class="btags"><span class="btag rel">前同事</span></div>
+          </div>
+          <div class="bst">默默关注 28 天 · 已传递 2 次 · 已慰问 5 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已默默问候')">默默慰问</button>
+        </div>
+      </div>
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#cbd5e1,#94a3b8)">刘</div>
+        <div class="binfo">
+          <div class="bnm">刘老师 <span class="blevel lv2">欣赏</span>
+            <div class="btags"><span class="btag rel">导师</span></div>
+          </div>
+          <div class="bst">默默关注 56 天 · 已传递 8 次 · 已慰问 12 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已默默慰问')">默默慰问</button>
+        </div>
+      </div>
+      <div style="text-align:center;padding:18px;color:#d1d5db;font-size:11px">
+        💡 默默守护：你看得到对方<br>对方不知道你在守望 · 最高 Lv.2<br>
+        <span style="color:#9ca3af">仅可见等级、关注时间、传递次数</span>
+      </div>
+    </div>
+
+    <div class="badd" onclick="showToast('📋 邀请链接已复制')">+ 建立新的羁绊</div>
+
+    <!-- Energy Transfer Popup -->
+    <div class="energy-popup" id="epopup">
+      <div class="ep-title">⚡ 传递能量给 李小花</div>
+      <div class="ep-info">羁绊等级：<span class="ep-hl">🤝 陪伴</span> · 传递效率 ×1.3 · 被传递方额外 +1%</div>
+      <div class="ep-info">你当前生命能源：<span class="ep-hl">82%</span> · 今日已向她传递 2 次 · 剩余 1 次</div>
+      <input type="range" class="ep-slider" min="0" max="30" value="10" step="5" oninput="updateEPSlider(this.value)">
+      <div class="ep-labels"><span>0%</span><span>5%</span><span>10%</span><span>20%</span><span>30%</span></div>
+      <div style="text-align:center;font-size:13px;color:#f97316;margin-bottom:8px">传递 <b id="epval">10%</b> 能量</div>
+      <div class="ep-dim" id="epdim">她将收到 <b>13%</b>（10% × 1.3 陪伴加成）· 本次接收衰减后 +3%</div>
+      <button class="ep-confirm" onclick="closeEP();checkWarmthUser()">确认传递</button>
+      <button class="ep-cancel" onclick="closeEP()">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== WARMTH POPUP ========== -->
+  <div class="warmth-popup" id="wpopup">
+    <div class="warmth-card">
+      <div class="wc-emoji">🔆</div>
+      <div class="wc-title">你把今天的温暖都送出去了</div>
+      <div class="wc-sub">你给 张小明、李小花、老爸 传递了能量<br>虽然自己只剩 7%，但你选择了分享 ✨</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:14px">现在感觉怎么样？</div>
+      <div class="wc-feel">
+        <button onclick="submitWarmth('happy')">😊 我很开心</button>
+        <button onclick="submitWarmth('tired')">😴 有点累</button>
+        <button onclick="submitWarmth('neutral')">🤷 没想那么多</button>
+      </div>
+      <button class="wc-close" onclick="closeWarmth()">知道了</button>
+    </div>
+  </div>
+
+  <!-- ========== RECORD NOW MODAL (flat dual-tab) ========== --</div>
+
+  <!-- ========== 心情 (MOOD) — 纯浏览：日志 + 回顾 ========== -->
+  <div class="screen" id="sc-mood">
+    <div style="font-size:16px;font-weight:700;color:#1f2937;margin-bottom:4px">💭 心情回顾</div>
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">记录入口在首页「✍️ 记录此刻」</div>
+
+    <!-- Mood history timeline -->
+    <div style="background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:10px">
+      <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;letter-spacing:1px">📋 近期心情</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😌</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">平静放松</span>
+          <span style="font-size:10px;color:#9ca3af">今天 20:35</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😟</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">焦虑不安</span>
+          <span style="font-size:10px;color:#9ca3af">今天 14:00</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😊</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">元气满满</span>
+          <span style="font-size:10px;color:#9ca3af">今天 08:20</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">🥰</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">幸福满足</span>
+          <span style="font-size:10px;color:#9ca3af">昨天 18:10</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb">
+          <span style="font-size:14px">😢</span>
+          <span style="font-size:11px;color:#6b7280;flex:1">低落难过</span>
+          <span style="font-size:10px;color:#9ca3af">昨天 10:30</span>
+        </div>
+      </div>
+      <div style="text-align:center;padding:6px;font-size:10px;color:#d1d5db">—— 下拉加载更多 ——</div>
+    </div>
+
+    <!-- Energy log (replaces static energy conservation card) -->
+    <div class="elog" id="energyLog">
+      <div class="elog-title-row">
+        <span class="elog-main-title">⚡ 能量日志 · 今日收支</span>
+        <span class="elog-toggle" onclick="showToast('📅 已切换至本周视图（原型展示）')">本周 ▼</span>
+      </div>
+      <div class="elog-summary">
+        <span class="elog-period">时间倒序 · 下拉查看更多</span>
+        <span class="elog-net">净变化 +25% ↑</span>
+      </div>
+      <div class="elog-list">
+        <div class="elog-item">
+          <span class="elog-time">20:35</span><span class="elog-icon">😌</span>
+          <span class="elog-label">平静放松</span>
+          <span class="elog-src mark-src">标注 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">19:30</span><span class="elog-icon">💫</span>
+          <span class="elog-label">张小明 · 传递能量</span>
+          <span class="elog-src transfer-src">传递 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">17:15</span><span class="elog-icon">💐</span>
+          <span class="elog-label">李小花送花 · 被认可</span>
+          <span class="elog-src transfer-src">传递 +8%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">14:00</span><span class="elog-icon">😟</span>
+          <span class="elog-label">焦虑不安</span>
+          <span class="elog-src neg-src">标注 -5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">12:00</span><span class="elog-icon">🍜</span>
+          <span class="elog-label">美食享受</span>
+          <span class="elog-src self-src">自有 +5%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">09:20</span><span class="elog-icon">💤</span>
+          <span class="elog-label">睡眠 8h · 深度 2h</span>
+          <span class="elog-src self-src">自有 +10%</span>
+        </div>
+        <div class="elog-item">
+          <span class="elog-time">08:00</span><span class="elog-icon">🏃</span>
+          <span class="elog-label">晨跑 30min · 8000 步</span>
+          <span class="elog-src self-src">自有 +5%</span>
+        </div>
+      </div>
+      <div class="elog-more">—— 下拉加载更早记录 ——</div>
+    </div>
+  </div>
+
+  <!-- ========== 回声 (ECHO) ========== -->
+  <div class="screen" id="sc-echo">
+    <div class="echo-header"><span class="echo-title">💬 回声</span></div>
+
+    <!-- Energy transfer message with accept/reject -->
+    <div class="msg-item unread" id="msg1">
+      <div class="msg-from">张小明 · 男友 · 🛡️ 守护神</div>
+      <div class="msg-body">守护神特权 ⚡ 免费传递了 8% 能量给你（不消耗自身）</div>
+      <div class="msg-time">19:30</div>
+      <span class="msg-tag emotion" id="msg1-tag">待处理 · 第1次接收</span>
+      <div class="msg-actions" id="msg1-actions">
+        <button class="msg-accept" onclick="acceptMsg('msg1')">🤝 接收</button>
+        <button class="msg-reject" onclick="rejectMsg('msg1')">✕ 婉拒</button>
+      </div>
+    </div>
+
+    <!-- Flower message (auto-accept) -->
+    <div class="msg-item unread" id="msg2">
+      <div class="msg-from">李小花 · 闺蜜 · 🤝 陪伴</div>
+      <div class="msg-body">给你发送了一朵花 💐「今天也在闪闪发光」</div>
+      <div class="msg-time">17:15</div>
+      <span class="msg-tag accepted" id="msg2-tag">已自动接收 · 被认可</span>
+    </div>
+
+    <!-- Read message -->
+    <div class="msg-item read" id="msg3">
+      <div class="msg-from">老爸 · 家人 · 🌸 欣赏</div>
+      <div class="msg-body">你的电量偏低… 发来问候 👋</div>
+      <div class="msg-time">昨天 20:05</div>
+      <span class="msg-tag accepted">已自动接收</span>
+    </div>
+  </div>
+
+  <!-- ========== 羁绊 (BOND) ========== -->
+  <div class="screen" id="sc-bond">
+    <div class="btab-bar">
+      <div class="btab active" onclick="swBond('mutual',this)">🤝 双向羁绊</div>
+      <div class="btab" onclick="swBond('quiet',this)">🌙 默默守护</div>
+    </div>
+    <div id="bond-mutual" class="blist">
+      <!-- Lv4 守护神 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#fef3c7)">
+        <div style="position:absolute;top:6px;right:10px;font-size:18px">🛡️</div>
+        <div class="bav" style="background:linear-gradient(135deg,#d97706,#f59e0b)">张</div>
+        <div class="binfo">
+          <div class="bnm">张小明 <span class="blevel lv4">守护神</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">伴侣 2.0×</span></div>
+          </div>
+          <div class="bst">🟢 精力充沛 · 累计 98 天 · 传递 53 次</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第1次 (+5%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" style="border-color:#d97706;color:#d97706" onclick="showToast('🛡️ 守护神免费传递！（今日1/1）')">⚡ 免费传</button>
+          <button class="bact flower" onclick="showToast('💐 已送花')">💐</button>
+        </div>
+      </div>
+
+      <!-- Lv3 陪伴 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">李</div>
+        <div class="binfo">
+          <div class="bnm">李小花 <span class="blevel lv3">陪伴</span>
+            <div class="btags"><span class="btag q">默默</span><span class="btag rel">密友 1.3×</span></div>
+          </div>
+          <div class="bst">🟡 电量偏低 · 累计 35 天 · 可查看周趋势</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg unused"></span></span> 第2次 (+4%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact energy-btn" onclick="openEnergyPopup()">⚡ 传递</button>
+        </div>
+      </div>
+
+      <!-- Lv2 欣赏 -->
+      <div class="bitem">
+        <div class="bav" style="background:linear-gradient(135deg,#10b981,#059669)">爸</div>
+        <div class="binfo">
+          <div class="bnm">老爸 <span class="blevel lv2">欣赏</span>
+            <div class="btags"><span class="btag pub">公开</span><span class="btag rel">家人 1.5×</span></div>
+          </div>
+          <div class="bst">🟢 状态良好 · 累计 12 天 · 已发送花/飞吻</div>
+          <div class="dim-indicator">今日接收: <span class="dim-bar"><span class="dim-seg used"></span><span class="dim-seg used"></span><span class="dim-seg used"></span></span> 第3次 (+3%)</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact flower" onclick="showToast('💐 已送花')">💐</button>
+          <button class="bact kiss" onclick="showToast('😘 已飞吻')">😘</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:#9ca3af;text-align:center;padding:4px">
+        💡 传递不限总次数 · 同一对象≤3次/天 · 衰减 5%→4%→3%→2%→1%→0.5%
+      </div>
+    </div>
+
+    <div id="bond-quiet" class="blist" style="display:none">
+      <!-- 默默守护：不展示对方能量状态，仅显示等级、天数、传递次数、交互按钮 -->
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#94a3b8,#64748b)">王</div>
+        <div class="binfo">
+          <div class="bnm">王阿姨 <span class="blevel lv1">关注</span>
+            <div class="btags"><span class="btag rel">前同事</span></div>
+          </div>
+          <div class="bst">默默关注 28 天 · 已传递 2 次 · 已慰问 5 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已默默问候')">默默慰问</button>
+        </div>
+      </div>
+      <div class="bitem" style="background:linear-gradient(135deg,#fff,#f8fafc)">
+        <div class="bav" style="background:linear-gradient(135deg,#cbd5e1,#94a3b8)">刘</div>
+        <div class="binfo">
+          <div class="bnm">刘老师 <span class="blevel lv2">欣赏</span>
+            <div class="btags"><span class="btag rel">导师</span></div>
+          </div>
+          <div class="bst">默默关注 56 天 · 已传递 8 次 · 已慰问 12 次</div>
+        </div>
+        <div class="bact-group">
+          <button class="bact" style="border-color:#6366f1;color:#6366f1" onclick="showToast('🌙 已默默慰问')">默默慰问</button>
+        </div>
+      </div>
+      <div style="text-align:center;padding:18px;color:#d1d5db;font-size:11px">
+        💡 默默守护：你看得到对方<br>对方不知道你在守望 · 最高 Lv.2<br>
+        <span style="color:#9ca3af">仅可见等级、关注时间、传递次数</span>
+      </div>
+    </div>
+
+    <div class="badd" onclick="showToast('📋 邀请链接已复制')">+ 建立新的羁绊</div>
+
+    <!-- Energy Transfer Popup -->
+    <div class="energy-popup" id="epopup">
+      <div class="ep-title">⚡ 传递能量给 李小花</div>
+      <div class="ep-info">羁绊等级：<span class="ep-hl">🤝 陪伴</span> · 传递效率 ×1.3 · 被传递方额外 +1%</div>
+      <div class="ep-info">你当前生命能源：<span class="ep-hl">82%</span> · 今日已向她传递 2 次 · 剩余 1 次</div>
+      <input type="range" class="ep-slider" min="0" max="30" value="10" step="5" oninput="updateEPSlider(this.value)">
+      <div class="ep-labels"><span>0%</span><span>5%</span><span>10%</span><span>20%</span><span>30%</span></div>
+      <div style="text-align:center;font-size:13px;color:#f97316;margin-bottom:8px">传递 <b id="epval">10%</b> 能量</div>
+      <div class="ep-dim" id="epdim">她将收到 <b>13%</b>（10% × 1.3 陪伴加成）· 本次接收衰减后 +3%</div>
+      <button class="ep-confirm" onclick="closeEP();checkWarmthUser()">确认传递</button>
+      <button class="ep-cancel" onclick="closeEP()">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== WARMTH POPUP ========== -->
+  <div class="warmth-popup" id="wpopup">
+    <div class="warmth-card">
+      <div class="wc-emoji">🔆</div>
+      <div class="wc-title">你把今天的温暖都送出去了</div>
+      <div class="wc-sub">你给 张小明、李小花、老爸 传递了能量<br>虽然自己只剩 7%，但你选择了分享 ✨</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:14px">现在感觉怎么样？</div>
+      <div class="wc-feel">
+        <button onclick="submitWarmth('happy')">😊 我很开心</button>
+        <button onclick="submitWarmth('tired')">😴 有点累</button>
+        <button onclick="submitWarmth('neutral')">🤷 没想那么多</button>
+      </div>
+      <button class="wc-close" onclick="closeWarmth()">知道了</button>
+    </div>
+  </div>
+
+  <!-- ========== RECORD NOW MODAL (tab-based) ========== -->
+  <div class="rn-overlay" id="rnOverlay">
+    <div class="rn-card">
+      <div class="rn-title">✍️ 记录此刻</div>
+      <!-- Tab bar -->
+      <div class="rntab-bar">
+        <button class="rntab active" id="rnTabNow" onclick="rnSwitchTab('now')">⚡ 此刻标注</button>
+        <button class="rntab" id="rnTabDay" onclick="rnSwitchTab('day')">🌙 今日总结</button>
+      </div>
+      <!-- Now panel -->
+      <div class="rn-panel active" id="rnPanelNow">
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:10px">🕘 此刻 · 现在</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😊</span><span class="n">元气满满</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😌</span><span class="n">平静放松</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">🥰</span><span class="n">幸福满足</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">🤩</span><span class="n">紧张期待</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😴</span><span class="n">疲惫乏力</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😟</span><span class="n">焦虑不安</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😢</span><span class="n">低落难过</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'now')"><span class="e">😤</span><span class="n">烦躁易怒</span></div>
+        </div>
+        <button class="m-submit" id="rnSubmitNow" onclick="rnSubmit('now')" disabled style="opacity:0.4">记录此刻</button>
+      </div>
+      <!-- Day panel -->
+      <div class="rn-panel" id="rnPanelDay">
+        <div style="font-size:36px;margin-bottom:8px">🌤️</div>
+        <div style="font-size:13px;font-weight:600;color:#1f2937;margin-bottom:4px">今天整体是 ______</div>
+        <div style="font-size:10px;color:#9ca3af;margin-bottom:10px">基于今天的心情记录</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😊</span><span class="n">元气满满</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😌</span><span class="n">平静放松</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">🥰</span><span class="n">幸福满足</span></div>
+          <div class="m-card" onclick="rnPickMood(this,'day')"><span class="e">😟</span><span class="n">焦虑不安</span></div>
+        </div>
+        <button class="m-submit" id="rnSubmitDay" onclick="rnSubmit('day')" disabled style="opacity:0.4">完成今日总结</button>
+      </div>
+      <button class="rn-close" onclick="closeRecordNow()">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== BOTTOM NAV (4 tabs) ========== -->
+  <div class="btm-nav">
+    <div class="ni" onclick="navTo('home',0)"><span class="ico">🔮</span><span>心汐</span></div>
+    <div class="ni" onclick="navTo('mood',1)"><span class="ico">💭</span><span>心情</span></div>
+    <div class="ni" onclick="navTo('echo',2)"><span class="ico">💬</span><span>回声</span></div>
+    <div class="ni" onclick="navTo('bond',3)"><span class="ico">💫</span><span>羁绊</span></div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ========== Onboarding — 2 steps, tab auto-advance on Step 2 ==========
+let obCurrent = 1
+let obAutoPicked = {s1count:0, s1need:5} // Step 1: 5 selections needed
+let obRolePicked = {work:false, fam:false}
+
+function pickAuto(el){
+  // Used in Step 2 only (micro-state) — auto-advances
+  let grid = el.parentElement
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+  setTimeout(()=>obAdvance(), 300)
+}
+
+function pickAuto2(el){
+  // Step 1 single-group picker: just highlight, count toward total
+  let grid = el.parentElement
+  // Deselect siblings in this group only
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+}
+
+function pickAuto3(el, group){
+  // Step 1 role dual-group picker
+  let grid = el.parentElement
+  grid.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'))
+  el.classList.add('selected')
+  if(group==='work') obRolePicked.work = true
+  if(group==='fam') obRolePicked.fam = true
+}
+
+function obAdvance(){
+  if(obCurrent >= 2) return
+  obCurrent++
+  obJump(obCurrent)
+}
+
+function obJump(n){
+  obCurrent = n
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'))
+  let step = document.getElementById('ob'+n)
+  if(step) step.classList.add('active')
+  document.querySelectorAll('#dots span').forEach((d,i)=>d.classList.toggle('done', i<n))
+}
+
+function finishOB(){
+  document.getElementById('onboard').classList.remove('active')
+  document.getElementById('dots').style.display='none'
+  document.getElementById('sc-home').classList.add('active')
+  navAct(0)
+  showToast('🎉 专属心情模型已建立 · 欢迎来到心汐 ✨')
+}
+
+function showRoleDetail(type){}
+
+// ========== Navigation (4 tabs) ==========
+function navTo(n,i){
+  ['home','mood','echo','bond'].forEach(s=>document.getElementById('sc-'+s).classList.remove('active'))
+  document.getElementById('sc-'+n).classList.add('active')
+  navAct(i)
+}
+function navAct(i){document.querySelectorAll('.ni').forEach((n,j)=>n.classList.toggle('active',j===i))}
+function toggleProfile(){document.getElementById('profile').classList.toggle('active')}
+
+// ========== Record Now Modal ==========
+function openRecordNow(){
+  document.getElementById('rnOverlay').classList.add('active')
+  rnSwitchTab('now')
+}
+function closeRecordNow(){
+  document.getElementById('rnOverlay').classList.remove('active')
+}
+let _rnPicked = {now:null, day:null}
+function rnSwitchTab(tab){
+  document.getElementById('rnPanelNow').classList.toggle('active', tab==='now')
+  document.getElementById('rnPanelDay').classList.toggle('active', tab==='day')
+  document.getElementById('rnTabNow').classList.toggle('active', tab==='now')
+  document.getElementById('rnTabDay').classList.toggle('active', tab==='day')
+}
+function rnPickMood(el, tab){
+  el.parentElement.querySelectorAll('.m-card').forEach(m=>m.classList.remove('selected'))
+  el.classList.add('selected')
+  _rnPicked[tab] = el.querySelector('.n').textContent
+  let submitBtn = document.getElementById(tab==='now' ? 'rnSubmitNow' : 'rnSubmitDay')
+  submitBtn.disabled = false
+  submitBtn.style.opacity = '1'
+}
+function rnSubmit(tab){
+  let mood = _rnPicked[tab]
+  if(!mood){showToast('请先选择一个心情');return}
+  closeRecordNow()
+  if(tab==='now') showToast('✅ '+mood+' · 已记录')
+  else showToast('🌙 今日总结：'+mood+' · 已保存')
+  _rnPicked = {now:null, day:null}
+  // Reset buttons
+  document.getElementById('rnSubmitNow').disabled = true
+  document.getElementById('rnSubmitNow').style.opacity = '0.4'
+  document.getElementById('rnSubmitDay').disabled = true
+  document.getElementById('rnSubmitDay').style.opacity = '0.4'
+}
+function startMoodNow(){
+  closeRecordNow()
+  swMoodModeInline('now')
+  navTo('mood',1)
+}
+
+function startMoodDay(){
+  closeRecordNow()
+  swMoodModeInline('day')
+  navTo('mood',1)
+}
+
+function swMoodModeInline(m){
+  document.getElementById('mood-now').style.display=m==='now'?'block':'none'
+  document.getElementById('mood-day').style.display=m==='day'?'block':'none'
+  document.querySelectorAll('.mmode').forEach((b,i)=>{
+    b.classList.toggle('active',(m==='now'&&i===0)||(m==='day'&&i===1))
+  })
+}
+
+// ========== Mood ==========
+function selMood(el){
+  el.parentElement.querySelectorAll('.m-card').forEach(m=>m.classList.remove('selected'))
+  el.classList.add('selected')
+}
+
+function swMoodMode(m,el){
+  document.getElementById('mood-now').style.display=m==='now'?'block':'none'
+  document.getElementById('mood-day').style.display=m==='day'?'block':'none'
+  document.querySelectorAll('.mmode').forEach(b=>b.classList.remove('active'))
+  el.classList.add('active')
+}
+
+// ========== Echo / Messages ==========
+function acceptMsg(id){
+  let tag=document.getElementById(id+'-tag')
+  let actions=document.getElementById(id+'-actions')
+  if(tag) tag.textContent='已接收 +8%'; tag.className='msg-tag accepted'
+  if(actions) actions.style.display='none'
+  let item=document.getElementById(id)
+  item.classList.remove('unread'); item.classList.add('read')
+  showToast('🤝 已接收能量传递')
+  updateMsgBadge()
+}
+
+function rejectMsg(id){
+  let tag=document.getElementById(id+'-tag')
+  let actions=document.getElementById(id+'-actions')
+  if(tag) tag.textContent='已婉拒'; tag.className='msg-tag rejected'
+  if(actions) actions.style.display='none'
+  let item=document.getElementById(id)
+  item.classList.remove('unread'); item.classList.add('read')
+  showToast('✕ 已婉拒能量传递')
+  updateMsgBadge()
+}
+
+function updateMsgBadge(){
+  let unread=document.querySelectorAll('#sc-echo .msg-item.unread').length
+  let badge=document.querySelector('.msg-badge')
+  badge.textContent=unread
+  if(unread===0) badge.style.display='none'
+  else badge.style.display='flex'
+}
+
+// ========== Bond ==========
+function swBond(t,el){
+  document.getElementById('bond-mutual').style.display=t==='mutual'?'flex':'none'
+  document.getElementById('bond-quiet').style.display=t==='quiet'?'flex':'none'
+  document.querySelectorAll('.btab').forEach(b=>b.classList.remove('active'))
+  el.classList.add('active')
+}
+
+function openEnergyPopup(){document.getElementById('epopup').classList.add('active')}
+function closeEP(){document.getElementById('epopup').classList.remove('active')}
+
+function updateEPSlider(v){
+  document.getElementById('epval').textContent=v+'%'
+  document.getElementById('epdim').innerHTML='她将收到 <b>'+(v*1.3).toFixed(0)+'%</b>（'+v+'% × 1.3 陪伴加成）· 本次接收衰减后 +3%'
+}
+
+function checkWarmthUser(){
+  let v=parseInt(document.getElementById('epval').textContent)
+  if(82-v<10) document.getElementById('wpopup').classList.add('active')
+  else showToast('⚡ 已传递 · 自身 -'+v+'%')
+}
+
+function submitWarmth(feel){
+  let msgs={happy:'😊 你的快乐来自分享！系统已记录：利他型快乐模式',tired:'😴 下次传递前会提醒「留一点给自己哦」',neutral:'🤷 系统已记录，将在月末总结中回顾'}
+  showToast(msgs[feel]);closeWarmth()
+}
+
+function closeWarmth(){document.getElementById('wpopup').classList.remove('active')}
+
+// ========== Toast ==========
+function showToast(m){
+  let t=document.getElementById('toast')
+  t.textContent=m;t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),2500)
+}
+
+// ========== Battery Toggle (FIXED - no more parentElement query bug) ==========
+let overflowMode=true
+document.getElementById('batwrap').onclick=function(){
+  overflowMode=!overflowMode
+  let b=document.getElementById('batwrap')
+  let fill=b.querySelector('.bat-fill')
+  let num=b.querySelector('.bat-num')
+  let unit=b.querySelector('.bat-unit')
+  let trend=b.querySelector('.trend')
+  let statusLine=document.getElementById('batStatusLine')
+  let srcTags=document.getElementById('srcTags')
+  if(overflowMode){
+    b.classList.add('bat-overflow')
+    fill.style.height='82%';num.textContent='82%';num.style.color='#8b5cf6'
+    unit.textContent='心汐 · 溢出状态 ✨'
+    trend.textContent='▲ 较昨日 +12% · 今天特别好';trend.className='trend up'
+    statusLine.textContent='🔮 溢出上限 95% — 今天状态爆棚！';statusLine.style.color='#8b5cf6'
+    srcTags.innerHTML='<span class="src-tag"><span class="src-dot self"></span>自有 38%</span><span class="src-tag"><span class="src-dot mark"></span>标注 32%</span><span class="src-tag"><span class="src-dot transfer"></span>传递 12%</span>'
+    document.getElementById('warn-low').classList.remove('show')
+  }else{
+    b.classList.remove('bat-overflow')
+    fill.style.height='18%';num.textContent='18%';num.style.color='#ef4444'
+    unit.textContent='心汐 · 预警状态 ⚠️'
+    trend.textContent='▼ 较昨日 -15% · 电量偏低';trend.className='trend down'
+    statusLine.textContent='⚠️ 接近预警线 20%';statusLine.style.color='#ef4444'
+    srcTags.innerHTML='<span class="src-tag"><span class="src-dot self"></span>自有 10%</span><span class="src-tag"><span class="src-dot mark"></span>标注 5%</span><span class="src-tag"><span class="src-dot transfer"></span>传递 3%</span>'
+    document.getElementById('warn-low').classList.add('show')
+    setTimeout(()=>document.getElementById('warn-low').classList.remove('show'),5000)
+  }
+}
+</script>
+</body>
+</html>

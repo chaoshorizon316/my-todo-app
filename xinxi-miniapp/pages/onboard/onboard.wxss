@@ -1,0 +1,218 @@
+/* ===== 引导页样式 ===== */
+
+.page {
+  min-height: 100vh;
+  background: var(--surface);
+  background-image: radial-gradient(circle at 15% 20%, rgba(177,204,197,0.12) 0%, transparent 60%),
+                    radial-gradient(circle at 85% 70%, rgba(177,204,197,0.08) 0%, transparent 50%);
+}
+
+/* ---- 顶部 ---- */
+.ob-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  position: sticky;
+  top: 0;
+  background: rgba(253,248,248,0.8);
+  background: rgba(253, 248, 248, 0.95);
+  z-index: 10;
+}
+.ob-brand {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.ob-logo { font-size: 32rpx; }
+.ob-name {
+  font-size: 28rpx;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+}
+.ob-step {
+  font-size: 22rpx;
+  color: var(--secondary);
+  letter-spacing: 0.08em;
+}
+
+/* ---- Body ---- */
+.ob-body {
+  padding: 0 40rpx;
+}
+.ob-intro {
+  text-align: center;
+  margin-bottom: 48rpx;
+}
+.ob-title {
+  font-size: 52rpx;
+  font-family: var(--font-display);
+  display: block;
+  margin-bottom: 8rpx;
+  letter-spacing: 0.04em;
+}
+.ob-desc {
+  font-size: 24rpx;
+  color: var(--secondary);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* ---- Section ---- */
+.ob-section {
+  margin-bottom: 36rpx;
+}
+.ob-section-title {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+.ob-section-title text {
+  font-size: 28rpx;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ob-divider {
+  flex: 1;
+  height: 1rpx;
+  background: var(--surface-container-high);
+}
+
+/* ---- Chips ---- */
+.ob-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+.ob-chip {
+  width: calc(50% - 6rpx);
+  padding: 20rpx 16rpx;
+  border-radius: 16rpx;
+  border: 1.5rpx solid rgba(196, 199, 199, 0.25);
+  background: var(--surface-container-lowest);
+  transition: all 0.3s ease;
+}
+.ob-chip.active {
+  border-color: var(--primary);
+  background: rgba(23, 24, 24, 0.03);
+}
+.ob-chip-label {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+.ob-chip-desc {
+  display: block;
+  font-size: 20rpx;
+  color: var(--secondary);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* small chips (emotion) */
+.ob-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+.ob-chip-sm {
+  padding: 12rpx 24rpx;
+  border-radius: 100rpx;
+  border: 1.5rpx solid rgba(196, 199, 199, 0.25);
+  background: var(--surface-container-lowest);
+  font-size: 24rpx;
+  transition: all 0.3s ease;
+}
+.ob-chip-sm.active {
+  border-color: var(--primary);
+  background: rgba(23, 24, 24, 0.03);
+  color: var(--primary);
+}
+
+/* role cards */
+.ob-role-row {
+  display: flex;
+  gap: 16rpx;
+}
+.ob-role-card {
+  flex: 1;
+  padding: 28rpx 20rpx;
+  border-radius: 20rpx;
+  border: 1.5rpx solid rgba(196, 199, 199, 0.25);
+  background: var(--surface-container-lowest);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.ob-role-card.active {
+  border-color: var(--primary);
+  background: rgba(23, 24, 24, 0.03);
+}
+.ob-role-icon { font-size: 40rpx; display: block; margin-bottom: 8rpx; }
+.ob-role-label { font-size: 26rpx; font-weight: 600; display: block; }
+.ob-role-desc { font-size: 20rpx; color: var(--secondary); opacity: 0.7; display: block; margin-top: 4rpx; }
+
+/* hope toggle */
+.ob-hope-toggle {
+  display: flex;
+  background: var(--surface-container);
+  border-radius: 100rpx;
+  padding: 6rpx;
+  max-width: 480rpx;
+  margin: 0 auto;
+}
+.ob-hope-opt {
+  flex: 1;
+  padding: 18rpx 0;
+  text-align: center;
+  font-size: 26rpx;
+  border-radius: 100rpx;
+  color: var(--secondary);
+  transition: all 0.4s ease;
+}
+.ob-hope-opt.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* mist line */
+.ob-mist {
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent 0%, rgba(196, 199, 199, 0.4) 50%, transparent 100%);
+  margin: 16rpx 0 32rpx;
+}
+
+/* ---- Footer ---- */
+.ob-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 32rpx 40rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+.ob-btn {
+  width: 100%;
+  max-width: 560rpx;
+  padding: 22rpx 0;
+  border-radius: 100rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: var(--surface-container-high);
+  color: var(--secondary);
+  border: none;
+  transition: all 0.4s ease;
+}
+.ob-btn::after { border: none; }
+.ob-btn.ready {
+  background: var(--primary);
+  color: #fff;
+}
+.ob-skip {
+  font-size: 24rpx;
+  color: var(--secondary);
+  opacity: 0.45;
+}

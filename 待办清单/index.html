@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简洁待办清单 | Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">
+                <i class="fas fa-check-circle text-blue-500 mr-3"></i>
+                简洁待办清单
+            </h1>
+            <p class="text-gray-600 text-lg">专注完成重要的事情，提高工作效率</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧：添加任务和统计 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 sticky top-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-plus-circle text-green-500 mr-2"></i>
+                        添加新任务
+                    </h2>
+
+                    <div class="mb-6">
+                        <div class="flex mb-4">
+                            <input
+                                type="text"
+                                id="taskInput"
+                                placeholder="输入任务内容，如：完成项目报告"
+                                class="flex-grow px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                autocomplete="off"
+                            >
+                            <button
+                                id="addTaskBtn"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-r-lg transition duration-200 font-medium"
+                            >
+                                <i class="fas fa-plus mr-2"></i>添加
+                            </button>
+                        </div>
+
+                        <!-- 任务高级选项 -->
+                        <div id="taskOptions" class="bg-gray-50 rounded-lg p-4 mb-4 transition-all duration-300">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- 分类选择 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        <i class="fas fa-folder mr-2 text-blue-500"></i>分类
+                                    </label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button type="button" class="category-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-category="personal" data-active="true">个人</button>
+                                        <button type="button" class="category-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-category="work">工作</button>
+                                        <button type="button" class="category-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-category="study">学习</button>
+                                        <button type="button" class="category-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-category="shopping">购物</button>
+                                        <button type="button" class="category-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-category="health">健康</button>
+                                    </div>
+                                </div>
+
+                                <!-- 优先级选择 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        <i class="fas fa-flag mr-2 text-red-500"></i>优先级
+                                    </label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button type="button" class="priority-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-priority="high">高</button>
+                                        <button type="button" class="priority-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-priority="medium" data-active="true">中</button>
+                                        <button type="button" class="priority-btn px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200" data-priority="low">低</button>
+                                    </div>
+                                </div>
+
+                                <!-- 截止日期 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        <i class="far fa-calendar-alt mr-2 text-green-500"></i>截止日期
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="dueDateInput"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                </div>
+
+                                <!-- 标签输入 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        <i class="fas fa-tag mr-2 text-purple-500"></i>标签（用逗号分隔）
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="tagsInput"
+                                        placeholder="工作, 项目, 重要"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- 备注 -->
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="far fa-sticky-note mr-2 text-yellow-500"></i>备注
+                                </label>
+                                <textarea
+                                    id="notesInput"
+                                    placeholder="任务备注或详细说明..."
+                                    rows="2"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 高级选项切换按钮 -->
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                                提示：按 Enter 键快速添加任务
+                            </div>
+                            <button
+                                id="toggleOptionsBtn"
+                                class="text-sm text-blue-500 hover:text-blue-700 font-medium transition duration-200"
+                            >
+                                <i class="fas fa-cog mr-1"></i>
+                                <span>高级选项</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 统计信息 -->
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-chart-bar text-purple-500 mr-2"></i>
+                            任务统计
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                <div class="text-2xl font-bold text-blue-600" id="totalTasks">0</div>
+                                <div class="text-sm text-blue-800">总任务</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg text-center">
+                                <div class="text-2xl font-bold text-green-600" id="completedTasks">0</div>
+                                <div class="text-sm text-green-800">已完成</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="border-t pt-6">
+                        <button
+                            id="clearCompletedBtn"
+                            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition duration-200 font-medium mb-3"
+                        >
+                            <i class="fas fa-trash-alt mr-2"></i>清空已完成任务
+                        </button>
+                        <button
+                            id="clearAllBtn"
+                            class="w-full bg-red-50 hover:bg-red-100 text-red-600 py-3 rounded-lg transition duration-200 font-medium"
+                        >
+                            <i class="fas fa-broom mr-2"></i>清空所有任务
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 使用说明 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                        使用说明
+                    </h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>输入任务内容，点击"添加"或按Enter键</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>点击任务文本标记为完成/未完成</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>点击删除按钮 <i class="fas fa-times text-red-500"></i> 删除任务</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>任务数据自动保存，刷新页面不会丢失</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 右侧：任务列表 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg p-6 h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-tasks text-blue-500 mr-3"></i>
+                            任务列表
+                        </h2>
+                        <div class="text-gray-500">
+                            <span id="filterStatus">全部任务</span>
+                        </div>
+                    </div>
+
+                    <!-- 搜索和筛选栏 -->
+                    <div class="mb-6 space-y-4">
+                        <!-- 搜索框 -->
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="搜索任务内容、标签或备注..."
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 高级筛选 -->
+                            <div class="relative">
+                                <button
+                                    id="filterToggleBtn"
+                                    class="w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition duration-200"
+                                >
+                                    <span class="font-medium text-gray-700">
+                                        <i class="fas fa-filter mr-2 text-blue-500"></i>
+                                        高级筛选
+                                    </span>
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </button>
+                                <div id="filterDropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
+                                    <div class="space-y-4">
+                                        <!-- 分类筛选 -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">分类</label>
+                                            <div class="space-y-2">
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="all" checked>
+                                                    <span>全部</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="personal">
+                                                    <span>个人</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="work">
+                                                    <span>工作</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="study">
+                                                    <span>学习</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="shopping">
+                                                    <span>购物</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="category-filter mr-2" value="health">
+                                                    <span>健康</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- 优先级筛选 -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">优先级</label>
+                                            <div class="space-y-2">
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="priority-filter mr-2" value="all" checked>
+                                                    <span>全部</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="priority-filter mr-2" value="high">
+                                                    <span>高优先级</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="priority-filter mr-2" value="medium">
+                                                    <span>中优先级</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="priority-filter mr-2" value="low">
+                                                    <span>低优先级</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- 截止日期筛选 -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">截止日期</label>
+                                            <div class="space-y-2">
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="dueDateFilter" class="due-date-filter mr-2" value="all" checked>
+                                                    <span>全部</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="dueDateFilter" class="due-date-filter mr-2" value="overdue">
+                                                    <span>已过期</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="dueDateFilter" class="due-date-filter mr-2" value="upcoming">
+                                                    <span>即将到期 (3天内)</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="dueDateFilter" class="due-date-filter mr-2" value="future">
+                                                    <span>未来</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="dueDateFilter" class="due-date-filter mr-2" value="none">
+                                                    <span>无截止日期</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 排序选择 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">排序方式</label>
+                                <select
+                                    id="sortSelect"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="createdAt-desc">最新创建</option>
+                                    <option value="createdAt-asc">最早创建</option>
+                                    <option value="dueDate-asc">截止日期 (近到远)</option>
+                                    <option value="dueDate-desc">截止日期 (远到近)</option>
+                                    <option value="priority-desc">优先级 (高到低)</option>
+                                    <option value="priority-asc">优先级 (低到高)</option>
+                                    <option value="text-asc">任务名称 (A-Z)</option>
+                                    <option value="text-desc">任务名称 (Z-A)</option>
+                                </select>
+                            </div>
+
+                            <!-- 视图切换 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">视图</label>
+                                <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+                                    <button
+                                        data-view="list"
+                                        class="view-toggle-btn flex-1 py-3 bg-blue-100 text-blue-700 font-medium transition duration-200"
+                                        data-active="true"
+                                    >
+                                        <i class="fas fa-list mr-2"></i>列表
+                                    </button>
+                                    <button
+                                        data-view="grid"
+                                        class="view-toggle-btn flex-1 py-3 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition duration-200"
+                                    >
+                                        <i class="fas fa-th-large mr-2"></i>网格
+                                    </button>
+                                    <button
+                                        data-view="compact"
+                                        class="view-toggle-btn flex-1 py-3 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition duration-200"
+                                    >
+                                        <i class="fas fa-compress-alt mr-2"></i>紧凑
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 筛选按钮 -->
+                        <div class="flex space-x-2">
+                            <button
+                                data-filter="all"
+                                class="filter-btn active bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition duration-200"
+                            >
+                                全部
+                            </button>
+                            <button
+                                data-filter="active"
+                                class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition duration-200"
+                            >
+                                进行中
+                            </button>
+                            <button
+                                data-filter="completed"
+                                class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition duration-200"
+                            >
+                                已完成
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 任务列表容器 -->
+                    <div id="tasksContainer" class="space-y-4">
+                        <!-- 空状态 -->
+                        <div id="emptyState" class="text-center py-12">
+                            <div class="text-gray-400 text-6xl mb-4">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-500 mb-2">还没有任务</h3>
+                            <p class="text-gray-400 mb-6">添加你的第一个待办事项，开始高效工作吧！</p>
+                            <button
+                                id="addExampleBtn"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 font-medium inline-flex items-center"
+                            >
+                                <i class="fas fa-magic mr-2"></i>添加示例任务
+                            </button>
+                        </div>
+
+                        <!-- 任务项会通过JS动态添加到这里 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="text-center mt-12 pt-8 border-t border-gray-200">
+            <p class="text-gray-500">
+                简洁待办清单 &copy; 2026 | 使用
+                <span class="text-blue-500 font-medium">HTML</span>,
+                <span class="text-blue-500 font-medium">Tailwind CSS</span> 和
+                <span class="text-blue-500 font-medium">JavaScript</span> 构建
+            </p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>

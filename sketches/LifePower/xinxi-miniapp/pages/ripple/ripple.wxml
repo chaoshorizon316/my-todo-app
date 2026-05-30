@@ -1,0 +1,18 @@
+<view class="page-ripple">
+  <view class="title">涟漪</view>
+  <view class="subtitle">你的心情轨迹</view>
+  <view class="mood-list">
+    <block wx:for="{{moods}}" wx:key="id">
+      <view class="mood-item">
+        <view class="mood-dot {{item.moodClass}}"></view>
+        <view class="mood-info">
+          <text class="mood-text">{{item.mood}}</text>
+          <text class="mood-time">{{item.time}}</text>
+        </view>
+      </view>
+    </block>
+    <view class="empty" wx:if="{{moods.length === 0}}">
+      还没有心情记录，去心湖投颗石子吧
+    </view>
+  </view>
+</view>

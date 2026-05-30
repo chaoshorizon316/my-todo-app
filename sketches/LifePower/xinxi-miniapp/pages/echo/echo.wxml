@@ -1,0 +1,22 @@
+<view class="page-echo">
+  <view class="title">回响</view>
+  <view class="subtitle">来自守望者的消息</view>
+  <view class="msg-list">
+    <block wx:for="{{messages}}" wx:key="id">
+      <view class="msg-card">
+        <view class="msg-from">{{item.fromUser.nickname}}</view>
+        <view class="msg-text">{{item.text}}</view>
+        <view class="msg-actions" wx:if="{{item.status === 'pending'}}">
+          <button class="btn-accept" bindtap="onAccept" data-id="{{item.id}}">接受</button>
+          <button class="btn-reject" bindtap="onReject" data-id="{{item.id}}">婉拒</button>
+        </view>
+        <view class="msg-status" wx:else>
+          {{item.status === 'accepted' ? '已回应' : '已婉拒'}}
+        </view>
+      </view>
+    </block>
+    <view class="empty" wx:if="{{messages.length === 0}}">
+      还没有回响，等待守望者的关心
+    </view>
+  </view>
+</view>

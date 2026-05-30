@@ -1,0 +1,56 @@
+<!-- 回响 · 对齐设计稿 -->
+<scroll-view scroll-y class="page" enhanced show-scrollbar="{{false}}">
+  <view class="header">
+    <text class="title">回响</text>
+    <text class="sub">彼岸传来的波纹</text>
+  </view>
+
+  <view class="msg-grid">
+    <block wx:for="{{messages}}" wx:key="id">
+      <!-- 第一条高亮 -->
+      <view wx:if="{{index===0 && item.status==='pending'}}" class="msg-card highlight">
+        <view class="msg-top">
+          <view class="msg-avatar">{{item.fromUser.nickname[0]}}</view>
+          <view class="msg-info">
+            <text class="msg-name">{{item.fromUser.nickname}}</text>
+            <text class="msg-time">{{item.timeStr}}</text>
+          </view>
+        </view>
+        <text class="msg-body">{{item.text}}</text>
+        <view class="msg-tag pending" wx:if="{{item.status==='pending'}}">待回应</view>
+        <view class="msg-tag accepted" wx:elif="{{item.status==='accepted'}}">已接纳</view>
+        <view class="msg-tag rejected" wx:elif="{{item.status==='rejected'}}">已散去</view>
+        <view class="msg-actions" wx:if="{{item.status==='pending'}}">
+          <button class="act-accept" data-id="{{item.id}}" bindtap="accept">接纳这份回响</button>
+          <button class="act-reject" data-id="{{item.id}}" bindtap="reject">让它散去</button>
+        </view>
+      </view>
+
+      <!-- 普通卡片 -->
+      <view wx:else class="msg-card {{item.status==='pending'?'unread':''}}">
+        <view class="msg-top">
+          <view class="msg-avatar small">{{item.fromUser.nickname[0]}}</view>
+          <view class="msg-info">
+            <text class="msg-name">{{item.fromUser.nickname}}</text>
+            <text class="msg-time">{{item.timeStr}}</text>
+          </view>
+        </view>
+        <text class="msg-body">{{item.text}}</text>
+        <view class="msg-tag pending" wx:if="{{item.status==='pending'}}">待回应</view>
+        <view class="msg-tag accepted" wx:elif="{{item.status==='accepted'}}">已自然接纳</view>
+        <view class="msg-tag rejected" wx:else>已散去</view>
+        <view class="msg-actions" wx:if="{{item.status==='pending'}}">
+          <button class="act-accept" data-id="{{item.id}}" bindtap="accept">接纳</button>
+          <button class="act-reject" data-id="{{item.id}}" bindtap="reject">散去</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{messages.length===0}}" class="empty-msg">
+    <text class="empty-icon">🫧</text>
+    <text>还没有收到回响</text>
+    <text class="empty-sub">当你的守望者回应时，这里会出现来自彼岸的波纹</text>
+  </view>
+  <view style="height:40rpx;"></view>
+</scroll-view>

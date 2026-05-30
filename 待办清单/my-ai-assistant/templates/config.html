@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置 - AI 智能助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #495057;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .models-list {
+            margin-top: 20px;
+        }
+
+        .model-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        .model-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-item.current {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .model-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #667eea;
+            color: white;
+        }
+
+        .model-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .small-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .add-model-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #e9ecef;
+            margin-top: 20px;
+        }
+
+        .add-model-form h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .model-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ 模型配置管理</h1>
+        
+        <div class="info">
+            <strong>提示：</strong> 你可以在这里管理多个大模型密钥，切换不同的模型。
+        </div>
+        
+        <div id="message" class="message" style="display: none;"></div>
+
+        <!-- 模型列表 -->
+        <div class="section">
+            <h2>📋 模型管理</h2>
+            <div id="modelsList" class="models-list">
+                <!-- 模型列表将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 当前模型配置 -->
+        <div class="section">
+            <h2>⚙️ 当前模型配置</h2>
+            <form id="configForm">
+                <div class="form-group">
+                    <label for="model">选择模型</label>
+                    <select id="model" name="model" required>
+                        <!-- 模型选项将通过 JavaScript 动态生成 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiKey">API 密钥</label>
+                    <input type="password" id="apiKey" name="apiKey" placeholder="sk-ant-..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiBase">API 基础 URL</label>
+                    <input type="text" id="apiBase" name="apiBase" value="https://api.anthropic.com/v1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="systemPrompt">系统提示</label>
+                    <textarea id="systemPrompt" name="systemPrompt" placeholder="你是一个智能编程助手...">你是一个智能编程助手，可以帮助用户完成各种编程任务。</textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">返回主界面</button>
+                    <button type="submit" class="btn btn-primary">保存配置</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 添加新模型 -->
+        <div class="section">
+            <h2>➕ 添加新模型</h2>
+            <div class="add-model-form">
+                <h3>新模型配置</h3>
+                <form id="addModelForm">
+                    <div class="form-group">
+                        <label for="newModelName">模型名称</label>
+                        <select id="newModelName" name="newModelName" required style="width: 100%; padding: 12px 16px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.2s;">
+                            <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                            <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                            <option value="claude-2.1">Claude 2.1</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="llama-3-70b-instruct">Llama 3 70B Instruct</option>
+                            <option value="llama-3-8b-instruct">Llama 3 8B Instruct</option>
+                            <option value="mixtral-8x7b-instruct">Mixtral 8x7B Instruct</option>
+                            <option value="deepseek-chat">DeepSeek Chat</option>
+                            <option value="deepseek-coder">DeepSeek Coder</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newApiKey">API 密钥</label>
+                        <input type="password" id="newApiKey" name="newApiKey" placeholder="sk-ant-..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newApiBase">API 基础 URL</label>
+                        <input type="text" id="newApiBase" name="newApiBase" value="https://api.anthropic.com/v1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newSystemPrompt">系统提示</label>
+                        <textarea id="newSystemPrompt" name="newSystemPrompt" placeholder="你是一个智能编程助手...">你是一个智能编程助手，可以帮助用户完成各种编程任务。</textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">添加模型</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = {
+            current_model: 'claude-3-sonnet-20240229',
+            models: {
+                'claude-3-sonnet-20240229': {
+                    api_key: '',
+                    api_base: 'https://api.anthropic.com/v1',
+                    system_prompt: '你是一个智能编程助手，可以帮助用户完成各种编程任务。'
+                }
+            }
+        };
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                currentConfig = data;
+                updateUI();
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+
+        // 更新 UI
+        function updateUI() {
+            updateModelsList();
+            updateConfigForm();
+        }
+
+        // 更新模型列表
+        function updateModelsList() {
+            const modelsList = document.getElementById('modelsList');
+            modelsList.innerHTML = '';
+
+            Object.keys(currentConfig.models).forEach(modelName => {
+                const modelConfig = currentConfig.models[modelName];
+                const isCurrent = modelName === currentConfig.current_model;
+
+                const modelItem = document.createElement('div');
+                modelItem.className = `model-item ${isCurrent ? 'current' : ''}`;
+
+                modelItem.innerHTML = `
+                    <div class="model-header">
+                        <div class="model-name">${modelName}</div>
+                        ${isCurrent ? '<div class="model-status">当前使用</div>' : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">
+                        API 密钥: ${modelConfig.api_key ? '已配置' : '未配置'}
+                    </div>
+                    <div class="model-actions">
+                        <button class="btn small-btn btn-secondary" onclick="switchModel('${modelName}')">切换</button>
+                        <button class="btn small-btn btn-danger" onclick="removeModel('${modelName}')">删除</button>
+                    </div>
+                `;
+
+                modelsList.appendChild(modelItem);
+            });
+        }
+
+        // 更新配置表单
+        function updateConfigForm() {
+            const modelSelect = document.getElementById('model');
+            modelSelect.innerHTML = '';
+
+            Object.keys(currentConfig.models).forEach(modelName => {
+                const option = document.createElement('option');
+                option.value = modelName;
+                option.textContent = modelName;
+                if (modelName === currentConfig.current_model) {
+                    option.selected = true;
+                }
+                modelSelect.appendChild(option);
+            });
+
+            const currentModelConfig = currentConfig.models[currentConfig.current_model];
+            document.getElementById('apiKey').value = currentModelConfig.api_key;
+            document.getElementById('apiBase').value = currentModelConfig.api_base;
+            document.getElementById('systemPrompt').value = currentModelConfig.system_prompt;
+        }
+
+        // 保存配置
+        document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const model = document.getElementById('model').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const apiBase = document.getElementById('apiBase').value;
+            const systemPrompt = document.getElementById('systemPrompt').value;
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        model: model,
+                        api_key: apiKey,
+                        api_base: apiBase,
+                        system_prompt: systemPrompt
+                    })
+                });
+
+                const data = await response.json();
+                showMessage(data.success ? 'success' : 'error', data.message || data.error);
+
+                if (data.success) {
+                    await loadConfig();
+                }
+            } catch (error) {
+                showMessage('error', '保存失败: ' + error.message);
+            }
+        });
+
+        // 添加新模型
+        document.getElementById('addModelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const modelName = document.getElementById('newModelName').value;
+            const apiKey = document.getElementById('newApiKey').value;
+            const apiBase = document.getElementById('newApiBase').value;
+            const systemPrompt = document.getElementById('newSystemPrompt').value;
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'add',
+                        model_name: modelName,
+                        api_key: apiKey,
+                        api_base: apiBase,
+                        system_prompt: systemPrompt
+                    })
+                });
+
+                const data = await response.json();
+                showMessage(data.success ? 'success' : 'error', data.message || data.error);
+
+                if (data.success) {
+                    // 清空表单
+                    document.getElementById('newModelName').value = '';
+                    document.getElementById('newApiKey').value = '';
+                    document.getElementById('newApiBase').value = 'https://api.anthropic.com/v1';
+                    document.getElementById('newSystemPrompt').value = '你是一个智能编程助手，可以帮助用户完成各种编程任务。';
+                    
+                    await loadConfig();
+                }
+            } catch (error) {
+                showMessage('error', '添加失败: ' + error.message);
+            }
+        });
+
+        // 切换模型
+        async function switchModel(modelName) {
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'switch',
+                        model_name: modelName
+                    })
+                });
+
+                const data = await response.json();
+                showMessage(data.success ? 'success' : 'error', data.message || data.error);
+
+                if (data.success) {
+                    await loadConfig();
+                }
+            } catch (error) {
+                showMessage('error', '切换失败: ' + error.message);
+            }
+        }
+
+        // 删除模型
+        async function removeModel(modelName) {
+            if (!confirm(`确定要删除模型 ${modelName} 吗？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'remove',
+                        model_name: modelName
+                    })
+                });
+
+                const data = await response.json();
+                showMessage(data.success ? 'success' : 'error', data.message || data.error);
+
+                if (data.success) {
+                    await loadConfig();
+                }
+            } catch (error) {
+                showMessage('error', '删除失败: ' + error.message);
+            }
+        }
+
+        // 显示消息
+        function showMessage(type, message) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 为新模型选择添加事件监听
+        document.getElementById('newModelName').addEventListener('change', function() {
+            const modelName = this.value;
+            const apiBaseInput = document.getElementById('newApiBase');
+            
+            // 根据模型类型设置默认 API 基础 URL
+            if (modelName.startsWith('claude')) {
+                apiBaseInput.value = 'https://api.anthropic.com/v1';
+            } else if (modelName.startsWith('gpt')) {
+                apiBaseInput.value = 'https://api.openai.com/v1';
+            } else if (modelName.startsWith('gemini')) {
+                apiBaseInput.value = 'https://generativelanguage.googleapis.com/v1';
+            } else if (modelName.startsWith('deepseek')) {
+                apiBaseInput.value = 'https://api.deepseek.com/v1';
+            }
+        });
+
+        // 页面加载时加载配置
+        document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+</body>
+</html>

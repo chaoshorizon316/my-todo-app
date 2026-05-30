@@ -1,0 +1,161 @@
+<!-- Profile 触发按钮 -->
+<view class="profile-fab" bindtap="openProfile">
+  <text class="ms-icon profile-fab-icon">person</text>
+</view>
+
+<!-- 心湖 -->
+<scroll-view scroll-y class="page" enhanced show-scrollbar="{{false}}">
+  <!-- 状态圆点 -->
+  <view class="dots-bar">
+    <view class="dot {{currentState==='mirror'?'active':''}}" data-state="mirror" bindtap="switchState"></view>
+    <view class="dot {{currentState==='breeze'?'active':''}}" data-state="breeze" bindtap="switchState"></view>
+    <view class="dot {{currentState==='ripples'?'active':''}}" data-state="ripples" bindtap="switchState"></view>
+    <view class="dot {{currentState==='storm'?'active':''}}" data-state="storm" bindtap="switchState"></view>
+    <text class="dot-label">{{stateText}}</text>
+  </view>
+
+  <!-- 湖面（纯 CSS 渐变 + 涟漪环） -->
+  <view class="lake-wrap">
+    <view class="lake-circle lake--{{currentState}}">
+      <view class="lake-water"></view>
+      <view class="lake-ripple r1"></view>
+      <view class="lake-ripple r2"></view>
+      <view class="lake-ripple r3"></view>
+      <view class="lake-glow"></view>
+    </view>
+  </view>
+
+  <!-- 状态文字 -->
+  <view class="state-text">
+    <text class="state-title">{{stateText}}</text>
+    <view class="zen-divider"></view>
+    <text class="state-sub">{{stateSub}}</text>
+  </view>
+
+  <!-- 按钮 -->
+  <view class="btn-group">
+    <button class="stone-btn" bindtap="throwStone">
+      <text class="btn-icon">💧</text>
+      <text>投一颗石子</text>
+    </button>
+    <view class="btn-row">
+      <button class="ghost-btn" bindtap="openRecord">✎ 记录此刻</button>
+      <button class="ghost-btn" bindtap="goRipple">◉ 查看涟漪</button>
+    </view>
+    <text class="echo-hint" wx:if="{{echoCount > 0}}">有 {{echoCount}} 人听见你的回响</text>
+    <text class="echo-hint" wx:else>湖面静谧，静待回响</text>
+  </view>
+
+  <!-- 映照卡片 -->
+  <view class="insight-card" wx:if="{{insight}}">
+    <text class="insight-label">今日湖面映照</text>
+    <text class="insight-text">「{{insight}}」</text>
+    <text class="insight-footer">湖面映照着你的状态</text>
+  </view>
+
+  <!-- 波澜预警 -->
+  <view class="warn-card" wx:if="{{showWarn}}">
+    <text class="warn-title">湖面波澜预警</text>
+    <text class="warn-desc">你的心湖波动较大，需要平静一下吗？</text>
+    <view class="warn-actions">
+      <button class="warn-btn" bindtap="openRecord">投入石子</button>
+    </view>
+  </view>
+
+  <view class="trend-link" bindtap="goRipple">查看涟漪趋势 →</view>
+  <view style="height:40rpx;"></view>
+</scroll-view>
+
+<!-- 记录弹窗 -->
+<view class="modal {{showRecord?'show':''}}" catchtap="closeRecord">
+  <view class="modal-card" catchtap="noop">
+    <text class="modal-title">投一颗石子</text>
+
+    <view class="modal-tabs">
+      <view class="modal-tab {{recordTab==='now'?'active':''}}" data-tab="now" bindtap="switchTab">⚡ 此刻的石子</view>
+      <view class="modal-tab {{recordTab==='day'?'active':''}}" data-tab="day" bindtap="switchTab">🌙 今日湖面</view>
+    </view>
+
+    <!-- 此刻 -->
+    <view wx:if="{{recordTab==='now'}}" class="modal-body">
+      <text class="modal-sub">此刻的心境如何？</text>
+      <view class="mood-grid">
+        <view class="mood-chip {{pickedMood==='开心'?'selected':''}}" data-mood="开心" bindtap="pickMood">
+          <text class="ms-icon mood-ms">sentiment_very_satisfied</text>
+          <text>开心</text>
+        </view>
+        <view class="mood-chip {{pickedMood==='平静'?'selected':''}}" data-mood="平静" bindtap="pickMood">
+          <text class="ms-icon mood-ms">self_care</text>
+          <text>平静</text>
+        </view>
+        <view class="mood-chip {{pickedMood==='疲惫'?'selected':''}}" data-mood="疲惫" bindtap="pickMood">
+          <text class="ms-icon mood-ms">bedtime</text>
+          <text>疲惫</text>
+        </view>
+        <view class="mood-chip {{pickedMood==='焦虑'?'selected':''}}" data-mood="焦虑" bindtap="pickMood">
+          <text class="ms-icon mood-ms">waves</text>
+          <text>焦虑</text>
+        </view>
+        <view class="mood-chip {{pickedMood==='低落'?'selected':''}}" data-mood="低落" bindtap="pickMood">
+          <text class="ms-icon mood-ms">water_drop</text>
+          <text>低落</text>
+        </view>
+        <view class="mood-chip {{pickedMood==='充满活力'?'selected':''}}" data-mood="充满活力" bindtap="pickMood">
+          <text class="ms-icon mood-ms">bolt</text>
+          <text>充满活力</text>
+        </view>
+      </view>
+      <view class="note-area">
+        <textarea class="note-input" placeholder="将思绪化作石子，投向湖心…" value="{{note}}" bindinput="onNoteInput" maxlength="50" auto-height />
+        <text class="note-count">{{note.length}}/50</text>
+      </view>
+    </view>
+
+    <!-- 今日 -->
+    <view wx:if="{{recordTab==='day'}}" class="modal-body">
+      <view class="day-head">
+        <text class="day-icon">🪷</text>
+        <text class="day-title">今天湖面整体是 ______</text>
+        <text class="day-sub">基于今天的石子投入</text>
+      </view>
+      <view class="day-grid">
+        <view class="day-chip {{pickedMood==='平静放松'?'selected':''}}" data-mood="平静放松" bindtap="pickMood"><text>平静放松</text></view>
+        <view class="day-chip {{pickedMood==='略有波动'?'selected':''}}" data-mood="略有波动" bindtap="pickMood"><text>略有波动</text></view>
+        <view class="day-chip {{pickedMood==='期待兴奋'?'selected':''}}" data-mood="期待兴奋" bindtap="pickMood"><text>期待兴奋</text></view>
+        <view class="day-chip {{pickedMood==='焦虑不安'?'selected':''}}" data-mood="焦虑不安" bindtap="pickMood"><text>焦虑不安</text></view>
+      </view>
+    </view>
+
+    <button class="submit-btn {{pickedMood?'active':''}}" bindtap="submit" disabled="{{!pickedMood}}">
+      {{recordTab==='now'?'投入石子':'完成今日凝望'}}
+    </button>
+    <view class="close-link" bindtap="closeRecord">取消</view>
+  </view>
+</view>
+
+<!-- Toast -->
+<view class="toast {{showToast?'show':''}}">{{toastMsg}}</view>
+
+<!-- Profile 遮罩 -->
+<view class="profile-overlay {{showProfile?'show':''}}" catchtap="closeProfile"></view>
+
+<!-- Profile 侧滑面板 -->
+<view class="profile-panel {{showProfile?'active':''}}">
+  <view class="profile-head">
+    <text class="profile-title">{{profileName}}</text>
+    <text class="ms-icon profile-close" bindtap="closeProfile">close</text>
+  </view>
+  <view class="profile-tags-row">
+    <text class="profile-tag">{{profileMbti}}</text>
+    <text class="profile-tag">{{profileRelation}}</text>
+    <text class="profile-tag">{{profileRole}}</text>
+    <text class="profile-tag">{{profileHope}}</text>
+  </view>
+  <view class="profile-meta">
+    <view class="profile-row"><text class="meta-label">湖面节奏</text><text class="meta-value">{{profileRhythm}}</text></view>
+    <view class="profile-row"><text class="meta-label">情绪敏感度</text><text class="meta-value">{{profileSensitivity}}</text></view>
+    <view class="profile-row"><text class="meta-label">涟漪来源</text><text class="meta-value">{{profileSource}}</text></view>
+    <view class="profile-row"><text class="meta-label">宿缘</text><text class="meta-value">{{profileBonds}}</text></view>
+    <view class="profile-row"><text class="meta-label">获得涟漪</text><text class="meta-value accent">{{profileEchoGain}}</text></view>
+  </view>
+</view>

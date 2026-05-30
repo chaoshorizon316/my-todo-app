@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心汐 · 晨雾湖面</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@200;300;400&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #dce6f0 0%, #eef3f7 50%, #f8fafc 100%);
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  }
+
+  .phone {
+    width: 390px; height: 844px;
+    background: linear-gradient(180deg, #e8f0f8 0%, #f0f4f9 40%, #f5f8fb 100%);
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.04), 0 0 120px rgba(160,190,210,0.2), 0 30px 80px rgba(0,0,0,0.08);
+  }
+
+  /* Content */
+  .content {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    height: 100%; padding: 0 32px;
+  }
+
+  .status-bar { height: 54px; }
+
+  /* Header */
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0 24px;
+  }
+
+  .header-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px; font-weight: 300;
+    color: rgba(60,80,100,0.75);
+    letter-spacing: 0.15em;
+  }
+
+  .header-subtitle {
+    font-size: 12px; font-weight: 200;
+    color: rgba(120,145,170,0.4);
+    letter-spacing: 0.2em;
+    margin-top: 2px;
+  }
+
+  .header-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(200,215,230,0.5), rgba(160,180,200,0.3));
+    border: 1px solid rgba(160,180,200,0.2);
+  }
+
+  /* Lake area */
+  .lake-container {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative;
+  }
+
+  .lake {
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    position: relative;
+    background: radial-gradient(ellipse at 50% 50%,
+      rgba(210,225,240,0.4) 0%,
+      rgba(190,210,230,0.5) 25%,
+      rgba(180,200,225,0.55) 50%,
+      rgba(200,215,235,0.4) 75%,
+      rgba(215,225,238,0.3) 100%
+    );
+    box-shadow:
+      0 0 100px rgba(180,200,220,0.2),
+      inset 0 0 80px rgba(220,235,248,0.5);
+    overflow: hidden;
+  }
+
+  /* Mist layers */
+  .mist {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(240,245,252,0.7), transparent);
+    animation: mistDrift var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+    filter: blur(var(--blur));
+  }
+
+  @keyframes mistDrift {
+    0%, 100% { transform: translate(var(--x1), var(--y1)) scale(1); opacity: 0.3; }
+    25% { transform: translate(var(--x2), var(--y2)) scale(1.05); opacity: 0.5; }
+    50% { transform: translate(var(--x3), var(--y3)) scale(1); opacity: 0.35; }
+    75% { transform: translate(var(--x4), var(--y4)) scale(0.95); opacity: 0.45; }
+  }
+
+  /* Water texture lines */
+  .water-line {
+    position: absolute;
+    width: 100%; height: 0.5px;
+    background: linear-gradient(90deg, transparent, rgba(160,180,200,0.1), transparent);
+    left: 0;
+    animation: waterRipple var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+
+  @keyframes waterRipple {
+    0%, 100% { opacity: 0.15; transform: scaleY(1); }
+    50% { opacity: 0.35; transform: scaleY(1.5); }
+  }
+
+  /* Subtle center */
+  .lake-center {
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(200,215,230,0.2) 0%,
+      rgba(190,205,225,0.1) 50%,
+      transparent 100%
+    );
+    animation: centerBreathe 8s ease-in-out infinite;
+  }
+
+  @keyframes centerBreathe {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+  }
+
+  /* Tiny ripple rings */
+  .ripple-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-radius: 50%;
+    border: 0.5px solid rgba(160,180,200,0.1);
+    transform: translate(-50%, -50%);
+    animation: rippleOut var(--dur) ease-out infinite;
+    animation-delay: var(--delay);
+  }
+
+  @keyframes rippleOut {
+    0% { width: 0; height: 0; opacity: 0.3; }
+    100% { width: 300px; height: 300px; opacity: 0; }
+  }
+
+  /* Status text */
+  .status-text {
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  .status-line {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px; font-weight: 300;
+    color: rgba(100,125,150,0.5);
+    letter-spacing: 0.12em;
+    line-height: 2;
+  }
+
+  .status-count {
+    color: rgba(80,105,130,0.65);
+    font-weight: 400;
+  }
+
+  /* Bottom area */
+  .bottom-area {
+    padding-bottom: 100px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .throw-btn {
+    padding: 14px 48px;
+    border-radius: 28px;
+    background: rgba(190,210,230,0.25);
+    border: 1px solid rgba(160,185,210,0.2);
+    color: rgba(80,105,130,0.7);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 15px; font-weight: 300;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.8s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .throw-btn:hover {
+    background: rgba(190,210,230,0.4);
+    border-color: rgba(140,170,200,0.3);
+    color: rgba(60,85,110,0.85);
+    box-shadow: 0 4px 20px rgba(140,170,200,0.15);
+  }
+
+  /* Bottom Tab Bar */
+  .tab-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 84px;
+    background: linear-gradient(to top, rgba(235,242,250,0.95) 0%, rgba(235,242,250,0.7) 60%, transparent 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex; align-items: flex-start;
+    padding: 12px 16px 20px;
+  }
+
+  .tab {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+  }
+
+  .tab-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(140,165,190,0.25);
+    margin: 8px auto 0;
+    transition: all 0.4s ease;
+  }
+
+  .tab.active .tab-dot {
+    background: rgba(100,130,160,0.5);
+    box-shadow: 0 0 8px rgba(100,130,160,0.15);
+  }
+
+  .tab-label {
+    font-size: 10px; font-weight: 300;
+    color: rgba(140,165,190,0.35);
+    letter-spacing: 0.1em;
+    transition: all 0.4s ease;
+  }
+
+  .tab.active .tab-label {
+    color: rgba(80,110,140,0.6);
+  }
+
+  /* Light vignette */
+  .vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 50% 60%, transparent 50%, rgba(220,230,240,0.3) 100%);
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="vignette"></div>
+
+  <div class="content">
+    <div class="status-bar"></div>
+
+    <div class="header">
+      <div>
+        <div class="header-title">心湖</div>
+        <div class="header-subtitle">SHINKO</div>
+      </div>
+      <div class="header-avatar"></div>
+    </div>
+
+    <div class="lake-container">
+      <div class="lake">
+        <!-- Mist blobs -->
+        <div class="mist" style="--dur:12s;--delay:0s;--blur:30px;top:10%;left:15%;width:120px;height:80px;--x1:0;--y1:0;--x2:15px;--y2:-10px;--x3:5px;--y3:5px;--x4:-10px;--y4:-5px;"></div>
+        <div class="mist" style="--dur:14s;--delay:3s;--blur:35px;top:25%;left:50%;width:100px;height:70px;--x1:0;--y1:0;--x2:-12px;--y2:8px;--x3:10px;--y3:-5px;--x4:5px;--y4:10px;"></div>
+        <div class="mist" style="--dur:13s;--delay:6s;--blur:28px;top:40%;left:30%;width:130px;height:90px;--x1:0;--y1:0;--x2:8px;--y2:-8px;--x3:-8px;--y3:5px;--x4:-5px;--y4:-3px;"></div>
+        <div class="mist" style="--dur:15s;--delay:2s;--blur:32px;top:55%;left:55%;width:110px;height:75px;--x1:0;--y1:0;--x2:-10px;--y2:-5px;--x3:5px;--y3:-10px;--x4:8px;--y4:8px;"></div>
+        <div class="mist" style="--dur:11s;--delay:8s;--blur:25px;top:15%;left:70%;width:90px;height:60px;--x1:0;--y1:0;--x2:10px;--y2:5px;--x3:-5px;--y3:-8px;--x4:-8px;--y4:3px;"></div>
+
+        <!-- Water lines -->
+        <div class="water-line" style="top:20%;--dur:6s;--delay:0s;"></div>
+        <div class="water-line" style="top:35%;--dur:7s;--delay:1.5s;"></div>
+        <div class="water-line" style="top:50%;--dur:6.5s;--delay:3s;"></div>
+        <div class="water-line" style="top:65%;--dur:7.5s;--delay:4.5s;"></div>
+        <div class="water-line" style="top:78%;--dur:6.8s;--delay:2s;"></div>
+
+        <!-- Ripple rings -->
+        <div class="ripple-ring" style="--dur:10s;--delay:0s;"></div>
+        <div class="ripple-ring" style="--dur:10s;--delay:2.5s;"></div>
+        <div class="ripple-ring" style="--dur:10s;--delay:5s;"></div>
+        <div class="ripple-ring" style="--dur:10s;--delay:7.5s;"></div>
+
+        <div class="lake-center"></div>
+      </div>
+
+      <div class="status-text">
+        <div class="status-line">清晨雾气未散</div>
+        <div class="status-line">有 <span class="status-count">零</span> 人听见你的回响</div>
+      </div>
+
+      <div class="bottom-area" style="margin-top:36px;">
+        <button class="throw-btn">投一颗石子</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active">
+      <div class="tab-dot"></div>
+      <span class="tab-label">心湖</span>
+    </div>
+    <div class="tab">
+      <div class="tab-dot"></div>
+      <span class="tab-label">涟漪</span>
+    </div>
+    <div class="tab">
+      <div class="tab-dot"></div>
+      <span class="tab-label">回响</span>
+    </div>
+    <div class="tab">
+      <div class="tab-dot"></div>
+      <span class="tab-label">宿缘</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

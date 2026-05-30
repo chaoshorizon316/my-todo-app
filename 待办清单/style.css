@@ -1,0 +1,298 @@
+/* 简洁待办清单 - 自定义样式 */
+
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 任务项动画 */
+.task-item {
+    animation: fadeInUp 0.3s ease-out;
+    transition: all 0.2s ease;
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 完成状态过渡 */
+.task-content {
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+/* 按钮点击效果 */
+button:active {
+    transform: scale(0.98);
+}
+
+/* 输入框焦点效果增强 */
+input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 加载动画 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 空状态动画 */
+#emptyState {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 完成按钮动画 */
+.complete-btn {
+    transition: all 0.2s ease;
+}
+
+.complete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 删除按钮动画 */
+.delete-btn {
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 筛选按钮激活状态 */
+.filter-btn.active {
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* 统计卡片动画 */
+#totalTasks, #completedTasks {
+    transition: all 0.3s ease;
+}
+
+/* 通知动画 */
+.notification {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 分类和优先级徽章样式 */
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.category-personal { background-color: #dbeafe; color: #1e40af; }
+.category-work { background-color: #fce7f3; color: #9d174d; }
+.category-study { background-color: #fef3c7; color: #92400e; }
+.category-shopping { background-color: #dcfce7; color: #166534; }
+.category-health { background-color: #f0f9ff; color: #0c4a6e; }
+
+.priority-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.25rem;
+}
+
+.priority-high { background-color: #ef4444; }
+.priority-medium { background-color: #f59e0b; }
+.priority-low { background-color: #10b981; }
+
+/* 标签样式 */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.tag-badge:last-child {
+    margin-right: 0;
+}
+
+/* 截止日期样式 */
+.due-date {
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.due-date.overdue {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.due-date.upcoming {
+    color: #f59e0b;
+}
+
+.due-date.future {
+    color: #10b981;
+}
+
+/* 高级选项区域动画 */
+#taskOptions {
+    transition: all 0.3s ease;
+}
+
+#taskOptions.hidden {
+    display: none;
+}
+
+/* 筛选下拉框 */
+#filterDropdown {
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+}
+
+/* 视图切换按钮 */
+.view-toggle-btn {
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn:not(:last-child) {
+    border-right: 1px solid #e5e7eb;
+}
+
+/* 网格视图任务项 */
+.grid-view .task-item {
+    height: 100%;
+}
+
+.compact-view .task-item {
+    padding: 0.75rem;
+}
+
+.compact-view .task-item .category-badge,
+.compact-view .task-item .priority-indicator,
+.compact-view .task-item .due-date,
+.compact-view .task-item .tag-badge {
+    display: none;
+}
+
+.compact-view .task-item .task-content {
+    margin-bottom: 0;
+}
+
+/* 搜索框焦点效果 */
+#searchInput:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 下拉框复选框样式 */
+input[type="checkbox"], input[type="radio"] {
+    accent-color: #3b82f6;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    #filterDropdown {
+        position: static;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .compact-view .task-item {
+        padding: 0.5rem;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .task-item {
+        border: 1px solid #ddd !important;
+        margin-bottom: 10px !important;
+    }
+}

@@ -1,0 +1,49 @@
+<!-- 涟漪 · 时间序列柱状图 · 对齐 V10 设计稿 -->
+<scroll-view scroll-y class="page" enhanced show-scrollbar="{{false}}">
+  <view class="header">
+    <text class="title">涟漪</text>
+    <text class="sub">石子落入的痕迹</text>
+  </view>
+
+  <!-- 时间序列柱状图 (对齐 V10) -->
+  <view class="card chart-card" wx:if="{{timeSlots.length > 0}}">
+    <text class="section-label">涟漪趋势 · 今日波纹</text>
+    <view class="chart-bars time-chart">
+      <block wx:for="{{timeSlots}}" wx:key="time">
+        <view class="chart-col">
+          <view class="chart-bar-wrap" style="height:{{item.containerH}}rpx;">
+            <view class="chart-bar time-bar" style="height:{{item.pct}}%;background:{{item.color}};"></view>
+          </view>
+          <text class="chart-label">{{item.label}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="mist-line"></view>
+
+  <!-- 时间线 · 涟漪印记 -->
+  <view class="card">
+    <text class="section-label">涟漪印记 · 今日波纹</text>
+    <block wx:for="{{moods}}" wx:key="id">
+      <view class="tl-item">
+        <view class="tl-ring" style="border-color:{{item.dotColor}};">
+          <text class="ms-icon tl-ring-icon">{{item.moodIconMS}}</text>
+        </view>
+        <view class="tl-content">
+          <text class="tl-mood">{{item.mood}}</text>
+          <text class="tl-note" wx:if="{{item.note}}">{{item.note}}</text>
+        </view>
+        <text class="tl-time">{{item.timeStr}}</text>
+      </view>
+    </block>
+    <view wx:if="{{moods.length===0}}" class="empty-msg">
+      <text class="empty-icon">🫧</text>
+      <text>还没有投下石子</text>
+      <text class="empty-sub">在「心湖」投下第一颗石子，这里会出现今天的涟漪印记</text>
+    </view>
+  </view>
+
+  <view class="load-more" bindtap="loadMore" wx:if="{{hasMore}}">—— 加载更多 ——</view>
+  <view style="height:40rpx;"></view>
+</scroll-view>

@@ -1,0 +1,17 @@
+.page-echo { padding: 32rpx; }
+.title { font-size: 36rpx; font-weight: 600; }
+.subtitle { font-size: 26rpx; color: #999; margin-bottom: 32rpx; }
+
+.msg-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+.msg-from { font-size: 24rpx; color: #E8815B; margin-bottom: 8rpx; }
+.msg-text { font-size: 28rpx; margin-bottom: 16rpx; }
+.msg-actions { display: flex; gap: 16rpx; }
+.btn-accept { background: #E8815B; color: #fff; font-size: 24rpx; border-radius: 32rpx; padding: 12rpx 32rpx; border: none; }
+.btn-reject { background: #eee; color: #999; font-size: 24rpx; border-radius: 32rpx; padding: 12rpx 32rpx; border: none; }
+.msg-status { font-size: 22rpx; color: #ccc; }
+.empty { text-align: center; color: #999; padding: 80rpx 0; }

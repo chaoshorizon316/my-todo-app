@@ -1,0 +1,18 @@
+<view class="tab-bar">
+  <view class="tab-item {{selected===0?'active':''}}" data-index="0" data-path="/pages/lake/lake" bindtap="switchTab">
+    <text class="ms-icon">water_full</text>
+    <text class="tab-label">心湖</text>
+  </view>
+  <view class="tab-item {{selected===1?'active':''}}" data-index="1" data-path="/pages/ripple/ripple" bindtap="switchTab">
+    <text class="ms-icon">radio_button_checked</text>
+    <text class="tab-label">涟漪</text>
+  </view>
+  <view class="tab-item {{selected===2?'active':''}}" data-index="2" data-path="/pages/echo/echo" bindtap="switchTab">
+    <text class="ms-icon">hearing</text>
+    <text class="tab-label">回响</text>
+  </view>
+  <view class="tab-item {{selected===3?'active':''}}" data-index="3" data-path="/pages/bond/bond" bindtap="switchTab">
+    <text class="ms-icon">auto_awesome</text>
+    <text class="tab-label">宿缘</text>
+  </view>
+</view>

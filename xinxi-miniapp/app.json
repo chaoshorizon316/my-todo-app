@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/lake/lake",
+    "pages/ripple/ripple",
+    "pages/echo/echo",
+    "pages/bond/bond",
+    "pages/onboard/onboard"
+  ],
+  "lazyCodeLoading": "requiredComponents",
+  "window": {
+    "navigationBarTitleText": "心汐",
+    "navigationBarBackgroundColor": "#fdf8f8",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fdf8f8"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#171818",
+    "backgroundColor": "#fdf8f8",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/lake/lake", "text": "心湖" },
+      { "pagePath": "pages/ripple/ripple", "text": "涟漪" },
+      { "pagePath": "pages/echo/echo", "text": "回响" },
+      { "pagePath": "pages/bond/bond", "text": "宿缘" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

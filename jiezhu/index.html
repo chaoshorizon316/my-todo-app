@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接住 — 双端原型 v3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Noto Sans SC"','system-ui','sans-serif'],
+        serif: ['"Noto Serif SC"','Georgia','serif'],
+      },
+      colors: {
+        cream: '#FBF8F4',
+        warm: {50:'#FEFAF5',100:'#FDF3E4',200:'#F9E4C8',300:'#F0CD9E',400:'#E8B870',500:'#D4A04A',600:'#C8843C',700:'#A06835',800:'#7A4E2C',900:'#3D2C1E'},
+        sage: {50:'#F4F7F4',100:'#E6EDE7',200:'#CDDCD0',300:'#A8C4AD',400:'#7A9A7E',500:'#5C7D60',600:'#48644C'},
+        boy: {50:'#F0F4F8',100:'#DCE8F5',200:'#B8D0EB',400:'#6AA3D9',500:'#4A8ED6',600:'#3B7AC5',700:'#2D62A0'},
+        girl: {50:'#FDF5F7',100:'#FBEAF0',200:'#F7D4DF',400:'#ECA0B6',500:'#E8A0B4',600:'#D4849A',700:'#B06A7E'},
+        important: '#E0554A',
+      }
+    }
+  }
+}
+</script>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#E8E4DF}
+
+  .phone-frame{width:390px;min-width:390px;height:844px;background:#FBF8F4;border-radius:44px;border:3px solid #3D2C1E;overflow:hidden;box-shadow:0 20px 60px rgba(61,44,30,0.15);display:flex;flex-direction:column}
+  .phone-notch{height:48px;background:#3D2C1E;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+  .phone-notch .time{color:#FBF8F4;font-size:13px;font-weight:500}
+  .phone-content{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
+  .phone-content::-webkit-scrollbar{width:0}
+
+  .ipad-frame{width:768px;min-width:768px;height:900px;background:var(--child-bg,#FBF8F4);border-radius:24px;border:3px solid #3D2C1E;overflow:hidden;box-shadow:0 20px 60px rgba(61,44,30,0.15);display:flex;flex-direction:column}
+  .ipad-status{height:28px;background:var(--child-primary,#3D2C1E);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .ipad-status .time{color:#FBF8F4;font-size:12px}
+  .ipad-content{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
+  .ipad-content::-webkit-scrollbar{width:0}
+
+  .screen{display:none;position:absolute;top:0;left:0;right:0;min-height:100%}
+  .screen.active{display:block}
+
+  .dot-done{display:inline-block;width:10px;height:10px;border-radius:50%;background:#7A9A7E}
+  .dot-progress{display:inline-block;width:10px;height:10px;border-radius:50%;background:#D4A04A}
+  .dot-pending{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid #D1D5DB}
+
+  .tab-bar{display:flex;border-top:1px solid #E5E0DA;background:#FBF8F4;flex-shrink:0}
+  .tab-item{flex:1;text-align:center;padding:8px 0 12px;cursor:pointer;font-size:11px;color:#A0A0A0;transition:color 0.2s}
+  .tab-item.active{color:#C8843C}
+  .tab-item .tab-icon{font-size:20px;display:block;margin-bottom:2px}
+
+  .btn-primary{display:block;width:100%;padding:14px;text-align:center;background:#C8843C;color:#fff;border-radius:9999px;font-size:16px;font-weight:500;cursor:pointer;border:none;transition:background 0.2s}
+  .btn-primary:hover{background:#A06835}
+  .btn-secondary{display:block;width:100%;padding:14px;text-align:center;background:#FDF3E4;color:#C8843C;border-radius:9999px;font-size:16px;font-weight:500;cursor:pointer;border:1px solid #F9E4C8}
+
+  .btn-child-primary{display:block;width:100%;padding:14px;text-align:center;background:var(--child-primary,#C8843C);color:#fff;border-radius:9999px;font-size:16px;font-weight:500;cursor:pointer;border:none;transition:background 0.2s}
+  .btn-child-secondary{display:block;width:100%;padding:14px;text-align:center;background:var(--child-light,#FDF3E4);color:var(--child-primary,#C8843C);border-radius:9999px;font-size:16px;font-weight:500;cursor:pointer;border:1px solid var(--child-border,#F9E4C8)}
+
+  .task-card{background:#fff;border-radius:16px;padding:14px;margin:0 14px 8px;box-shadow:0 1px 3px rgba(61,44,30,0.06);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s}
+  .task-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(61,44,30,0.08)}
+  .task-card.done{opacity:0.6}
+  .task-card.child-card{border-left:3px solid var(--child-primary,#C8843C)}
+
+  .toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:#3D2C1E;color:#FBF8F4;padding:10px 24px;border-radius:9999px;font-size:14px;z-index:100;pointer-events:none;transition:opacity 0.3s}
+
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .sync-dot{animation:pulse 2s infinite}
+  @keyframes scanLine{0%{top:10%}100%{top:85%}}
+  .scan-line{position:absolute;left:10%;width:80%;height:2px;background:rgba(200,132,60,0.8);box-shadow:0 0 8px rgba(200,132,60,0.5);animation:scanLine 2s ease-in-out infinite alternate}
+
+  .timer-text{font-variant-numeric:tabular-nums;font-family:'SF Mono','Menlo',monospace}
+
+  /* Subject badges */
+  .badge-chn{background:#FDF3E4;color:#C8843C;font-size:11px;padding:2px 8px;border-radius:9999px;font-weight:500}
+  .badge-math{background:#E8F0FB;color:#4A8ED6;font-size:11px;padding:2px 8px;border-radius:9999px;font-weight:500}
+  .badge-eng{background:#E8F5EC;color:#5C9A6F;font-size:11px;padding:2px 8px;border-radius:9999px;font-weight:500}
+  .badge-important{background:#FDE8E6;color:#E0554A;font-size:11px;padding:2px 8px;border-radius:9999px;font-weight:600}
+
+  /* Calendar */
+  .cal-cell{width:14.28%;text-align:center;padding:6px 0;font-size:12px;cursor:pointer;border-radius:8px;transition:background 0.15s}
+  .cal-cell:hover{background:#FDF3E4}
+  .cal-cell.cal-all-done{background:#CDDCD0;color:#48644C;font-weight:600}
+  .cal-cell.cal-partial{background:#FDF3E4;color:#C8843C;font-weight:500}
+  .cal-cell.cal-none{color:#C0B8AE}
+  .cal-cell.today{box-shadow:inset 0 0 0 2px #C8843C;font-weight:700}
+
+  .input-area{background:#fff;border-radius:16px;border:1.5px solid #F9E4C8;padding:12px;margin:0 14px;transition:border-color 0.2s}
+  .input-area:focus-within{border-color:#C8843C;box-shadow:0 0 0 3px rgba(200,132,60,0.1)}
+
+  .landing-bg{background:linear-gradient(180deg,#FBF8F4 0%,#FDF3E4 100%)}
+  .landing-card{background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(61,44,30,0.06)}
+
+  /* Modal overlay */
+  .modal-overlay{position:absolute;inset:0;background:rgba(61,44,30,0.4);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+  .modal-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:60%;overflow-y:auto;box-shadow:0 -4px 20px rgba(61,44,30,0.1)}
+
+  /* Image in task */
+  .task-image{width:100%;border-radius:12px;margin-top:8px;max-height:160px;object-fit:cover}
+
+  /* TTS button */
+  .tts-btn{width:36px;height:36px;border-radius:50%;background:var(--child-light,#FDF3E4);color:var(--child-primary,#C8843C);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;border:none;transition:transform 0.15s;flex-shrink:0}
+  .tts-btn:hover{transform:scale(1.1)}
+  .tts-btn.playing{background:var(--child-primary,#C8843C);color:#fff;animation:pulse 1s infinite}
+
+  /* Section header */
+  .section-header{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;font-weight:600}
+</style>
+</head>
+<body class="flex gap-5 justify-center items-start p-5 min-h-screen">
+
+<!-- ============================================================ -->
+<!--  PARENT PHONE                                                  -->
+<!-- ============================================================ -->
+<div class="phone-frame" id="parentPhone">
+  <div class="phone-notch"><span class="time">17:45</span></div>
+  <div class="phone-content" id="parentContent">
+
+    <!-- P0: LANDING -->
+    <div class="screen active landing-bg" id="p0-landing">
+      <div class="flex flex-col items-center px-6 pt-16 text-center">
+        <div class="text-5xl mb-4">🤲</div>
+        <h1 class="text-2xl font-serif font-bold text-warm-900 mb-2">接住</h1>
+        <p class="text-sm text-warm-500 leading-relaxed max-w-xs">把家长从微信里"人肉拆任务"的劳动中解放出来，<br>让孩子看到的不再是指令，而是有理由的行动。</p>
+        <div class="landing-card w-full mt-8 text-left">
+          <div class="flex items-start gap-3 mb-3"><span class="text-xl">📋</span><div><div class="text-sm font-medium text-warm-800">智能拆解</div><div class="text-xs text-warm-400">粘贴微信群消息，AI 自动拆成任务卡片</div></div></div>
+          <div class="flex items-start gap-3 mb-3"><span class="text-xl">💬</span><div><div class="text-sm font-medium text-warm-800">每个任务都有"为什么"</div><div class="text-xs text-warm-400">孩子不只看到做什么，更知道为什么做</div></div></div>
+          <div class="flex items-start gap-3"><span class="text-xl">🔗</span><div><div class="text-sm font-medium text-warm-800">实时同步</div><div class="text-xs text-warm-400">孩子完成，家长即刻知道</div></div></div>
+        </div>
+        <button class="btn-primary mt-8" onclick="switchParent('p1-main')">进入</button>
+        <p class="text-xs text-warm-400 mt-4">首次使用？先绑定孩子的设备 →</p>
+      </div>
+    </div>
+
+    <!-- P1: MAIN TASK LIST (grouped by subject) -->
+    <div class="screen" id="p1-main">
+      <div class="px-5 pt-5 pb-2 flex items-center justify-between">
+        <h1 class="text-xl font-serif font-semibold text-warm-900">接住</h1>
+        <span class="text-xs bg-warm-100 text-warm-600 px-2 py-1 rounded-full font-medium">小宝的家</span>
+      </div>
+
+      <div class="input-area mx-4 mt-1 cursor-pointer" style="min-height:180px" onclick="switchParent('p2-preview')">
+        <textarea class="w-full h-[120px] text-sm text-warm-700 resize-none border-0 outline-none bg-transparent p-1" placeholder="粘贴微信群里的作业消息，或点击下方语音录入..." readonly></textarea>
+        <div class="flex items-center gap-2 mt-1"><span class="flex-1"></span>
+          <button class="flex items-center gap-1 bg-warm-600 text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-warm-700" onclick="event.stopPropagation();switchParent('p2-preview')">✨ 智能识别</button>
+          <button class="flex items-center gap-1 bg-warm-100 text-warm-600 text-xs px-4 py-2 rounded-full font-medium hover:bg-warm-200" onclick="event.stopPropagation();startVoiceInput()">🎤 语音</button>
+        </div>
+      </div>
+
+      <div class="px-4 pt-4 pb-1 flex items-center justify-between">
+        <span class="text-xs font-medium text-warm-500 uppercase tracking-wider">今日任务</span>
+        <span class="text-xs text-sage-500 font-medium" id="parentTodayProgress">1/6 已完成</span>
+      </div>
+      <div id="parentTaskList"></div>
+      <div id="parentWeekList"></div>
+      <div id="parentOngoingList"></div>
+      <div class="pb-4"></div>
+    </div>
+
+    <!-- P2: AI PREVIEW -->
+    <div class="screen" id="p2-preview">
+      <div class="px-5 pt-5 pb-3 flex items-center gap-3">
+        <button class="text-warm-600 text-lg leading-none cursor-pointer" onclick="switchParent('p1-main')">&larr;</button>
+        <h2 class="text-lg font-serif font-semibold text-warm-900">任务拆解预览</h2>
+      </div>
+      <div class="mx-4 mb-2 bg-warm-50 rounded-xl p-3 text-xs text-warm-600 leading-relaxed border border-warm-100">
+        <span class="font-medium text-warm-700">已识别原始消息：</span><br>
+        <span id="previewOriginalMsg">"语文：1.拼读课本79页双蓝线生字并口头组词 2.背诵日积月累二十四节气，明天随堂测试 3.书空田字格生字并组词造句 4.课外阅读。数学：做课后练习第3到第5题。本周摘抄2句好句。"</span>
+      </div>
+      <div class="flex gap-2 mx-4 mb-3">
+        <button class="flex items-center gap-1 text-xs text-warm-600 bg-warm-100 px-3 py-1.5 rounded-full font-medium hover:bg-warm-200" onclick="reAnalyze()">🔄 重新拆解</button>
+        <button class="flex items-center gap-1 text-xs text-sage-500 bg-sage-50 px-3 py-1.5 rounded-full font-medium hover:bg-sage-100" onclick="addNewTask()">＋ 新增任务</button>
+        <span class="flex-1"></span>
+        <span class="text-xs text-warm-500 font-medium self-center" id="previewTaskCount">已识别 6 个任务</span>
+      </div>
+
+      <div class="px-4 pb-1"><span class="text-xs font-medium text-warm-500">⏰ 今日必须完成</span></div>
+      <div id="previewTaskList"></div>
+
+      <div class="px-4 pt-3 pb-1"><span class="text-xs font-medium text-warm-400">⏳ 本周完成</span></div>
+      <div class="mx-4 mb-2 bg-white rounded-2xl p-4 border border-warm-100/60 shadow-sm">
+        <div class="flex items-start gap-2.5">
+          <input type="checkbox" class="mt-1 accent-warm-600" checked><div class="flex-1"><span class="badge-chn mb-1 inline-block">语文</span><div class="text-sm font-medium text-warm-800 mt-1">摘抄本周好句（2句）</div><div class="text-xs text-gray-400 mt-1 leading-relaxed">💬 好句子摘下来，以后写作文时脑子里就有东西了</div><div class="text-xs text-warm-400 mt-1">本周完成 · 语文老师</div></div>
+          <div class="flex flex-col gap-1.5"><button class="text-gray-300 hover:text-warm-600 text-sm">✏️</button><button class="text-gray-300 hover:text-red-400 text-sm">✕</button></div>
+        </div>
+      </div>
+
+      <div class="px-4 pt-3 pb-1"><span class="text-xs font-medium text-warm-400">📅 长期积累</span></div>
+      <div class="mx-4 mb-4 bg-white rounded-2xl p-4 border border-warm-100/60 shadow-sm">
+        <div class="flex items-start gap-2.5">
+          <input type="checkbox" class="mt-1 accent-warm-600" checked><div class="flex-1"><span class="badge-chn mb-1 inline-block">语文</span><div class="text-sm font-medium text-warm-800 mt-1">了解二十四节气的含义</div><div class="text-xs text-gray-400 mt-1 leading-relaxed">💬 二十四节气是古人观察自然总结出的智慧</div><div class="text-xs text-warm-400 mt-1">长期积累 · 语文老师</div></div>
+          <div class="flex flex-col gap-1.5"><button class="text-gray-300 hover:text-warm-600 text-sm">✏️</button><button class="text-gray-300 hover:text-red-400 text-sm">✕</button></div>
+        </div>
+      </div>
+
+      <div class="px-4 pb-4 flex gap-3">
+        <button class="btn-secondary flex-1 text-sm" onclick="switchParent('p1-main')">返回修改</button>
+        <button class="btn-primary flex-1 text-sm" onclick="confirmSend()">确认并发送</button>
+      </div>
+    </div>
+
+    <!-- P2b: SCAN -->
+    <div class="screen" id="p2b-scan">
+      <div class="flex flex-col items-center px-6 pt-8">
+        <button class="self-start text-warm-600 text-lg mb-4" onclick="switchParent('p5-me')">&larr; 返回</button>
+        <h2 class="text-lg font-serif font-semibold text-warm-900 mb-6">扫描孩子设备的二维码</h2>
+        <div class="relative w-64 h-64 bg-gray-900 rounded-3xl overflow-hidden mb-4"><div class="absolute inset-0 flex items-center justify-center"><div class="w-48 h-48 border-2 border-white/60 rounded-2xl relative"><div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-warm-500 rounded-tl"></div><div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-warm-500 rounded-tr"></div><div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-warm-500 rounded-bl"></div><div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-warm-500 rounded-br"></div><div class="scan-line"></div></div></div></div>
+        <p class="text-sm text-warm-500 mb-6">将二维码放入框内，自动识别</p>
+        <div class="flex gap-3 w-full max-w-xs"><button class="btn-secondary flex-1 text-sm" onclick="switchParent('p5-me')">取消</button><button class="btn-primary flex-1 text-sm" onclick="simulateScanParent()">手动输入绑定码</button></div>
+        <p class="text-xs text-warm-400 mt-8 text-center max-w-xs">打开孩子设备上的「接住」，<br>在首页右上角找到二维码图标，让孩子出示二维码</p>
+      </div>
+    </div>
+
+    <!-- P4: FOOTPRINTS WITH CALENDAR (3-state + task history) -->
+    <div class="screen" id="p4-footprints">
+      <div class="px-5 pt-5 pb-3"><h2 class="text-lg font-serif font-semibold text-warm-900">足迹</h2></div>
+      <div class="flex gap-1.5 mx-4 mb-4 overflow-x-auto" id="footprintFilters">
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-600 text-white whitespace-nowrap" data-period="week" onclick="filterFootprints('week',this)">本周</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" data-period="lastWeek" onclick="filterFootprints('lastWeek',this)">上周</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" data-period="month" onclick="filterFootprints('month',this)">本月</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" data-period="lastMonth" onclick="filterFootprints('lastMonth',this)">上月</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" data-period="year" onclick="filterFootprints('year',this)">今年</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" data-period="lastYear" onclick="filterFootprints('lastYear',this)">去年</button>
+      </div>
+
+      <!-- Calendar with 3-state indicators -->
+      <div class="mx-4 bg-white rounded-2xl p-4 shadow-sm mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <button class="text-warm-400 text-sm" onclick="changeCalMonth(-1)">◀</button>
+          <span class="text-sm font-medium text-warm-800" id="calMonthLabel">2026年 5月</span>
+          <button class="text-warm-400 text-sm" onclick="changeCalMonth(1)">▶</button>
+        </div>
+        <div class="grid grid-cols-7 text-xs text-warm-400 mb-1"><div class="text-center">日</div><div class="text-center">一</div><div class="text-center">二</div><div class="text-center">三</div><div class="text-center">四</div><div class="text-center">五</div><div class="text-center">六</div></div>
+        <div class="grid grid-cols-7" id="calGrid"></div>
+        <div class="flex items-center gap-3 mt-2 text-[10px] text-warm-400">
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#CDDCD0"></span> 全完成</span>
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#FDF3E4"></span> 部分完成</span>
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#E8E3DC"></span> 未完成</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="mx-4 bg-white rounded-2xl p-5 shadow-sm text-center" id="footprintStats">
+        <div class="text-4xl mb-2">👣</div>
+        <div class="text-3xl font-serif font-semibold text-sage-500" id="fpMainStat">87%</div>
+        <div class="text-sm text-warm-500 mt-1">本周完成率</div>
+        <div class="w-full bg-warm-100 rounded-full h-2 mt-3 overflow-hidden"><div class="bg-sage-400 h-full rounded-full" style="width:87%"></div></div>
+        <div class="text-sm text-warm-500 mt-4" id="fpDetail1">本周完成 <span class="font-semibold text-warm-800">24</span> 件事</div>
+        <div class="text-sm text-sage-500 mt-2" id="fpDetail2">比上周做得更快了</div>
+      </div>
+      <div class="pb-20"></div>
+
+      <!-- Calendar day detail modal -->
+      <div class="modal-overlay hidden" id="calDayModal" onclick="closeCalModal()">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3"></div>
+          <h3 class="text-base font-semibold text-warm-800 mb-1" id="calModalTitle">5月22日 任务清单</h3>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium" id="calModalBadge"></span>
+          </div>
+          <div id="calModalTaskList" class="space-y-2"></div>
+          <button class="btn-secondary mt-4 text-sm" onclick="closeCalModal()">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- P5: MY -->
+    <div class="screen" id="p5-me">
+      <div class="px-5 pt-5 pb-4"><h2 class="text-lg font-serif font-semibold text-warm-900">我的</h2></div>
+
+      <!-- Child profile: Gender + theme -->
+      <div class="mx-4 mb-4">
+        <span class="text-sm font-medium text-warm-700">孩子信息</span>
+        <div class="bg-white rounded-2xl p-4 mt-2 shadow-sm border border-warm-100/40">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">👦</span>
+            <div class="flex-1"><div class="text-sm font-medium text-warm-800">小宝</div><div class="text-xs text-warm-400">设置性别后，学生端会自动切换主题</div></div>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-all" id="genderBtnBoy"
+              style="border-color:#4A8ED6;background:#E8F0FB;color:#4A8ED6" onclick="setChildGender('boy')">👦 男孩 · 蓝色主题</button>
+            <button class="flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-all" id="genderBtnGirl"
+              style="border-color:#E0C8D0;background:#FDF5F7;color:#B06A7E" onclick="setChildGender('girl')">👧 女孩 · 粉色主题</button>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <span class="text-xs text-warm-400">卡通主题：</span>
+            <button class="text-xs px-2 py-1 rounded-full border border-warm-200 hover:bg-warm-50" onclick="setCartoonTheme('rocket')">🚀 太空</button>
+            <button class="text-xs px-2 py-1 rounded-full border border-warm-200 hover:bg-warm-50" onclick="setCartoonTheme('dino')">🦕 恐龙</button>
+            <button class="text-xs px-2 py-1 rounded-full border border-warm-200 hover:bg-warm-50" onclick="setCartoonTheme('unicorn')">🦄 独角兽</button>
+            <button class="text-xs px-2 py-1 rounded-full border border-warm-200 hover:bg-warm-50" onclick="setCartoonTheme('cat')">🐱 小猫</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Management -->
+      <div class="mx-4 mb-4">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-warm-700">学科管理</span><button class="text-xs text-warm-600 font-medium" onclick="addSubject()">＋ 添加学科</button></div>
+        <div class="flex flex-wrap gap-1.5" id="subjectTagList"></div>
+        <p class="text-[10px] text-warm-400 mt-1.5">学科用于标记任务分类，学生端按学科分组显示</p>
+      </div>
+
+      <hr class="mx-4 border-warm-100">
+
+      <!-- Binding Management -->
+      <div class="mx-4 mt-4">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-warm-700">绑定管理</span><button class="text-xs text-warm-600 font-medium" onclick="switchParent('p2b-scan')">＋ 添加绑定</button></div>
+        <div id="bindingList"></div>
+        <p class="text-[10px] text-warm-400 mt-1.5">支持多个家长绑定同一个孩子，主管理员可以管理绑定关系</p>
+      </div>
+      <div class="pb-20"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="parentToast" style="opacity:0">✓ 已发送</div>
+  </div>
+
+  <!-- Parent Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item active" id="tab-tasks" onclick="switchParent('p1-main')"><span class="tab-icon">☑</span> 任务</div>
+    <div class="tab-item" id="tab-footprints" onclick="switchParent('p4-footprints')"><span class="tab-icon">👣</span> 足迹</div>
+    <div class="tab-item" id="tab-me" onclick="switchParent('p5-me')"><span class="tab-icon">👤</span> 我的</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  SYNC INDICATOR                                               -->
+<!-- ============================================================ -->
+<div class="flex flex-col items-center gap-3 pt-20 min-w-[90px]">
+  <div class="w-2.5 h-2.5 rounded-full bg-sage-400 sync-dot"></div>
+  <span class="text-xs text-warm-500 font-medium">实时同步中</span>
+  <div class="text-[10px] text-warm-400 text-center leading-relaxed mt-2" id="syncEvent">等待孩子操作...</div>
+  <div class="mt-4 bg-white/60 rounded-xl p-3 text-[10px] text-warm-500 leading-relaxed max-w-[110px] text-center border border-warm-100/40">
+    <span class="font-medium">模拟说明</span><br>左侧=家长手机<br>右侧=儿童iPad<br><br>点击儿童端卡片<br>观察联动效果<br><br>儿童端按学科分组<br>家长端同样分组
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  CHILD iPAD (theme via CSS vars)                               -->
+<!-- ============================================================ -->
+<div class="ipad-frame" id="childIpad">
+  <div class="ipad-status"><span class="time">17:45</span> <span class="ml-2 text-[10px] opacity-70" id="childCartoonLabel">🚀</span></div>
+  <div class="ipad-content" id="childContent">
+
+    <!-- C0: LANDING -->
+    <div class="screen active landing-bg" id="c0-landing">
+      <div class="flex flex-col items-center px-8 pt-12 text-center">
+        <div class="text-6xl mb-6">🤲</div>
+        <h1 class="text-3xl font-serif font-bold text-warm-900 mb-3">接住</h1>
+        <p class="text-base text-warm-500 leading-relaxed max-w-md">你好！在这里，你会看到爸爸妈妈发来的任务卡片。<br>每张卡片都会告诉你<span class="font-semibold text-warm-700">为什么要做这件事</span>。</p>
+        <div class="landing-card w-full max-w-sm mt-8 text-left">
+          <div class="flex items-start gap-3 mb-3"><span class="text-2xl">📋</span><div><div class="text-sm font-medium text-warm-800">看到任务卡片</div><div class="text-xs text-warm-400">清楚知道今天要做什么，还有为什么做</div></div></div>
+          <div class="flex items-start gap-3 mb-3"><span class="text-2xl">✅</span><div><div class="text-sm font-medium text-warm-800">做完一个勾一个</div><div class="text-xs text-warm-400">感觉自己"做到了"，学习是自己的事</div></div></div>
+          <div class="flex items-start gap-3"><span class="text-2xl">👣</span><div><div class="text-sm font-medium text-warm-800">看到自己的脚印</div><div class="text-xs text-warm-400">只和昨天的自己比，不说教不排名</div></div></div>
+        </div>
+        <button class="btn-child-primary max-w-sm mt-8" onclick="switchChild('c1-stream')">我准备好了！</button>
+        <div class="mt-6 flex items-center gap-2"><button class="text-xs text-warm-500 underline cursor-pointer" onclick="switchChild('c6-scan')">📷 扫描家长二维码绑定</button></div>
+      </div>
+    </div>
+
+    <!-- C1: TASK CARD STREAM (grouped by subject) -->
+    <div class="screen" id="c1-stream">
+      <div class="px-6 pt-8 pb-4 flex items-start justify-between">
+        <div>
+          <p class="text-2xl font-serif font-semibold text-warm-900"><span id="childGreetingEmoji">⛅</span> 下午好，小宝</p>
+          <p class="text-base text-warm-500 mt-2">今天有 <span class="font-semibold text-warm-800" id="childTotalCount">6</span> 件事，你已经完成了 <span class="font-semibold text-sage-500" id="childDoneCount">1</span> 件 ✨</p>
+        </div>
+        <button class="text-warm-400 hover:text-warm-600 text-xl mt-1 cursor-pointer" onclick="switchChild('c6-scan')">📷</button>
+      </div>
+      <div class="flex gap-2 px-6 pb-3 overflow-x-auto" id="childSubjectFilter"></div>
+      <div id="childTaskCards" class="px-4 pb-8"></div>
+    </div>
+
+    <!-- C2: TASK IN PROGRESS -->
+    <div class="screen" id="c2-progress">
+      <div class="flex flex-col items-center px-8 pt-10 pb-8 text-center">
+        <div class="text-5xl mb-4" id="progressEmoji">📖</div>
+        <div id="progressSubjectBadge" class="mb-2"></div>
+        <div id="progressImportantBadge" class="mb-1"></div>
+        <h2 class="text-2xl font-serif font-semibold text-warm-900 mb-1" id="progressTitle">背诵《日积月累》</h2>
+        <p class="text-lg text-warm-500 mb-1" id="progressSubtitle">二十四节气</p>
+        <p class="text-base text-gray-400 max-w-md leading-relaxed mt-3" id="progressWhy">明天随堂测试会考这个，背熟了明天就不慌啦</p>
+        <div id="progressImage"></div>
+        <div class="mt-8 timer-text text-5xl font-medium text-warm-800" id="timerDisplay">08:35</div>
+        <p class="text-sm text-warm-400 mt-2">已经做了这么久</p>
+        <button class="btn-child-primary max-w-xs mt-8 text-lg !py-14" onclick="finishTask()">我完成了！</button>
+        <button class="mt-4 text-sm text-warm-400 cursor-pointer hover:text-warm-500" onclick="pauseTask()">先歇一会儿 · 不做了</button>
+      </div>
+    </div>
+
+    <!-- C3: TELL MOM -->
+    <div class="screen" id="c3-tell-mom">
+      <div class="flex flex-col items-center px-8 pt-16 text-center">
+        <div class="text-5xl mb-8">✨</div>
+        <h2 class="text-2xl font-serif font-semibold text-warm-900 mb-2">你完成了！</h2>
+        <p class="text-lg text-warm-500 mb-8" id="tellMomTaskName">背诵《日积月累》</p>
+        <button class="btn-child-primary max-w-sm text-lg" onclick="tellMom()">📨 告诉妈妈</button>
+        <button class="mt-4 text-sm text-warm-400 cursor-pointer hover:text-warm-500" onclick="dontTellMom()">先不说</button>
+      </div>
+    </div>
+
+    <!-- C4: ALL DONE -->
+    <div class="screen" id="c4-all-done">
+      <div class="flex flex-col items-center px-8 pt-14 text-center">
+        <div class="text-6xl mb-8" id="allDoneEmoji">🎯</div>
+        <h2 class="text-2xl font-serif font-semibold text-warm-900 mb-3">今天的事都做完了！</h2>
+        <p class="text-lg text-warm-500 mb-1" id="allDoneTaskCount">6 件事，全部完成</p>
+        <p class="text-base text-sage-500 mt-1 mb-10" id="allDoneFaster">你比昨天快了 5 分钟</p>
+        <button class="btn-child-secondary max-w-sm" onclick="switchChild('c5-footprints')">去看看我的脚印 👣</button>
+      </div>
+    </div>
+
+    <!-- C5: MY FOOTPRINTS (3-state calendar + task history) -->
+    <div class="screen" id="c5-footprints">
+      <div class="px-6 pt-8 pb-4">
+        <button class="text-warm-600 text-base cursor-pointer mb-4" onclick="switchChild('c1-stream')">&larr; 返回</button>
+        <h2 class="text-2xl font-serif font-semibold text-warm-900">👣 我的脚印</h2>
+      </div>
+      <div class="flex gap-1.5 mx-6 mb-4 overflow-x-auto">
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-600 text-white whitespace-nowrap" onclick="filterChildFootprints('week',this)">本周</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" onclick="filterChildFootprints('lastWeek',this)">上周</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" onclick="filterChildFootprints('month',this)">本月</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" onclick="filterChildFootprints('lastMonth',this)">上月</button>
+        <button class="text-xs px-3 py-1.5 rounded-full font-medium bg-warm-100 text-warm-600 whitespace-nowrap" onclick="filterChildFootprints('all',this)">全部</button>
+      </div>
+      <div class="mx-6 bg-white rounded-2xl p-5 shadow-sm mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <button class="text-warm-400 text-sm" onclick="changeChildCalMonth(-1)">◀</button>
+          <span class="text-sm font-medium text-warm-800" id="childCalMonthLabel">2026年 5月</span>
+          <button class="text-warm-400 text-sm" onclick="changeChildCalMonth(1)">▶</button>
+        </div>
+        <div class="grid grid-cols-7 text-xs text-warm-400 mb-1"><div class="text-center">日</div><div class="text-center">一</div><div class="text-center">二</div><div class="text-center">三</div><div class="text-center">四</div><div class="text-center">五</div><div class="text-center">六</div></div>
+        <div class="grid grid-cols-7" id="childCalGrid"></div>
+        <div class="flex items-center gap-3 mt-2 text-[10px] text-warm-400">
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#CDDCD0"></span> 全完成</span>
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#FDF3E4"></span> 部分完成</span>
+          <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:#E8E3DC"></span> 未完成</span>
+        </div>
+      </div>
+      <div class="mx-6 bg-white rounded-2xl p-8 shadow-sm text-center" id="childFpStats">
+        <div class="text-3xl font-serif font-semibold text-warm-900 mb-2">这周你完成了<br><span class="text-5xl text-sage-500">24</span><br>件事</div>
+        <p class="text-sm text-warm-500 mt-4">比上周多了 <span class="font-semibold text-warm-800">3</span> 件</p>
+      </div>
+      <div class="mx-6 mt-4 bg-white rounded-2xl p-8 shadow-sm text-center">
+        <div class="text-3xl font-serif font-semibold text-warm-900 mb-2">有 <span class="text-sage-500">15</span> 件事</div>
+        <p class="text-sm text-warm-500">是你自己想起来就做了，不用提醒</p>
+      </div>
+      <div class="mx-6 mt-6 text-center pb-8"><p class="text-lg font-serif text-warm-700" id="childFpMessage">你这一周，比上周更好。</p></div>
+
+      <!-- Calendar day detail modal -->
+      <div class="modal-overlay hidden" id="childCalDayModal" onclick="closeChildCalModal()">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3"></div>
+          <h3 class="text-base font-semibold text-warm-800 mb-1" id="childCalModalTitle">5月22日 任务清单</h3>
+          <div class="flex items-center gap-2 mb-3"><span class="text-xs px-2 py-0.5 rounded-full font-medium" id="childCalModalBadge"></span></div>
+          <div id="childCalModalTaskList" class="space-y-2"></div>
+          <button class="btn-child-secondary mt-4 text-sm" onclick="closeChildCalModal()">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- C6: SCAN -->
+    <div class="screen" id="c6-scan">
+      <div class="flex flex-col items-center px-8 pt-8">
+        <button class="self-start text-warm-600 text-lg mb-4" onclick="switchChild('c1-stream')">&larr; 返回</button>
+        <h2 class="text-2xl font-serif font-semibold text-warm-900 mb-2">连接家人</h2>
+        <p class="text-sm text-warm-500 mb-6 text-center">让爸爸妈妈扫描这个二维码，<br>或者扫描他们的二维码</p>
+        <div class="bg-white rounded-2xl p-6 shadow-sm mb-4 w-full max-w-sm text-center">
+          <p class="text-xs text-warm-500 mb-2">我的二维码（给家长扫描）</p>
+          <div class="w-40 h-40 mx-auto bg-gray-200 rounded-xl flex items-center justify-center text-5xl">🔲</div>
+          <p class="text-xs text-warm-400 mt-2">小宝 · 儿童端</p>
+        </div>
+        <div class="flex items-center gap-3 w-full max-w-sm mb-4"><div class="flex-1 border-t border-warm-200"></div><span class="text-xs text-warm-400">或者</span><div class="flex-1 border-t border-warm-200"></div></div>
+        <button class="btn-child-secondary max-w-sm text-sm mb-2" onclick="simulateScanChild()">📷 扫描家长的二维码</button>
+        <div id="scanResultChild" class="hidden bg-sage-50 rounded-2xl p-4 w-full max-w-sm text-center border border-sage-200">
+          <p class="text-sm text-sage-600">✅ 已识别家长二维码</p>
+          <p class="text-sm text-warm-800 mt-1 font-medium">称呼：妈妈</p>
+          <input type="text" class="mt-3 w-full border border-warm-200 rounded-xl px-3 py-2 text-sm text-warm-700" placeholder="给对方起个称呼" value="妈妈">
+          <button class="btn-child-primary mt-3 !py-2 text-sm" onclick="confirmBindingChild()">确认绑定</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  JAVASCRIPT                                                    -->
+<!-- ============================================================ -->
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const subColors={语文:'#C8843C',数学:'#4A8ED6',英语:'#5C9A6F'};
+const subBadges={语文:'badge-chn',数学:'badge-math',英语:'badge-eng'};
+const subEmojis={语文:'📖',数学:'📝',英语:'🔤'};
+const subOrder=['语文','数学','英语'];
+
+let subjects=['语文','数学','英语'];
+let childGender='boy'; // 'boy' | 'girl'
+let cartoonTheme='rocket'; // affects decorations
+let bindings=[{id:'b1',childName:'小宝',childId:'child-001',role:'主管理员',myNick:'妈妈',isMe:true},{id:'b2',childName:'小宝',childId:'child-001',role:'家长',myNick:'爸爸',isMe:false}];
+
+const tasks=[
+  {id:'t1',content:'拼读课本79页双蓝线生字并口头组词',subject:'语文',importance:false,why:'今天学的生字，读熟组词才算真正认识它们',timeLabel:'今日必须完成',teacherSubject:'语文老师',timeScope:'today',estMin:15,status:'done',doneTime:'18:02',emoji:'📖',image:null},
+  {id:'t2',content:'背诵《日积月累》',subtitle:'二十四节气',subject:'语文',importance:true,why:'明天随堂测试会考这个，背熟了明天就不慌啦',timeLabel:'今日必须完成',teacherSubject:'语文老师',timeScope:'today',estMin:20,status:'in_progress',emoji:'📖',image:null},
+  {id:'t3',content:'看图描述：春天的公园',subtitle:'观察图片，用3-5句话描述',subject:'语文',importance:false,why:'学会观察和表达，以后写作文脑子里就有画面了',timeLabel:'今日必须完成',teacherSubject:'语文老师',timeScope:'today',estMin:15,status:'pending',emoji:'🖼️',image:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect fill="#87CEEB" width="400" height="200"/><rect fill="#7C9A6E" y="140" width="400" height="60"/><circle fill="#FFD700" cx="320" cy="40" r="30"/><rect fill="#C8843C" x="50" y="100" width="12" height="50"/><circle fill="#7A9A7E" cx="56" cy="90" r="25"/><rect fill="#C8843C" x="200" y="110" width="8" height="40"/><circle fill="#5C9A6F" cx="204" cy="100" r="18"/><text fill="#E0554A" x="150" y="50" font-size="14">🌸 🌸</text><text fill="#4A8ED6" x="280" y="170" font-size="12">🌊 小溪</text></svg>')},
+  {id:'t4',content:'做课后练习第3到第5题',subject:'数学',importance:false,why:'数学多练练，课堂上的知识就更扎实了',timeLabel:'今日必须完成',teacherSubject:'数学老师',timeScope:'today',estMin:20,status:'pending',emoji:'📝',image:null},
+  {id:'t5',content:'课外阅读',subject:'语文',importance:false,why:'每天读一点课外书，脑子里就会有很多好东西，以后写作文就厉害了',timeLabel:'今日必须完成',teacherSubject:'语文老师',timeScope:'today',estMin:30,status:'pending',emoji:'📚',image:null},
+  {id:'t5b',content:'准备美术课材料',subtitle:'水彩颜料和画笔',subject:'语文',importance:false,why:'提前准备好，明天上课就不会手忙脚乱了',timeLabel:'今日必须完成',teacherSubject:'班主任',timeScope:'today',estMin:5,status:'pending',emoji:'🎨',image:null},
+  {id:'t6',content:'摘抄本周好句（2句）',subject:'语文',importance:false,why:'好句子摘下来，以后写作文时脑子里就有东西了',timeLabel:'本周完成',teacherSubject:'语文老师',timeScope:'week',estMin:null,status:'pending',emoji:'✍️',image:null},
+  {id:'t7',content:'了解二十四节气的含义',subject:'语文',importance:false,why:'二十四节气是古人观察自然总结出的智慧',timeLabel:'长期积累',teacherSubject:'语文老师',timeScope:'ongoing',estMin:null,status:'pending',emoji:'🌿',image:null},
+];
+
+// Calendar completion data (mock: day -> 'all'|'partial'|'none')
+const calCompletion = {};
+function seedCalCompletion(){
+  for(let d=1;d<=31;d++){
+    const r=Math.random();
+    if(d<=22) calCompletion[`2026-5-${d}`]=r>0.5?'all':(r>0.2?'partial':'none');
+  }
+  // Ensure today is "all" for demo
+  calCompletion['2026-5-22']='all';
+}
+seedCalCompletion();
+
+let currentTaskId='t2', timerSeconds=515, timerInterval=null;
+let calYear=2026, calMonth=5, childCalYear=2026, childCalMonth=5;
+let previewEditMode={};
+let childSubFilter='all'; // 'all' or subject name
+
+// ── THEME APPLICATION ──────────────────────────────────────────
+const themeConfig={
+  boy:{primary:'#4A8ED6',primaryDark:'#3B7AC5',light:'#E8F0FB',border:'#B8D0EB',bg:'#F6F8FB',greetingEmoji:'☀️'},
+  girl:{primary:'#E8A0B4',primaryDark:'#D4849A',light:'#FDF0F4',border:'#F7D4DF',bg:'#FDF7F9',greetingEmoji:'🌸'},
+};
+
+const cartoonConfig={
+  rocket:{emoji:'🚀',doneEmoji:'🌟'},
+  dino:{emoji:'🦕',doneEmoji:'🦴'},
+  unicorn:{emoji:'🦄',doneEmoji:'🌈'},
+  cat:{emoji:'🐱',doneEmoji:'🐾'},
+};
+
+function applyChildTheme(){
+  const t=themeConfig[childGender];
+  const c=cartoonConfig[cartoonTheme];
+  const frame=document.getElementById('childIpad');
+  frame.style.setProperty('--child-primary',t.primary);
+  frame.style.setProperty('--child-light',t.light);
+  frame.style.setProperty('--child-border',t.border);
+  frame.style.setProperty('--child-bg',t.bg);
+  document.getElementById('childCartoonLabel').textContent=c.emoji;
+  document.getElementById('childGreetingEmoji').textContent=t.greetingEmoji;
+  document.getElementById('allDoneEmoji').textContent=c.doneEmoji;
+}
+
+function setChildGender(g){
+  childGender=g;
+  document.getElementById('genderBtnBoy').style.borderColor=g==='boy'?'#4A8ED6':'#E0C8D0';
+  document.getElementById('genderBtnBoy').style.background=g==='boy'?'#E8F0FB':'#FDF5F7';
+  document.getElementById('genderBtnBoy').style.color=g==='boy'?'#4A8ED6':'#B06A7E';
+  document.getElementById('genderBtnGirl').style.borderColor=g==='girl'?'#E8A0B4':'#E0C8D0';
+  document.getElementById('genderBtnGirl').style.background=g==='girl'?'#FDF0F4':'#FDF5F7';
+  document.getElementById('genderBtnGirl').style.color=g==='girl'?'#D4849A':'#B06A7E';
+  applyChildTheme();
+  renderChildCards();
+  syncEvent(`主题已切换为${g==='boy'?'蓝色男孩':'粉色女孩'}模式`);
+}
+
+function setCartoonTheme(t){
+  cartoonTheme=t;
+  applyChildTheme();
+  syncEvent(`卡通主题切换: ${cartoonConfig[t].emoji}`);
+}
+
+// ── SYNC EVENT ────────────────────────────────────────────────
+function syncEvent(msg){
+  const el=document.getElementById('syncEvent'); el.textContent=msg; el.style.color='#C8843C';
+  setTimeout(()=>{el.style.color='#A0A0A0'},2000);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function subBadge(subj){const cls=subBadges[subj]||'badge-chn';return`<span class="${cls}">${subj}</span>`;}
+function impBadge(){return'<span class="badge-important">⚠ 重要</span>';}
+function getSubColor(s){return subColors[s]||'#8B7E74';}
+function getSubBg(s){const m={语文:'#FDF3E4',数学:'#E8F0FB',英语:'#E8F5EC'};return m[s]||'#F5F2EF';}
+function getSubBorder(s){const m={语文:'#F9E4C8',数学:'#CDE0F7',英语:'#CDE8D4'};return m[s]||'#E5E0DA';}
+function groupBySubject(taskList){
+  const groups={}; const order=subjects.concat(['其他']);
+  taskList.forEach(t=>{const s=subjects.includes(t.subject)?t.subject:'其他';if(!groups[s])groups[s]=[];groups[s].push(t);});
+  // Sort groups by predefined order
+  const result=[]; order.forEach(s=>{if(groups[s]) result.push({subject:s,tasks:groups[s]});});
+  return result;
+}
+
+// ── RENDER PARENT TASKS (grouped by subject) ──────────────────
+function renderParentTasks(){
+  const todayTasks=tasks.filter(t=>t.timeScope==='today');
+  const weekTasks=tasks.filter(t=>t.timeScope==='week');
+  const ongoingTasks=tasks.filter(t=>t.timeScope==='ongoing');
+  const doneCount=todayTasks.filter(t=>t.status==='done').length;
+  document.getElementById('parentTodayProgress').textContent=`${doneCount}/${todayTasks.length} 已完成`;
+
+  const todayContainer=document.getElementById('parentTaskList');
+  const groups=groupBySubject(todayTasks);
+  todayContainer.innerHTML=groups.map(g=>`
+    <div class="px-4 pt-2 pb-1"><span class="text-xs font-medium" style="color:${getSubColor(g.subject)}">${subEmojis[g.subject]||'📌'} ${g.subject}</span></div>
+    ${g.tasks.map(t=>{
+      let dot='dot-pending',meta='还没开始',metaColor='#A0A0A0';
+      if(t.status==='done'){dot='dot-done';meta=`小宝 已完成 · ${t.doneTime}`;metaColor='#7A9A7E';}
+      else if(t.status==='in_progress'){dot='dot-progress';meta='小宝 进行中';metaColor='#D4A04A';}
+      return`<div class="task-card ${t.status==='done'?'done':''}"><div class="flex items-start gap-2.5"><span class="${dot} mt-1.5 flex-shrink-0"></span><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 mb-1">${t.importance?impBadge():''}</div><div class="text-sm font-medium text-warm-800">${t.content}${t.image?' 🖼️':''}</div><div class="text-xs mt-1" style="color:${metaColor}">${meta}</div></div></div></div>`;
+    }).join('')}
+  `).join('');
+
+  // Week + Ongoing (compact)
+  document.getElementById('parentWeekList').innerHTML=weekTasks.length?`
+    <div class="px-4 pt-3 pb-1"><span class="text-xs font-medium text-warm-400 uppercase tracking-wider">本周</span></div>
+    ${weekTasks.map(t=>`<div class="task-card" style="opacity:0.7"><div class="flex items-start gap-2.5"><span class="dot-pending mt-1.5 flex-shrink-0"></span><div class="flex-1 min-w-0"><div class="text-sm font-medium text-warm-800">${t.content}</div><div class="text-xs text-warm-400 mt-1">${t.timeLabel} · ${t.teacherSubject}</div></div></div></div>`).join('')}`:'';
+
+  document.getElementById('parentOngoingList').innerHTML=ongoingTasks.length?`
+    <div class="px-4 pt-3 pb-1"><span class="text-xs font-medium text-warm-400 uppercase tracking-wider">长期积累</span></div>
+    ${ongoingTasks.map(t=>`<div class="task-card" style="opacity:0.7"><div class="flex items-start gap-2.5"><span class="dot-pending mt-1.5 flex-shrink-0"></span><div class="flex-1 min-w-0"><div class="text-sm font-medium text-warm-800">${t.content}</div><div class="text-xs text-warm-400 mt-1">${t.timeLabel} · ${t.teacherSubject}</div></div></div></div>`).join('')}`:'';
+}
+
+// ── RENDER CHILD TASKS (grouped by subject, with TTS + image) ─
+function renderChildCards(){
+  const container=document.getElementById('childTaskCards');
+  const todayTasks=tasks.filter(t=>t.timeScope==='today');
+  const doneCount=todayTasks.filter(t=>t.status==='done').length;
+  document.getElementById('childDoneCount').textContent=doneCount;
+  document.getElementById('childTotalCount').textContent=todayTasks.length;
+
+  // Render subject filter chips
+  const usedSubs=[...new Set(todayTasks.map(t=>t.subject))];
+  document.getElementById('childSubjectFilter').innerHTML=`
+    <button class="text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${childSubFilter==='all'?'bg-warm-600 text-white':'bg-warm-100 text-warm-600'}" onclick="setChildSubFilter('all')">全部</button>
+    ${usedSubs.map(s=>`<button class="text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all" style="${childSubFilter===s?`background:${getSubColor(s)};color:#fff`:`background:${getSubBg(s)};color:${getSubColor(s)}`}" onclick="setChildSubFilter('${s}')">${subEmojis[s]||''} ${s}</button>`).join('')}
+  `;
+
+  let displayTasks=childSubFilter==='all'?todayTasks:todayTasks.filter(t=>t.subject===childSubFilter);
+  const groups=groupBySubject(displayTasks);
+
+  container.innerHTML=groups.map(g=>`
+    <div class="px-1 pt-3 pb-1"><span class="text-sm font-semibold" style="color:${getSubColor(g.subject)}">${subEmojis[g.subject]||'📌'} ${g.subject}</span></div>
+    ${g.tasks.map(t=>{
+      if(t.status==='done'){
+        return`<div class="bg-white/60 rounded-xl px-4 py-3 mb-2 mx-1 flex items-center gap-3"><span class="text-sage-400 text-lg">✅</span><span class="text-sm text-warm-600">${t.content}</span><span class="text-xs text-warm-400 ml-auto">已完成 · 刚刚</span></div>`;
+      }
+      const isActive=t.status==='in_progress';
+      return`<div class="task-card child-card !rounded-2xl !p-5 !mb-3 cursor-pointer" onclick="${isActive?`resumeTask('${t.id}')`:`startTask('${t.id}')`}">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">${t.emoji}</span>
+          <div class="flex-1">
+            <div class="flex items-center gap-1.5 mb-1">${t.importance?impBadge():''}</div>
+            <div class="text-base font-medium text-warm-800">${t.content}</div>
+            ${t.subtitle?`<div class="text-sm text-warm-500">${t.subtitle}</div>`:''}
+            <div class="text-sm text-gray-400 mt-1.5 leading-relaxed">💬 ${t.why}</div>
+            ${t.image?`<img src="${t.image}" class="task-image" alt="任务图片" loading="lazy">`:''}
+            <div class="text-xs text-warm-400 mt-2">${t.timeLabel} · ${t.teacherSubject}</div>
+          </div>
+          <button class="tts-btn mt-1" onclick="event.stopPropagation();speakTask('${t.id}')" title="播放朗读">🔊</button>
+        </div>
+        <div class="mt-3">${isActive?'<span class="inline-block px-4 py-1.5 rounded-full text-sm font-medium" style="background:var(--child-light);color:var(--child-primary)">继续做</span>':'<span class="inline-block px-4 py-1.5 rounded-full text-sm font-medium text-white" style="background:var(--child-primary)">开始</span>'}</div>
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+function setChildSubFilter(f){childSubFilter=f;renderChildCards();}
+
+// ── TTS SPEAK ─────────────────────────────────────────────────
+function speakTask(taskId){
+  const task=tasks.find(t=>t.id===taskId); if(!task) return;
+  const text=`${task.content}。${task.why}`;
+  if('speechSynthesis' in window){
+    const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u.rate=0.9;
+    const btns=document.querySelectorAll('.tts-btn'); btns.forEach(b=>b.classList.remove('playing'));
+    speechSynthesis.cancel();
+    const btn=event.target.closest('.tts-btn'); if(btn) btn.classList.add('playing');
+    u.onend=()=>{btns.forEach(b=>b.classList.remove('playing'));};
+    speechSynthesis.speak(u);
+    syncEvent(`🔊 朗读：${task.content.slice(0,10)}...`);
+  }else{
+    syncEvent('语音播报需要浏览器支持 Speech API');
+  }
+}
+
+// ── RENDER PREVIEW ────────────────────────────────────────────
+function renderPreviewTasks(){
+  const container=document.getElementById('previewTaskList');
+  const todayTasks=tasks.filter(t=>t.timeScope==='today');
+  document.getElementById('previewTaskCount').textContent=`已识别 ${todayTasks.length} 个任务`;
+  container.innerHTML=todayTasks.map(t=>{
+    const editing=previewEditMode[t.id];
+    return`<div class="mx-4 mb-2 bg-white rounded-2xl p-4 border border-warm-100/60 shadow-sm"><div class="flex items-start gap-2.5"><input type="checkbox" class="mt-1 accent-warm-600" checked><div class="flex-1"><div class="flex items-center gap-1.5 mb-1">${subBadge(t.subject)} ${t.importance?impBadge():''}</div>${editing?`<input class="w-full text-sm font-medium text-warm-800 border border-warm-200 rounded-lg px-2 py-1 mb-1" value="${t.content.replace(/"/g,'&quot;')}" id="editContent_${t.id}"><input class="w-full text-xs text-gray-400 border border-warm-200 rounded-lg px-2 py-1 mb-1" value="${t.why.replace(/"/g,'&quot;')}" id="editWhy_${t.id}"><div class="flex gap-1 mt-1"><select class="text-xs border border-warm-200 rounded px-1 py-0.5" id="editSubject_${t.id}">${subjects.map(s=>`<option value="${s}" ${s===t.subject?'selected':''}>${s}</option>`).join('')}</select><select class="text-xs border border-warm-200 rounded px-1 py-0.5" id="editTimeLabel_${t.id}"><option value="今日必须完成" ${t.timeLabel==='今日必须完成'?'selected':''}>今日必须完成</option><option value="本周完成" ${t.timeLabel==='本周完成'?'selected':''}>本周完成</option><option value="长期积累" ${t.timeLabel==='长期积累'?'selected':''}>长期积累</option></select><label class="text-xs flex items-center gap-1"><input type="checkbox" id="editImportance_${t.id}" ${t.importance?'checked':''}> 重要</label></div><button class="text-xs text-sage-500 mt-1" onclick="savePreviewEdit('${t.id}')">✅ 保存</button>`:`<div class="text-sm font-medium text-warm-800">${t.content} ${t.importance?impBadge():''}</div><div class="text-xs text-gray-400 mt-1 leading-relaxed">💬 ${t.why}</div><div class="text-xs text-warm-400 mt-1">${t.timeLabel} · ${t.teacherSubject}</div>`}</div><div class="flex flex-col gap-1.5"><button class="text-gray-300 hover:text-warm-600 text-sm" onclick="editPreviewTask('${t.id}')">✏️</button><button class="text-gray-300 hover:text-red-400 text-sm" onclick="deletePreviewTask('${t.id}')">✕</button></div></div></div>`;
+  }).join('');
+}
+
+function editPreviewTask(id){previewEditMode[id]=true;renderPreviewTasks();}
+function savePreviewEdit(id){
+  const task=tasks.find(t=>t.id===id);if(!task)return;
+  task.content=document.getElementById('editContent_'+id)?.value||task.content;
+  task.why=document.getElementById('editWhy_'+id)?.value||task.why;
+  task.subject=document.getElementById('editSubject_'+id)?.value||task.subject;
+  task.timeLabel=document.getElementById('editTimeLabel_'+id)?.value||task.timeLabel;
+  task.importance=document.getElementById('editImportance_'+id)?.checked||false;
+  if(task.timeLabel==='今日必须完成')task.timeScope='today';else if(task.timeLabel==='本周完成')task.timeScope='week';else task.timeScope='ongoing';
+  previewEditMode[id]=false;renderPreviewTasks();
+}
+function deletePreviewTask(id){const idx=tasks.findIndex(t=>t.id===id);if(idx>=0){tasks.splice(idx,1);renderPreviewTasks();syncEvent('已删除一个任务');}}
+function reAnalyze(){syncEvent('正在重新拆解...');setTimeout(()=>{syncEvent('重新拆解完成');renderPreviewTasks()},600);}
+function addNewTask(){
+  const newId='t'+Date.now();
+  tasks.push({id:newId,content:'新任务（点击编辑修改）',subject:'语文',importance:false,why:'家长添加的任务',timeLabel:'今日必须完成',teacherSubject:'家长',timeScope:'today',estMin:null,status:'pending',emoji:'📌',image:null});
+  previewEditMode[newId]=true;renderPreviewTasks();syncEvent('已添加新任务');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function switchParent(id){
+  document.querySelectorAll('#parentContent .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('#parentPhone .tab-item').forEach(t=>t.classList.remove('active'));
+  if(id==='p1-main'||id==='p2-preview')document.getElementById('tab-tasks').classList.add('active');
+  else if(id==='p4-footprints')document.getElementById('tab-footprints').classList.add('active');
+  else if(id==='p5-me'||id==='p2b-scan')document.getElementById('tab-me').classList.add('active');
+  if(id==='p1-main')renderParentTasks();
+  if(id==='p2-preview')renderPreviewTasks();
+  if(id==='p5-me'){renderSubjectTags();renderBindingList();}
+  if(id==='p4-footprints')renderCalendar();
+}
+function switchChild(id){
+  document.querySelectorAll('#childContent .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='c1-stream')renderChildCards();
+  if(id==='c5-footprints')renderChildCalendar();
+}
+
+// ── PARENT ACTIONS ────────────────────────────────────────────
+function confirmSend(){
+  const toast=document.getElementById('parentToast');toast.style.opacity='1';setTimeout(()=>{toast.style.opacity='0'},2000);
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null}
+  switchParent('p1-main');syncEvent('妈妈发送了新任务');
+  setTimeout(()=>{renderChildCards();syncEvent('小宝设备收到了新任务')},800);
+}
+function startVoiceInput(){syncEvent('🎤 正在聆听语音输入...');setTimeout(()=>{syncEvent('语音识别完成，请查看预览');switchParent('p2-preview')},1000);}
+
+// ── CHILD TASK ACTIONS ────────────────────────────────────────
+function resumeTask(taskId){
+  const task=tasks.find(t=>t.id===taskId);if(!task)return;
+  currentTaskId=taskId;
+  document.getElementById('progressEmoji').textContent=task.emoji;
+  document.getElementById('progressTitle').textContent=task.content;
+  document.getElementById('progressSubtitle').textContent=task.subtitle||'';
+  document.getElementById('progressWhy').textContent=task.why;
+  document.getElementById('progressSubjectBadge').innerHTML=subBadge(task.subject);
+  document.getElementById('progressImportantBadge').innerHTML=task.importance?impBadge():'';
+  document.getElementById('progressImage').innerHTML=task.image?`<img src="${task.image}" class="task-image mt-4 max-w-sm mx-auto rounded-xl" alt="任务图片">`:'';
+  updateTimerDisplay();
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{timerSeconds++;updateTimerDisplay()},1000);
+  switchChild('c2-progress');syncEvent(`小宝继续：${task.content.slice(0,12)}...`);renderParentTasks();
+}
+function startTask(taskId){
+  const task=tasks.find(t=>t.id===taskId);if(!task)return;
+  const prev=tasks.find(t=>t.status==='in_progress');if(prev)prev.status='pending';
+  task.status='in_progress';currentTaskId=taskId;timerSeconds=0;
+  document.getElementById('progressEmoji').textContent=task.emoji;
+  document.getElementById('progressTitle').textContent=task.content;
+  document.getElementById('progressSubtitle').textContent=task.subtitle||'';
+  document.getElementById('progressWhy').textContent=task.why;
+  document.getElementById('progressSubjectBadge').innerHTML=subBadge(task.subject);
+  document.getElementById('progressImportantBadge').innerHTML=task.importance?impBadge():'';
+  document.getElementById('progressImage').innerHTML=task.image?`<img src="${task.image}" class="task-image mt-4 max-w-sm mx-auto rounded-xl" alt="任务图片">`:'';
+  updateTimerDisplay();
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{timerSeconds++;updateTimerDisplay()},1000);
+  switchChild('c2-progress');syncEvent(`小宝开始了：${task.content.slice(0,12)}...`);renderParentTasks();
+}
+function pauseTask(){if(timerInterval)clearInterval(timerInterval);switchChild('c1-stream');syncEvent('小宝暂停了一下');renderChildCards();renderParentTasks();}
+function finishTask(){if(timerInterval)clearInterval(timerInterval);const task=tasks.find(t=>t.id===currentTaskId);document.getElementById('tellMomTaskName').textContent=task?task.content:'';switchChild('c3-tell-mom');}
+function tellMom(){const task=tasks.find(t=>t.id===currentTaskId);if(task){task.status='done';task.doneTime=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});}syncEvent(`小宝告诉妈妈：${task.content.slice(0,10)}完成了！`);renderParentTasks();checkAllDone();}
+function dontTellMom(){const task=tasks.find(t=>t.id===currentTaskId);if(task){task.status='done';task.doneTime=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});}syncEvent('小宝完成了任务（没告诉妈妈）');renderParentTasks();checkAllDone();}
+function checkAllDone(){const todayTasks=tasks.filter(t=>t.timeScope==='today');if(todayTasks.every(t=>t.status==='done')){document.getElementById('allDoneTaskCount').textContent=`${todayTasks.length} 件事，全部完成`;switchChild('c4-all-done');}else{switchChild('c1-stream');renderChildCards();}}
+function updateTimerDisplay(){const m=Math.floor(timerSeconds/60).toString().padStart(2,'0');const s=(timerSeconds%60).toString().padStart(2,'0');document.getElementById('timerDisplay').textContent=`${m}:${s}`;}
+
+// ── SUBJECT MANAGEMENT ────────────────────────────────────────
+function renderSubjectTags(){
+  const container=document.getElementById('subjectTagList');
+  container.innerHTML=subjects.map(s=>`<span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border" style="background:${getSubBg(s)};color:${getSubColor(s)};border-color:${getSubBorder(s)}">${s} <button class="text-xs hover:opacity-60" onclick="removeSubject('${s}')">×</button></span>`).join('');
+  if(subjects.length<8)container.innerHTML+=`<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-warm-300 text-warm-400 hover:border-warm-500 cursor-pointer" onclick="addSubject()">＋</button>`;
+}
+function addSubject(){const name=prompt('输入新学科名称：');if(!name||!name.trim())return;if(subjects.includes(name.trim())){alert('该学科已存在');return;}subjects.push(name.trim());renderSubjectTags();syncEvent(`已添加学科：${name.trim()}`);}
+function removeSubject(s){if(subjects.length<=1){alert('至少保留一个学科');return;}subjects=subjects.filter(x=>x!==s);renderSubjectTags();syncEvent(`已移除学科：${s}`);}
+
+// ── BINDING MANAGEMENT ────────────────────────────────────────
+function renderBindingList(){
+  document.getElementById('bindingList').innerHTML=bindings.map(b=>`
+    <div class="bg-white rounded-2xl p-4 mb-2 shadow-sm border border-warm-100/40"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-2xl">👦</span><div><div class="text-sm font-medium text-warm-800">${b.childName} <span class="text-xs text-warm-400">· ${b.myNick}</span></div><div class="text-xs text-warm-500">${b.role}${b.isMe?' · 当前设备':''}</div></div></div><div class="flex gap-1.5">${b.isMe&&b.role==='主管理员'?'<button class="text-xs text-warm-600 bg-warm-100 px-2 py-1 rounded-full" onclick="inviteParent()">＋邀请</button>':''}${!b.isMe?'<button class="text-xs text-gray-400 hover:text-red-400 px-2 py-1" onclick="removeBinding(\''+b.id+'\')">解除</button>':''}</div></div></div>`).join('');
+}
+function inviteParent(){syncEvent('已生成邀请二维码，其他家长扫描即可绑定');alert('分享给其他家长：\n\n1. 打开「接住」App\n2. 在首页点击 📷 扫描二维码\n3. 输入称呼后完成绑定');}
+function removeBinding(id){bindings=bindings.filter(b=>b.id!==id);renderBindingList();syncEvent('已解除绑定');}
+function simulateScanParent(){const name=prompt('输入你对孩子的称呼：','小宝的妈妈');if(!name)return;bindings.push({id:'b'+Date.now(),childName:'小宝',childId:'child-001',role:'家长',myNick:name,isMe:true});renderBindingList();syncEvent(`绑定成功！称呼：${name}`);switchParent('p5-me');}
+function simulateScanChild(){document.getElementById('scanResultChild').classList.remove('hidden');syncEvent('已识别家长二维码');}
+function confirmBindingChild(){document.getElementById('scanResultChild').classList.add('hidden');syncEvent('与家长绑定成功！');switchChild('c1-stream');}
+
+// ── CALENDAR (PARENT FOOTPRINTS) ───────────────────────────────
+function renderCalendar(){
+  const grid=document.getElementById('calGrid');
+  document.getElementById('calMonthLabel').textContent=`${calYear}年 ${calMonth}月`;
+  const firstDay=new Date(calYear,calMonth-1,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();
+  const isCurrentMonth=today.getFullYear()===calYear&&today.getMonth()===calMonth-1;
+  let html='';for(let i=0;i<firstDay;i++)html+='<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=isCurrentMonth&&d===today.getDate();
+    const key=`${calYear}-${calMonth}-${d}`;
+    const status=calCompletion[key]||'none';
+    let cls='cal-cell';
+    if(status==='all')cls+=' cal-all-done';
+    else if(status==='partial')cls+=' cal-partial';
+    else cls+=' cal-none';
+    if(isToday)cls+=' today';
+    html+=`<div class="${cls}" onclick="openCalDayModal(${d},'${status}')">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function changeCalMonth(delta){calMonth+=delta;if(calMonth>12){calMonth=1;calYear++;}if(calMonth<1){calMonth=12;calYear--;}renderCalendar();}
+function filterFootprints(period,btn){
+  document.querySelectorAll('#footprintFilters button').forEach(b=>{b.classList.remove('bg-warm-600','text-white');b.classList.add('bg-warm-100','text-warm-600')});
+  btn.classList.remove('bg-warm-100','text-warm-600');btn.classList.add('bg-warm-600','text-white');
+  const data={week:{stat:'87%',label:'本周完成率',d1:'本周完成 <b>24</b> 件事',d2:'比上周做得更快了'},lastWeek:{stat:'79%',label:'上周完成率',d1:'上周完成 <b>21</b> 件事',d2:'这周有进步'},month:{stat:'85%',label:'本月完成率',d1:'本月完成 <b>96</b> 件事',d2:'保持稳定'},lastMonth:{stat:'80%',label:'上月完成率',d1:'上月完成 <b>88</b> 件事',d2:'本月明显进步'},year:{stat:'83%',label:'今年完成率',d1:'今年完成 <b>520</b> 件事',d2:'累计坚持很棒'},lastYear:{stat:'76%',label:'去年完成率',d1:'去年完成 <b>480</b> 件事',d2:'一年比一年好'}};
+  const d=data[period]||data.week;
+  document.getElementById('fpMainStat').textContent=d.stat;document.getElementById('fpMainLabel').textContent=d.label;
+  document.getElementById('fpDetail1').innerHTML=d.d1;document.getElementById('fpDetail2').textContent=d.d2;
+}
+
+function openCalDayModal(day,status){
+  document.getElementById('calDayModal').classList.remove('hidden');
+  document.getElementById('calModalTitle').textContent=`${calYear}年${calMonth}月${day}日 任务清单`;
+  const labels={all:'全完成',partial:'部分完成',none:'未完成'};
+  const colors={all:'bg-sage-100 text-sage-600',partial:'bg-warm-100 text-warm-600',none:'bg-gray-100 text-gray-500'};
+  const badge=document.getElementById('calModalBadge');
+  badge.textContent=labels[status];badge.className='text-xs px-2 py-0.5 rounded-full font-medium '+colors[status];
+  // Mock task list
+  const mockTasks=status==='all'?[{name:'拼读双蓝线生字并组词',done:true},{name:'背诵日积月累',done:true},{name:'书空田字格生字',done:true},{name:'课外阅读',done:true}]:status==='partial'?[{name:'拼读双蓝线生字并组词',done:true},{name:'背诵日积月累',done:true},{name:'书空田字格生字',done:false},{name:'课外阅读',done:false}]:[{name:'拼读双蓝线生字并组词',done:false},{name:'背诵日积月累',done:false},{name:'书空田字格生字',done:false},{name:'课外阅读',done:false}];
+  document.getElementById('calModalTaskList').innerHTML=mockTasks.map(t=>`<div class="flex items-center gap-2 py-1.5"><span class="${t.done?'text-sage-400':'text-gray-300'} text-sm">${t.done?'✅':'○'}</span><span class="text-sm ${t.done?'text-warm-600':'text-gray-400'}">${t.name}</span></div>`).join('');
+}
+function closeCalModal(){document.getElementById('calDayModal').classList.add('hidden');}
+
+// ── CALENDAR (CHILD FOOTPRINTS) ────────────────────────────────
+function renderChildCalendar(){
+  const grid=document.getElementById('childCalGrid');
+  document.getElementById('childCalMonthLabel').textContent=`${childCalYear}年 ${childCalMonth}月`;
+  const firstDay=new Date(childCalYear,childCalMonth-1,1).getDay();
+  const daysInMonth=new Date(childCalYear,childCalMonth,0).getDate();
+  const today=new Date();
+  const isCurrentMonth=today.getFullYear()===childCalYear&&today.getMonth()===childCalMonth-1;
+  let html='';for(let i=0;i<firstDay;i++)html+='<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=isCurrentMonth&&d===today.getDate();
+    const key=`${childCalYear}-${childCalMonth}-${d}`;
+    const status=calCompletion[key]||'none';
+    let cls='cal-cell';
+    if(status==='all')cls+=' cal-all-done';else if(status==='partial')cls+=' cal-partial';else cls+=' cal-none';
+    if(isToday)cls+=' today';
+    html+=`<div class="${cls}" onclick="openChildCalDayModal(${d},'${status}')">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function changeChildCalMonth(delta){childCalMonth+=delta;if(childCalMonth>12){childCalMonth=1;childCalYear++;}if(childCalMonth<1){childCalMonth=12;childCalYear--;}renderChildCalendar();}
+function filterChildFootprints(period,btn){
+  const buttons=btn.parentElement.querySelectorAll('button');buttons.forEach(b=>{b.classList.remove('bg-warm-600','text-white');b.classList.add('bg-warm-100','text-warm-600')});btn.classList.remove('bg-warm-100','text-warm-600');btn.classList.add('bg-warm-600','text-white');
+  const data={week:'这周你完成了<br><span style="font-size:3rem;color:#5C7D60">24</span><br>件事',lastWeek:'上周你完成了<br><span style="font-size:3rem;color:#5C7D60">21</span><br>件事',month:'这个月你完成了<br><span style="font-size:3rem;color:#5C7D60">96</span><br>件事',lastMonth:'上个月你完成了<br><span style="font-size:3rem;color:#5C7D60">88</span><br>件事',all:'你一共完成了<br><span style="font-size:3rem;color:#5C7D60">520</span><br>件事'};
+  document.getElementById('childFpStats').querySelector('div').innerHTML=data[period]||data.week;
+  document.getElementById('childFpMessage').textContent=period==='all'?'你一直在变好。':'你这一周，比上周更好。';
+}
+
+function openChildCalDayModal(day,status){
+  document.getElementById('childCalDayModal').classList.remove('hidden');
+  document.getElementById('childCalModalTitle').textContent=`${childCalYear}年${childCalMonth}月${day}日 任务清单`;
+  const labels={all:'全完成',partial:'部分完成',none:'未完成'};
+  const colors={all:'bg-sage-100 text-sage-600',partial:'bg-warm-100 text-warm-600',none:'bg-gray-100 text-gray-500'};
+  const badge=document.getElementById('childCalModalBadge');
+  badge.textContent=labels[status];badge.className='text-xs px-2 py-0.5 rounded-full font-medium '+colors[status];
+  const mockTasks=status==='all'?[{name:'拼读双蓝线生字并组词',done:true},{name:'背诵日积月累',done:true},{name:'书空田字格生字',done:true}]:status==='partial'?[{name:'拼读双蓝线生字并组词',done:true},{name:'背诵日积月累',done:true},{name:'书空田字格生字',done:false}]:[{name:'拼读双蓝线生字并组词',done:false},{name:'背诵日积月累',done:false},{name:'书空田字格生字',done:false}];
+  document.getElementById('childCalModalTaskList').innerHTML=mockTasks.map(t=>`<div class="flex items-center gap-2 py-1.5"><span class="${t.done?'text-sage-400':'text-gray-300'} text-sm">${t.done?'✅':'○'}</span><span class="text-sm ${t.done?'text-warm-600':'text-gray-400'}">${t.name}</span></div>`).join('');
+}
+function closeChildCalModal(){document.getElementById('childCalDayModal').classList.add('hidden');}
+
+// ── INIT ──────────────────────────────────────────────────────
+function init(){
+  applyChildTheme();
+  renderParentTasks();renderPreviewTasks();renderChildCards();
+  renderSubjectTags();renderBindingList();renderCalendar();renderChildCalendar();
+}
+init();
+</script>
+</body>
+</html>

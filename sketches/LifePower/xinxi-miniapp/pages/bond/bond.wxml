@@ -1,0 +1,17 @@
+<view class="page-bond">
+  <view class="title">宿缘</view>
+  <view class="subtitle">守望你的人们</view>
+  <view class="bond-grid">
+    <block wx:for="{{bonds}}" wx:key="id">
+      <view class="bond-card">
+        <view class="bond-name">{{item.name}}</view>
+        <view class="bond-relation">{{item.relation}}</view>
+        <view class="bond-type">{{item.type}}</view>
+      </view>
+    </block>
+  </view>
+  <view class="empty" wx:if="{{bonds.length === 0}}">
+    还没有羁绊，等待宿命的相遇
+  </view>
+  <button class="btn-add" bindtap="onAdd">添加羁绊</button>
+</view>

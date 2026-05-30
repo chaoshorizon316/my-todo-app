@@ -1,0 +1,91 @@
+<!-- 宿缘 · 分享建立羁绊 -->
+<scroll-view scroll-y class="page" enhanced show-scrollbar="{{false}}">
+  <view class="header">
+    <text class="title">宿缘</text>
+    <text class="sub">以心汐为信，守望彼此</text>
+  </view>
+
+  <!-- 分享卡片 -->
+  <view class="share-card">
+    <view class="share-illustration">
+      <text class="ms-icon share-icon">volunteer_activism</text>
+    </view>
+    <text class="share-desc">将心汐分享给微信好友，</text>
+    <text class="share-desc">对方打开后自动建立羁绊</text>
+    <button class="share-btn" open-type="share">
+      <text class="ms-icon share-btn-icon">share</text>
+      <text>分享给好友</text>
+    </button>
+  </view>
+
+  <!-- 我的羁绊 -->
+  <view class="section-header">
+    <text class="section-title">我的羁绊</text>
+    <text class="section-count" wx:if="{{bonds.length}}">{{bonds.length}} 人</text>
+  </view>
+
+  <!-- Tabs -->
+  <view class="tab-bar" wx:if="{{bonds.length}}">
+    <view class="tab {{activeTab==='mutual'?'active':''}}" data-tab="mutual" bindtap="switchTab">
+      <text>守护光点</text>
+    </view>
+    <view class="tab {{activeTab==='quiet'?'active':''}}" data-tab="quiet" bindtap="switchTab">
+      <text>静默守望</text>
+    </view>
+  </view>
+
+  <!-- 守护光点（相互羁绊） -->
+  <view wx:if="{{activeTab==='mutual'}}" class="bond-list">
+    <block wx:for="{{mutualBonds}}" wx:key="id">
+      <view class="bond-card highlight">
+        <view class="bond-left">
+          <view class="bond-avatar gold">
+            <text class="ms-icon">person</text>
+          </view>
+          <view class="bond-info">
+            <text class="bond-name">{{item.name}}</text>
+            <text class="bond-detail">{{item.relation}} · 守护光点</text>
+          </view>
+        </view>
+        <button class="bond-act" bindtap="sendEcho" data-id="{{item.id}}" data-name="{{item.name}}">
+          <text class="ms-icon">send</text>
+        </button>
+      </view>
+    </block>
+    <view wx:if="{{mutualBonds.length===0}}" class="empty-state">
+      <text class="ms-icon empty-icon">group</text>
+      <text class="empty-text">分享心汐给好友，建立守护羁绊</text>
+    </view>
+  </view>
+
+  <!-- 静默守望（单向/未回应） -->
+  <view wx:if="{{activeTab==='quiet'}}" class="bond-list">
+    <block wx:for="{{quietBonds}}" wx:key="id">
+      <view class="bond-card quiet">
+        <view class="bond-left">
+          <view class="bond-avatar ghost">
+            <text class="ms-icon">person</text>
+          </view>
+          <view class="bond-info">
+            <text class="bond-name">{{item.name}}</text>
+            <text class="bond-detail">{{item.relation}} · 静默守望</text>
+          </view>
+        </view>
+        <text class="quiet-badge">静</text>
+      </view>
+    </block>
+    <view wx:if="{{quietBonds.length===0}}" class="empty-state">
+      <text class="ms-icon empty-icon">self_improvement</text>
+      <text class="empty-text">暂无静默守望</text>
+    </view>
+  </view>
+
+  <!-- 空状态：无羁绊时 -->
+  <view wx:if="{{bonds.length===0}}" class="empty-state large">
+    <text class="ms-icon empty-icon-large">water_full</text>
+    <text class="empty-text">你还没有羁绊</text>
+    <text class="empty-sub">分享心汐给好友，建立守望连接</text>
+  </view>
+
+  <view style="height:40rpx;"></view>
+</scroll-view>

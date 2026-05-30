@@ -1,0 +1,17 @@
+<view class="page-lake">
+  <view class="lake-area">
+    <view class="lake-surface">
+      <view class="ripple ripple-1"></view>
+      <view class="ripple ripple-2"></view>
+      <view class="ripple ripple-3"></view>
+      <view class="stone"></view>
+    </view>
+  </view>
+  <view class="insight-text">{{insight}}</view>
+  <view class="action-area">
+    <button class="btn-record" bindtap="onRecord">记录此刻</button>
+  </view>
+  <view class="echo-hint" wx:if="{{unreadCount > 0}}">
+    有 {{unreadCount}} 条回响等待你的回应
+  </view>
+</view>

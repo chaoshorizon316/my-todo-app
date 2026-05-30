@@ -1,0 +1,79 @@
+.page-lake {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 32rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.lake-area {
+  width: 400rpx;
+  height: 400rpx;
+  position: relative;
+  margin: 40rpx 0;
+}
+
+.lake-surface {
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168,200,216,0.3), rgba(91,122,138,0.1));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 2rpx solid #E8815B;
+  transform: translate(-50%, -50%);
+}
+
+.ripple-1 { width: 280rpx; height: 280rpx; opacity: 0.25; }
+.ripple-2 { width: 200rpx; height: 200rpx; opacity: 0.45; }
+.ripple-3 { width: 120rpx; height: 120rpx; opacity: 0.7; }
+
+.stone {
+  width: 24rpx;
+  height: 24rpx;
+  background: #E8815B;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.insight-text {
+  font-size: 28rpx;
+  color: #5B7A8A;
+  text-align: center;
+  line-height: 1.6;
+  padding: 0 32rpx;
+  margin: 20rpx 0 40rpx;
+}
+
+.action-area {
+  margin-top: 20rpx;
+}
+
+.btn-record {
+  background: #E8815B;
+  color: #fff;
+  border-radius: 48rpx;
+  padding: 24rpx 80rpx;
+  font-size: 30rpx;
+  border: none;
+}
+
+.echo-hint {
+  margin-top: 30rpx;
+  font-size: 24rpx;
+  color: #E8815B;
+  opacity: 0.8;
+}

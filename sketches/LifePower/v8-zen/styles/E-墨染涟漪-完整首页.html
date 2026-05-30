@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>心汐 · 墨染涟漪 · 完整首页</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;600;700&family=Noto+Sans+SC:wght@200;300;400;500&display=swap');
+
+  /* ===== Design Tokens ===== */
+  :root {
+    --paper: #f5f0e8;
+    --paper-light: #faf7f2;
+    --ink-deep: rgba(30,25,20,0.85);
+    --ink-mid: #615d59;
+    --ink-light: #a39e98;
+    --ink-ghost: rgba(0,0,0,0.06);
+    --ink-blue: #2c4a6e;
+    --warm-red: #c44e3d;
+    --ink-green: #4a7c59;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #e8e0d5 0%, #f0ebe0 40%, #f5f0e8 100%);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .phone {
+    width: 390px; height: 844px;
+    background: var(--paper);
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    transition: background 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.03),
+      0 0 120px rgba(180,160,130,0.15),
+      0 30px 80px rgba(0,0,0,0.06);
+  }
+
+  /* 4 state backgrounds */
+  .phone.state-0 { background: linear-gradient(180deg, #f5f0e8 0%, #f7f3ed 50%, #faf7f2 100%); }
+  .phone.state-1 { background: linear-gradient(180deg, #eff2f0 0%, #f2f5f3 50%, #f5f0e8 100%); }
+  .phone.state-2 { background: linear-gradient(180deg, #e8edf2 0%, #edf1f5 50%, #f0ede8 100%); }
+  .phone.state-3 { background: linear-gradient(180deg, #e0dbd3 0%, #e5e0d8 50%, #dfd8ce 100%); }
+
+  /* ===== Paper Texture Overlay ===== */
+  .paper-texture {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.05;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.02) 3px, rgba(0,0,0,0.02) 6px);
+  }
+
+  /* ===== Scrollable Main ===== */
+  .main-scroll {
+    position: relative; z-index: 1;
+    height: 100%; overflow-y: auto; overflow-x: hidden;
+    padding: 0 24px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-scroll::-webkit-scrollbar { width: 0; }
+
+  /* ===== 1. Header ===== */
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0 8px;
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(180deg, rgba(245,240,232,0.92) 0%, rgba(245,240,232,0.6) 80%, transparent 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .header-time {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 15px; font-weight: 400;
+    color: rgba(30,25,20,0.8);
+    letter-spacing: 0.05em;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .header-share {
+    font-size: 18px;
+    color: var(--ink-mid);
+    cursor: pointer;
+    transition: color 0.3s;
+    background: none; border: none;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .header-share:active { color: var(--ink-deep); }
+
+  .header-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(180,170,150,0.3), rgba(140,120,100,0.18));
+    border: 1px solid rgba(140,120,100,0.12);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px; font-weight: 400;
+    color: var(--ink-mid);
+    transition: all 0.3s;
+  }
+
+  .header-avatar:active { border-color: rgba(140,120,100,0.25); }
+
+  /* ===== 2. Mode Indicator ===== */
+  .mode-indicator {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0 16px;
+    gap: 6px;
+  }
+
+  .mode-dots {
+    display: flex; gap: 7px;
+  }
+
+  .mode-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--ink-ghost);
+    transition: all 0.5s ease;
+  }
+
+  .mode-dot.lit {
+    background: rgba(44,74,110,0.5);
+    box-shadow: 0 0 4px rgba(44,74,110,0.15);
+  }
+
+  .mode-dot.upcoming {
+    background: rgba(0,0,0,0.04);
+  }
+
+  .mode-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 10px; font-weight: 300;
+    color: var(--ink-light);
+    letter-spacing: 0.12em;
+  }
+
+  /* ===== 3. Lake Visual (160px) ===== */
+  .lake-section {
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .lake-wrapper {
+    position: relative;
+    width: 160px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .lake {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background: var(--paper);
+  }
+
+  /* Ink layers – center dark, edges fading. 5 concentric layers */
+  .ink-layer {
+    position: absolute;
+    border-radius: 50%;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Default: quiet centered ink drop */
+  .lake.default .ink-layer-1 {
+    width: 24px; height: 24px;
+    background: radial-gradient(circle, rgba(50,40,28,0.22), rgba(65,52,35,0.1) 50%, transparent 80%);
+  }
+  .lake.default .ink-layer-2 {
+    width: 48px; height: 48px;
+    background: radial-gradient(circle, rgba(55,44,30,0.14), rgba(70,56,38,0.06) 50%, transparent 80%);
+  }
+  .lake.default .ink-layer-3 {
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(60,48,32,0.08), rgba(75,60,40,0.03) 55%, transparent 85%);
+  }
+  .lake.default .ink-layer-4 {
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(65,50,34,0.04), rgba(80,64,42,0.015) 55%, transparent 90%);
+  }
+  .lake.default .ink-layer-5 {
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(70,55,36,0.02), rgba(85,68,44,0.008) 55%, transparent 95%);
+  }
+
+  /* Expanded (after click, mimics "涟漪频密") */
+  .lake.expanded .ink-layer-1 {
+    width: 36px; height: 36px;
+    background: radial-gradient(circle, rgba(50,40,28,0.2), rgba(65,52,35,0.09) 50%, transparent 80%);
+  }
+  .lake.expanded .ink-layer-2 {
+    width: 68px; height: 68px;
+    background: radial-gradient(circle, rgba(55,44,30,0.12), rgba(70,56,38,0.05) 55%, transparent 82%);
+  }
+  .lake.expanded .ink-layer-3 {
+    width: 105px; height: 105px;
+    background: radial-gradient(circle, rgba(60,48,32,0.07), rgba(75,60,40,0.025) 58%, transparent 88%);
+  }
+  .lake.expanded .ink-layer-4 {
+    width: 142px; height: 142px;
+    background: radial-gradient(circle, rgba(65,50,34,0.035), rgba(80,64,42,0.012) 58%, transparent 92%);
+  }
+  .lake.expanded .ink-layer-5 {
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(70,55,36,0.018), rgba(85,68,44,0.006) 58%, transparent 96%);
+  }
+
+  /* Ink ring ripples */
+  .ink-ring {
+    position: absolute;
+    border-radius: 50%;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    border: 0.5px solid rgba(60,48,30,0.08);
+    opacity: 0;
+    transition: none;
+  }
+
+  .lake.rippling .ink-ring-1 { animation: ringOut 4s ease-out infinite 0s; }
+  .lake.rippling .ink-ring-2 { animation: ringOut 4s ease-out infinite 1s; }
+  .lake.rippling .ink-ring-3 { animation: ringOut 4s ease-out infinite 2s; }
+  .lake.rippling .ink-ring-4 { animation: ringOut 4s ease-out infinite 3s; }
+
+  @keyframes ringOut {
+    0% { width: 0; height: 0; opacity: 0.45; }
+    100% { width: 170px; height: 170px; opacity: 0; }
+  }
+
+  @keyframes inkBreathe {
+    0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.04); }
+  }
+
+  /* Lake status text */
+  .lake-status {
+    margin-top: 16px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px; font-weight: 400;
+    color: var(--ink-deep);
+    letter-spacing: 0.25em;
+    text-align: center;
+    transition: all 0.8s ease;
+  }
+
+  /* ===== 4. Trend Indicator ===== */
+  .trend-indicator {
+    text-align: center;
+    padding: 6px 0 10px;
+  }
+
+  .trend-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 0.08em;
+  }
+
+  .trend-down { color: var(--warm-red); }
+  .trend-up { color: var(--ink-green); }
+  .trend-neutral { color: var(--ink-light); }
+
+  /* ===== 5. Echo Count ===== */
+  .echo-count {
+    text-align: center;
+    padding: 4px 0 12px;
+  }
+
+  .echo-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px; font-weight: 300;
+    color: var(--ink-light);
+    letter-spacing: 0.18em;
+  }
+
+  /* Energy stats line */
+  .energy-stats-line {
+    text-align: center;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300;
+    color: var(--ink-mid);
+    padding: 6px 0 12px;
+    letter-spacing: 0.06em;
+    opacity: 0.65;
+  }
+
+  /* ===== 6. Energy Tags ===== */
+  .energy-tags {
+    display: flex; justify-content: center; gap: 10px;
+    padding: 8px 0 16px;
+  }
+
+  .energy-tag {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.02);
+    border: 1px solid var(--ink-ghost);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300;
+    color: var(--ink-mid);
+    letter-spacing: 0.05em;
+  }
+
+  .tag-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .tag-dot.blue { background: rgba(44,74,110,0.45); }
+  .tag-dot.green { background: rgba(74,124,89,0.4); }
+  .tag-dot.amber { background: rgba(180,150,80,0.4); }
+
+  /* ===== 7. Reminder Bar (hidden by default) ===== */
+  .reminder-bar {
+    display: none;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: rgba(196,78,61,0.04);
+    border-radius: 10px;
+    border-left: 3px solid rgba(196,78,61,0.3);
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+
+  .reminder-bar.visible { display: block; }
+
+  .reminder-title {
+    font-size: 12px; font-weight: 400;
+    color: var(--warm-red);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .reminder-actions {
+    display: flex; gap: 10px;
+  }
+
+  .reminder-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px; font-weight: 300;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+    background: transparent;
+    border: 1px solid rgba(180,140,120,0.15);
+    color: var(--ink-mid);
+    letter-spacing: 0.06em;
+  }
+
+  .reminder-btn:active {
+    background: rgba(180,140,120,0.06);
+    border-color: rgba(180,140,120,0.25);
+  }
+
+  /* ===== 8. Throw Stone Button ===== */
+  .throw-section {
+    padding: 12px 0 16px;
+  }
+
+  .throw-btn {
+    display: block; width: 100%;
+    padding: 14px 0;
+    border-radius: 14px;
+    background: transparent;
+    border: 1px solid rgba(120,100,80,0.15);
+    color: var(--ink-mid);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 15px; font-weight: 400;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.5s ease;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .throw-btn::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 11px;
+    border: 0.5px solid rgba(120,100,80,0.06);
+    transition: all 0.5s ease;
+    pointer-events: none;
+  }
+
+  .throw-btn:active {
+    border-color: rgba(100,80,60,0.3);
+    color: var(--ink-deep);
+    background: rgba(160,140,110,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+
+  .throw-btn:active::after {
+    border-color: rgba(120,100,80,0.12);
+  }
+
+  /* ===== 9. AI Mood Card ===== */
+  .mood-card {
+    margin: 0 0 20px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--paper-light);
+    border: 1px solid var(--ink-ghost);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+
+  .mood-card-title {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 300;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .mood-card-body {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px; font-weight: 300;
+    color: var(--ink-mid);
+    line-height: 1.9;
+    letter-spacing: 0.06em;
+    text-align: justify;
+  }
+
+  /* ===== 10. Bottom Navigation ===== */
+  .bottom-nav {
+    position: sticky; bottom: 0;
+    display: flex;
+    padding: 10px 0 24px;
+    background: linear-gradient(to top, rgba(245,240,232,0.95) 0%, rgba(245,240,232,0.7) 60%, transparent 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(160,140,110,0.08);
+    margin: 0 -24px;
+    padding-left: 16px; padding-right: 16px;
+  }
+
+  .nav-tab {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    padding: 6px 0;
+  }
+
+  .nav-icon {
+    font-size: 18px;
+    opacity: 0.4;
+    transition: all 0.4s ease;
+  }
+
+  .nav-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 10px; font-weight: 300;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    transition: all 0.4s ease;
+  }
+
+  .nav-tab.active .nav-icon { opacity: 0.8; }
+  .nav-tab.active .nav-label {
+    color: var(--ink-blue);
+    font-weight: 400;
+  }
+
+  /* ===== Transitions for lake state changes ===== */
+  .lake-status.fade { opacity: 0.3; }
+
+  /* Spacer at bottom for safe area */
+  .bottom-spacer { height: 8px; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="paper-texture"></div>
+
+  <div class="main-scroll" id="mainScroll">
+
+    <!-- 1. Header -->
+    <div class="header">
+      <span class="header-time" id="headerTime">20:35</span>
+      <div class="header-right">
+        <button class="header-share" aria-label="分享">📤</button>
+        <div class="header-avatar" role="button" aria-label="我的">我</div>
+      </div>
+    </div>
+
+    <!-- 2. Mode Indicator -->
+    <div class="mode-indicator">
+      <div class="mode-dots">
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot lit"></span>
+        <span class="mode-dot upcoming"></span>
+      </div>
+      <div class="mode-text">单人模式 · 第 6 天 · 明天解锁宿缘</div>
+    </div>
+
+    <!-- 3. Lake Visual -->
+    <div class="lake-section">
+      <div class="lake-wrapper" id="lakeWrapper" title="点击湖面投石">
+        <div class="lake default" id="lake">
+          <!-- 5 ink layers -->
+          <div class="ink-layer ink-layer-1"></div>
+          <div class="ink-layer ink-layer-2"></div>
+          <div class="ink-layer ink-layer-3"></div>
+          <div class="ink-layer ink-layer-4"></div>
+          <div class="ink-layer ink-layer-5"></div>
+
+          <!-- 4 ink rings -->
+          <div class="ink-ring ink-ring-1"></div>
+          <div class="ink-ring ink-ring-2"></div>
+          <div class="ink-ring ink-ring-3"></div>
+          <div class="ink-ring ink-ring-4"></div>
+        </div>
+      </div>
+      <div class="lake-status" id="lakeStatus">湖面如镜</div>
+    </div>
+
+    <!-- 4. Trend Indicator -->
+    <div class="trend-indicator">
+      <span class="trend-text trend-down" id="trendText">↓ 较昨日微降，运动不足</span>
+    </div>
+
+    <!-- 5. Echo Count -->
+    <div class="echo-count">
+      <span class="echo-text" id="echoText">有 0 人听见你的回响</span>
+    </div>
+
+    <!-- 5b. Energy Stats -->
+    <div class="energy-stats-line" id="energyStats">今日能量：平静如初 · 投石 1 次</div>
+
+    <!-- 6. Energy Tags -->
+    <div class="energy-tags">
+      <div class="energy-tag">
+        <span class="tag-dot blue"></span>
+        <span>自在 +5%</span>
+      </div>
+      <div class="energy-tag">
+        <span class="tag-dot green"></span>
+        <span>标注 +3%</span>
+      </div>
+      <div class="energy-tag">
+        <span class="tag-dot amber"></span>
+        <span>传递 +2%</span>
+      </div>
+    </div>
+
+    <!-- 7. Reminder Bar (hidden by default) -->
+    <div class="reminder-bar" id="reminderBar">
+      <div class="reminder-title">能量偏低 · 已连续 2 天</div>
+      <div class="reminder-actions">
+        <button class="reminder-btn">🎵 充电活动</button>
+        <button class="reminder-btn">💭 求关怀</button>
+      </div>
+    </div>
+
+    <!-- 8. Throw Stone Button -->
+    <div class="throw-section">
+      <button class="throw-btn" id="throwBtn">✍️ 投一颗石子</button>
+    </div>
+
+    <!-- 9. AI Mood Card -->
+    <div class="mood-card">
+      <div class="mood-card-title">基于你今日的心情印记生成</div>
+      <div class="mood-card-body">
+        今天你的心湖，被两颗石子轻轻触动。午后的风，让墨色微微漾开又聚拢。整体来说，你在平静中藏着不易察觉的微澜。此刻墨色是淡的，但每一圈涟漪都记录着你走过的痕迹。
+      </div>
+    </div>
+
+    <!-- 10. Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-tab active" data-tab="心湖">
+        <span class="nav-icon">🔵</span>
+        <span class="nav-label">心湖</span>
+      </div>
+      <div class="nav-tab" data-tab="涟漪">
+        <span class="nav-icon">💧</span>
+        <span class="nav-label">涟漪</span>
+      </div>
+      <div class="nav-tab" data-tab="回响">
+        <span class="nav-icon">🫧</span>
+        <span class="nav-label">回响</span>
+      </div>
+      <div class="nav-tab" data-tab="宿缘">
+        <span class="nav-icon">🤍</span>
+        <span class="nav-label">宿缘</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  // ===== State =====
+  const lakeStates = ['湖面如镜', '微风微澜', '涟漪频密', '风起浪涌'];
+  const trendTexts = [
+    { text: '↓ 较昨日微降，运动不足', cls: 'trend-down' },
+    { text: '— 与昨日持平，静水流深', cls: 'trend-neutral' },
+    { text: '↑ 较昨日微升，心有微澜', cls: 'trend-up' },
+  ];
+  let currentLakeState = 0;
+  let clickCount = 0;
+
+  const $ = (sel) => document.querySelector(sel);
+  const phone = $('#phone');
+  const lake = $('#lake');
+  const lakeWrapper = $('#lakeWrapper');
+  const lakeStatus = $('#lakeStatus');
+  const trendText = $('#trendText');
+  const echoText = $('#echoText');
+  const reminderBar = $('#reminderBar');
+  const throwBtn = $('#throwBtn');
+
+  // ===== Update time display =====
+  function updateTime() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    $('#headerTime').textContent = h + ':' + m;
+  }
+  updateTime();
+
+    // ===== Ink ripple trigger on lake click =====
+    function triggerRipple() {
+      // Start ripple animation
+      lake.classList.add('rippling');
+      clearTimeout(lake._rippleTimeout);
+      lake._rippleTimeout = setTimeout(() => {
+        lake.classList.remove('rippling');
+      }, 4000);
+
+      // Cycle through 4 lake states on each click
+      clickCount++;
+      currentLakeState = (currentLakeState + 1) % lakeStates.length;
+      lakeStatus.textContent = lakeStates[currentLakeState];
+
+      // Apply 4 distinct visual states via inline style on ink layers
+      const inkLayers = lake.querySelectorAll('.ink-layer');
+      const states = [
+        // 0: 湖面如镜 — tight, centered, calm
+        [
+          [24, 24, 'rgba(50,40,28,0.22)', 'rgba(65,52,35,0.1)'],
+          [48, 48, 'rgba(55,44,30,0.14)', 'rgba(70,56,38,0.06)'],
+          [80, 80, 'rgba(60,48,32,0.08)', 'rgba(75,60,40,0.03)'],
+          [120, 120, 'rgba(65,50,34,0.04)', 'rgba(80,64,42,0.015)'],
+          [160, 160, 'rgba(70,55,36,0.02)', 'rgba(85,68,44,0.008)'],
+        ],
+        // 1: 微风微澜 — slight outward drift, soft breathing
+        [
+          [32, 32, 'rgba(50,40,28,0.18)', 'rgba(65,52,35,0.08)'],
+          [58, 58, 'rgba(55,44,30,0.11)', 'rgba(70,56,38,0.05)'],
+          [90, 90, 'rgba(60,48,32,0.06)', 'rgba(75,60,40,0.025)'],
+          [130, 130, 'rgba(65,50,34,0.03)', 'rgba(80,64,42,0.012)'],
+          [165, 165, 'rgba(70,55,36,0.015)', 'rgba(85,68,44,0.006)'],
+        ],
+        // 2: 涟漪频密 — wider, multiple rings more visible
+        [
+          [44, 44, 'rgba(50,40,28,0.18)', 'rgba(65,52,35,0.08)'],
+          [72, 72, 'rgba(55,44,30,0.11)', 'rgba(70,56,38,0.05)'],
+          [108, 108, 'rgba(60,48,32,0.06)', 'rgba(75,60,40,0.028)'],
+          [148, 148, 'rgba(65,50,34,0.035)', 'rgba(80,64,42,0.014)'],
+          [172, 172, 'rgba(70,55,36,0.018)', 'rgba(85,68,44,0.008)'],
+        ],
+        // 3: 风起浪涌 — wide spread, heavier ink, visible edges
+        [
+          [56, 56, 'rgba(55,42,28,0.24)', 'rgba(70,54,35,0.12)'],
+          [82, 82, 'rgba(58,46,30,0.16)', 'rgba(75,58,38,0.08)'],
+          [118, 118, 'rgba(63,50,32,0.1)', 'rgba(80,62,40,0.04)'],
+          [155, 155, 'rgba(68,52,34,0.06)', 'rgba(85,66,42,0.025)'],
+          [178, 178, 'rgba(72,58,36,0.035)', 'rgba(90,70,44,0.015)'],
+        ],
+      ];
+
+      const s = states[currentLakeState];
+      inkLayers.forEach((layer, i) => {
+        if (i >= s.length) return;
+        layer.style.width = s[i][0] + 'px';
+        layer.style.height = s[i][1] + 'px';
+        layer.style.background = 'radial-gradient(circle, ' + s[i][2] + ' 0%, ' + s[i][3] + ' 50%, transparent 82%)';
+      });
+
+      // Keep ripple rings visible when in active/rough states
+      const rings = lake.querySelectorAll('.ink-ring');
+      const ringVisibility = currentLakeState >= 2;
+      rings.forEach((ring, i) => {
+        ring.style.opacity = ringVisibility ? '0.5' : '0';
+        ring.style.transition = 'opacity 0.8s ease';
+      });
+
+      // Update phone background for current state
+      phone.className = 'phone state-' + currentLakeState;
+
+      // Update energy stats line
+      const energyStats = $('#energyStats');
+      const statTexts = [
+        '今日能量：平静如初 · 投石 1 次',
+        '今日能量：微风拂过 · 投石 2 次 · 自在为主',
+        '今日能量：涟漪层叠 · 投石 3 次 · 标注渐增',
+        '今日能量：湖心涌动 · 投石 4 次 · 传递已至',
+      ];
+      if (energyStats) energyStats.textContent = statTexts[currentLakeState];
+
+    // Randomly cycle trend text
+    const trendIdx = clickCount % trendTexts.length;
+    trendText.className = 'trend-text ' + trendTexts[trendIdx].cls;
+    trendText.textContent = trendTexts[trendIdx].text;
+
+    // Update echo count occasionally
+    const echoes = Math.min(clickCount, 3);
+    if (echoes === 0) {
+      echoText.textContent = '有 0 人听见你的回响';
+    } else if (echoes === 1) {
+      echoText.textContent = '有 1 人听见你的回响';
+    } else {
+      echoText.textContent = '有 ' + echoes + ' 人听见你的回响';
+    }
+
+    // Show reminder bar after 3+ clicks (demo)
+    if (clickCount >= 3 && !reminderBar.classList.contains('visible')) {
+      reminderBar.classList.add('visible');
+    }
+  }
+
+  lakeWrapper.addEventListener('click', triggerRipple);
+
+  // ===== Throw button also triggers ripple =====
+  throwBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    triggerRipple();
+    // Scroll to lake
+    lakeWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // ===== Reminder action buttons =====
+  reminderBar.querySelectorAll('.reminder-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Demo: just hide the reminder
+      reminderBar.classList.remove('visible');
+    });
+  });
+
+  // ===== Bottom nav tab switching =====
+  document.querySelectorAll('.nav-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
+  });
+
+  console.log('心汐 · 墨染涟漪 · 完整首页 — 已就绪');
+  console.log('点击湖面或「投一颗石子」按钮触发墨晕扩散');
+})();
+</script>
+</body>
+</html>

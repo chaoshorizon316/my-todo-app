@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/lake/lake",
+    "pages/ripple/ripple",
+    "pages/echo/echo",
+    "pages/bond/bond"
+  ],
+  "window": {
+    "navigationBarTitleText": "心汐",
+    "navigationBarBackgroundColor": "#FDF8F6",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FDF8F6"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#E8815B",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/lake/lake",
+        "text": "心湖",
+        "iconPath": "images/tab-lake.png",
+        "selectedIconPath": "images/tab-lake-active.png"
+      },
+      {
+        "pagePath": "pages/ripple/ripple",
+        "text": "涟漪",
+        "iconPath": "images/tab-ripple.png",
+        "selectedIconPath": "images/tab-ripple-active.png"
+      },
+      {
+        "pagePath": "pages/echo/echo",
+        "text": "回响",
+        "iconPath": "images/tab-echo.png",
+        "selectedIconPath": "images/tab-echo-active.png"
+      },
+      {
+        "pagePath": "pages/bond/bond",
+        "text": "宿缘",
+        "iconPath": "images/tab-bond.png",
+        "selectedIconPath": "images/tab-bond-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

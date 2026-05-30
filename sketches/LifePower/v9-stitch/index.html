@@ -1,0 +1,2541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>心汐 v9 · 心湖</title>
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/lake-states.css">
+<style>
+  /* ===== 手机模拟器 ===== */
+  body {
+    background: #0a1628;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .phone {
+    width: 375px;
+    height: 750px;
+    background: #fdf8f8;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    /* 手工纸纹理 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* ===== 状态栏 ===== */
+  .header {
+    padding: 50px var(--gutter) var(--breath-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-secondary);
+    z-index: 80;
+    position: relative;
+  }
+  .header-time {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-on-surface-variant);
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--breath-sm);
+  }
+  .msg-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-secondary);
+    font-size: 20px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .msg-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    background: var(--color-error);
+    color: var(--color-on-error);
+    font-size: 9px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+  }
+  .profile-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-container);
+    color: var(--color-on-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-body);
+  }
+
+  /* ===== 屏幕面板 ===== */
+  .screen {
+    display: none;
+    height: calc(100% - 130px);
+    overflow-y: auto;
+    padding: 0 var(--gutter);
+    position: relative;
+  }
+  .screen.active {
+    display: block;
+  }
+  .screen::-webkit-scrollbar {
+    width: 0;
+  }
+
+  /* ===== 引导页覆盖层 ===== */
+  .ob-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    background: var(--color-background);
+    border-radius: 40px;
+    padding: 60px var(--gutter) 30px;
+    overflow-y: auto;
+  }
+  .ob-overlay.active {
+    display: block;
+  }
+  .ob-overlay::-webkit-scrollbar {
+    width: 0;
+  }
+
+  /* 引导进度点 */
+  .ob-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: var(--breath-md);
+  }
+  .ob-dots span {
+    width: 20px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-surface-container-highest);
+    transition: background var(--duration-base) var(--ease-out);
+  }
+  .ob-dots span.done {
+    background: var(--color-primary);
+  }
+
+  /* 引导步骤 */
+  .ob-step {
+    display: none;
+  }
+  .ob-step.active {
+    display: block;
+  }
+  .ob-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-xs);
+    letter-spacing: -0.01em;
+  }
+  .ob-sub {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    margin-bottom: var(--breath-lg);
+    line-height: var(--lh-label-poetic);
+  }
+  .ob-section-label {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin: var(--breath-md) 0 var(--breath-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Chip 网格 */
+  .chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--breath-xs);
+  }
+  .chip-grid.col2 .chip {
+    width: calc(50% - 4px);
+    text-align: center;
+  }
+  .chip {
+    padding: var(--breath-xs) var(--breath-sm);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(116, 120, 120, 0.15);
+    background: var(--color-surface-container-lowest);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    transition: all var(--duration-slow) var(--ease-out);
+    line-height: var(--lh-label-poetic);
+  }
+  .chip:hover {
+    border-color: var(--color-primary);
+    background: rgba(23, 24, 24, 0.02);
+  }
+  .chip.selected {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container);
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .chip .chip-desc {
+    display: block;
+    font-size: var(--fs-micro);
+    color: var(--color-on-surface-variant);
+    font-weight: 400;
+    margin-top: 2px;
+    line-height: var(--lh-micro);
+    opacity: 0.7;
+  }
+  .chip.selected .chip-desc {
+    color: var(--color-on-primary-fixed-variant);
+    opacity: 0.8;
+  }
+
+  /* 引导按钮 */
+  .ob-btn {
+    width: 100%;
+    padding: var(--breath-sm);
+    margin-top: var(--breath-lg);
+    border-radius: var(--radius-xl);
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-body-md);
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .ob-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .ob-skip {
+    display: block;
+    text-align: center;
+    margin-top: var(--breath-sm);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-secondary);
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  /* ===== 心湖屏 (Home) ===== */
+
+  /* 状态切换栏 */
+  .lake-state-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--breath-xs);
+    margin-bottom: var(--breath-md);
+    flex-wrap: wrap;
+  }
+  .lake-state-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-container-high);
+    cursor: pointer;
+    transition: background var(--duration-base) var(--ease-out);
+  }
+  .lake-state-dot.active {
+    background: var(--color-primary);
+  }
+  .lake-state-dot.future {
+    background: var(--color-surface-container-highest);
+  }
+  .lake-state-label {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    text-align: center;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  /* 湖面主容器 — 继承 lake-states.css 的 .lake-container 等 */
+  .home-lake-wrap {
+    text-align: center;
+    padding: var(--breath-xs) 0;
+    position: relative;
+  }
+
+  /* 底部大气雾效 — 渐隐雾，增强景深感 */
+  .lake-mist {
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(to top, rgba(221, 217, 216, 0.4), transparent);
+    pointer-events: none;
+  }
+
+  /* 湖面状态文字 */
+  .lake-text-main {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-xs);
+    line-height: var(--lh-headline-lg-mobile);
+  }
+  .lake-text-sub {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    line-height: var(--lh-label-poetic);
+    font-style: italic;
+  }
+  .lake-text-zen-divider {
+    width: 4rem;
+    height: 1px;
+    background: var(--color-outline-variant);
+    margin: var(--breath-xs) auto;
+    opacity: 0.5;
+  }
+
+  /* 涟漪来源标签行 */
+  .ripple-source-tags {
+    display: flex;
+    justify-content: center;
+    gap: var(--breath-sm);
+    margin-top: var(--breath-xs);
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-on-surface-variant);
+  }
+  .ripple-source-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ripple-source-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .ripple-source-dot.inner {
+    background: var(--color-primary);
+  }
+  .ripple-source-dot.mark {
+    background: var(--color-tertiary-fixed-dim);
+  }
+  .ripple-source-dot.transfer {
+    background: var(--color-on-tertiary-fixed-variant);
+  }
+
+  /* 湖面解读卡片 */
+  .lake-insight-card {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--breath-sm);
+    margin-top: var(--breath-sm);
+    box-shadow: var(--shadow-xs);
+  }
+  .lake-insight-title {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-bottom: var(--breath-xs);
+    letter-spacing: 0.05em;
+  }
+  .lake-insight-text {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    line-height: var(--lh-body-lg);
+    font-style: italic;
+  }
+  .lake-insight-footer {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-top: var(--breath-xs);
+    text-align: right;
+    opacity: 0.7;
+  }
+
+  /* 底部操作按钮 */
+  .lake-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--breath-xs);
+    margin-top: var(--breath-sm);
+  }
+  .lake-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--breath-xs);
+    width: 100%;
+    padding: var(--breath-sm);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(23, 24, 24, 0.2);
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: var(--fs-body-md);
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-out);
+    letter-spacing: 0.03em;
+  }
+  .lake-action-btn:hover {
+    border-color: var(--color-primary);
+    background: rgba(23, 24, 24, 0.03);
+  }
+  .lake-action-btn.primary {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(23, 24, 24, 0.4);
+  }
+  .lake-action-btn.primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(23, 24, 24, 0.05);
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-out);
+  }
+  .lake-action-btn.primary:hover::after {
+    opacity: 1;
+  }
+
+  /* 预警条 */
+  .warn-bar {
+    background: var(--color-error-container);
+    border-left: 3px solid var(--color-error);
+    border-radius: var(--radius-md);
+    padding: var(--breath-xs) var(--breath-sm);
+    margin: var(--breath-sm) 0;
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-error-container);
+    display: none;
+  }
+  .warn-bar.show {
+    display: block;
+  }
+  .warn-bar .warn-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .warn-bar .warn-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: var(--breath-xs);
+  }
+  .warn-bar .warn-actions button {
+    padding: 5px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-error);
+    background: var(--color-surface-container-lowest);
+    color: var(--color-error);
+    font-size: var(--fs-micro);
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+
+  /* 涟漪屏 查看趋势 入口 */
+  .view-trend-link {
+    text-align: center;
+    padding: var(--breath-xs);
+    margin-top: var(--breath-xs);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-primary);
+    cursor: pointer;
+    opacity: 0.7;
+    letter-spacing: 0.03em;
+  }
+
+  /* ===== 涟漪屏 (Echoes) ===== */
+  .echoes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--breath-md);
+  }
+  .echoes-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+  }
+  .echoes-subtitle {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+  }
+
+  /* 涟漪时间线 */
+  .ripple-timeline {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--breath-sm);
+    box-shadow: var(--shadow-xs);
+  }
+  .ripple-timeline-header {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-bottom: var(--breath-xs);
+    letter-spacing: 0.05em;
+  }
+  .ripple-timeline-item {
+    display: flex;
+    align-items: center;
+    gap: var(--breath-xs);
+    padding: var(--breath-xs) 0;
+    border-bottom: 1px solid var(--color-surface-container);
+  }
+  .ripple-timeline-item:last-child {
+    border-bottom: none;
+  }
+  .ripple-ring {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    position: relative;
+    color: var(--color-primary);
+  }
+  .ripple-ring::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 1px solid rgba(23, 24, 24, 0.15);
+  }
+  .ripple-item-label {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    flex: 1;
+  }
+  .ripple-item-time {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+  }
+  .ripple-empty {
+    text-align: center;
+    padding: var(--breath-lg) var(--breath-sm);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-secondary);
+    opacity: 0.6;
+    font-style: italic;
+  }
+  .ripple-load-more {
+    text-align: center;
+    padding: var(--breath-xs);
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-surface-container-highest);
+  }
+
+  /* ===== 回响屏 (Echoes-back) ===== */
+  .echoback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--breath-md);
+  }
+  .echoback-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+  }
+  .echoback-subtitle {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+  }
+
+  .msg-item {
+    padding: var(--breath-sm);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--breath-xs);
+    transition: all var(--duration-base) var(--ease-out);
+    background: var(--color-surface-container-lowest);
+    border-left: 3px solid transparent;
+  }
+  .msg-item.unread {
+    background: var(--color-surface-container-lowest);
+    border-left-color: var(--color-primary);
+    box-shadow: var(--shadow-xs);
+  }
+  .msg-item.read {
+    background: var(--color-surface-container-low);
+    opacity: 0.75;
+  }
+  .msg-from {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    font-weight: 500;
+    color: var(--color-primary);
+  }
+  .msg-body {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    margin-top: 2px;
+    line-height: var(--lh-label-poetic);
+  }
+  .msg-time {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-top: 4px;
+  }
+  .msg-tag {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-micro);
+    font-family: var(--font-body);
+  }
+  .msg-tag.pending {
+    background: var(--color-surface-container);
+    color: var(--color-primary);
+  }
+  .msg-tag.accepted {
+    background: var(--color-tertiary-fixed);
+    color: var(--color-on-tertiary-fixed);
+  }
+  .msg-tag.rejected {
+    background: var(--color-error-container);
+    color: var(--color-on-error-container);
+  }
+  .msg-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: var(--breath-xs);
+  }
+  .msg-accept, .msg-reject {
+    padding: 6px var(--breath-sm);
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    cursor: pointer;
+    font-weight: 400;
+    transition: all var(--duration-base) var(--ease-out);
+    background: var(--color-surface-container-lowest);
+  }
+  .msg-accept {
+    border-color: var(--color-tertiary-fixed-dim);
+    color: var(--color-on-tertiary-fixed-variant);
+  }
+  .msg-accept:hover {
+    background: var(--color-tertiary-fixed);
+  }
+  .msg-reject {
+    border-color: var(--color-outline-variant);
+    color: var(--color-secondary);
+  }
+  .msg-reject:hover {
+    background: var(--color-surface-container);
+  }
+
+  /* ===== 宿缘屏 (Destiny) ===== */
+  .destiny-header {
+    margin-bottom: var(--breath-md);
+  }
+  .destiny-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+  }
+  .destiny-subtitle {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+  }
+
+  .bond-tab-bar {
+    display: flex;
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: 3px;
+    margin-bottom: var(--breath-sm);
+    box-shadow: var(--shadow-xs);
+  }
+  .bond-tab {
+    flex: 1;
+    padding: var(--breath-xs);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+  .bond-tab.active {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: 500;
+  }
+
+  .bond-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--breath-xs);
+  }
+  .bond-list.hidden {
+    display: none;
+  }
+
+  .bond-item {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--breath-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--breath-xs);
+    box-shadow: var(--shadow-xs);
+    position: relative;
+  }
+  .bond-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: var(--fs-body-md);
+    font-weight: 500;
+    color: var(--color-on-primary);
+    flex-shrink: 0;
+  }
+  .bond-info {
+    flex: 1;
+  }
+  .bond-name {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    font-weight: 500;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .bond-level {
+    font-size: var(--fs-micro);
+    padding: 2px 8px;
+    border-radius: var(--radius-md);
+    font-weight: 400;
+  }
+  .bond-level.lv1 {
+    background: var(--color-surface-container);
+    color: var(--color-secondary);
+  }
+  .bond-level.lv2 {
+    background: var(--color-primary-fixed);
+    color: var(--color-on-primary-fixed-variant);
+  }
+  .bond-level.lv3 {
+    background: var(--color-primary-fixed-dim);
+    color: var(--color-on-primary-fixed-variant);
+  }
+  .bond-level.lv4 {
+    background: var(--color-tertiary-fixed);
+    color: var(--color-on-tertiary-fixed);
+  }
+  .bond-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .bond-tag {
+    font-size: var(--fs-micro);
+    padding: 2px 7px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+  }
+  .bond-tag.public {
+    background: var(--color-tertiary-fixed);
+    color: var(--color-on-tertiary-fixed-variant);
+  }
+  .bond-tag.quiet {
+    background: var(--color-surface-container);
+    color: var(--color-on-surface-variant);
+  }
+  .bond-tag.relation {
+    background: var(--color-primary-fixed);
+    color: var(--color-on-primary-fixed-variant);
+  }
+  .bond-status {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+  }
+  .bond-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+  .bond-action {
+    padding: 5px 12px;
+    border-radius: var(--radius-xl);
+    border: 1px solid;
+    background: var(--color-surface-container-lowest);
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .bond-action.echo {
+    border-color: var(--color-tertiary-fixed-dim);
+    color: var(--color-on-tertiary-fixed-variant);
+  }
+  .bond-action.flower {
+    border-color: var(--color-primary-fixed-dim);
+    color: var(--color-on-primary-fixed-variant);
+  }
+  .bond-action.kiss {
+    border-color: var(--color-on-tertiary-fixed-variant);
+    color: var(--color-on-tertiary-fixed-variant);
+  }
+  .bond-action.shield {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .bond-add {
+    text-align: center;
+    padding: var(--breath-sm);
+    margin-top: var(--breath-xs);
+    border-radius: var(--radius-xl);
+    border: 1.5px dashed var(--color-primary-fixed-dim);
+    color: var(--color-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+    opacity: 0.7;
+  }
+  .bond-tip {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    text-align: center;
+    padding: var(--breath-xs);
+    opacity: 0.6;
+  }
+
+  /* ===== 底部导航 ===== */
+  .btm-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(253, 248, 248, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--color-surface-container-highest);
+    padding: 6px 0 20px;
+    z-index: 80;
+    font-family: var(--font-body);
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+  .nav-item.active {
+    color: var(--color-primary);
+  }
+  .nav-item .nav-icon {
+    font-size: 20px;
+  }
+
+  /* ===== Modal: 记录此刻 ===== */
+  .record-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    border-radius: 40px;
+    align-items: center;
+    justify-content: center;
+  }
+  .record-overlay.active {
+    display: flex;
+  }
+  .record-card {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--breath-md) var(--gutter);
+    width: 290px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .record-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-md);
+  }
+  .record-tab-bar {
+    display: flex;
+    background: var(--color-surface-container);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    margin-bottom: var(--breath-sm);
+  }
+  .record-tab {
+    flex: 1;
+    padding: var(--breath-xs) 0;
+    border-radius: var(--radius-md);
+    border: none;
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-secondary);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+  .record-tab.active {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .record-panel {
+    display: none;
+  }
+  .record-panel.active {
+    display: block;
+  }
+  .record-mood-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: var(--breath-sm);
+  }
+  .record-mood-item {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-lg);
+    padding: var(--breath-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--breath-xs);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+  .record-mood-item:hover {
+    border-color: var(--color-primary-fixed-dim);
+  }
+  .record-mood-item.selected {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container);
+  }
+  .record-mood-emoji {
+    font-size: 24px;
+  }
+  .record-mood-name {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-primary);
+  }
+  .record-submit {
+    width: 100%;
+    padding: var(--breath-xs);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+  }
+  .record-submit:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .record-close {
+    display: block;
+    width: 100%;
+    margin-top: var(--breath-xs);
+    padding: var(--breath-xs);
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+  }
+  .record-day-icon {
+    font-size: 36px;
+    margin-bottom: var(--breath-xs);
+  }
+  .record-day-title {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-bottom: var(--breath-xs);
+  }
+  .record-day-sub {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-bottom: var(--breath-sm);
+  }
+
+  /* ===== Modal: 能量详情 (回响能量弹出) ===== */
+  .energy-popup {
+    display: none;
+    position: absolute;
+    bottom: 120px;
+    left: var(--gutter);
+    right: var(--gutter);
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--gutter);
+    z-index: 50;
+    box-shadow: var(--shadow-lg);
+  }
+  .energy-popup.active {
+    display: block;
+  }
+  .energy-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-body-lg);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-xs);
+  }
+  .energy-info {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-on-surface-variant);
+    margin-bottom: var(--breath-xs);
+    line-height: var(--lh-label-poetic);
+  }
+  .energy-info strong {
+    color: var(--color-primary);
+  }
+  .energy-slider {
+    width: 100%;
+    margin: var(--breath-xs) 0;
+    accent-color: var(--color-primary);
+  }
+  .energy-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    margin-bottom: var(--breath-xs);
+  }
+  .energy-value {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-xs);
+  }
+  .energy-dim {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    color: var(--color-secondary);
+    text-align: center;
+    margin-bottom: var(--breath-xs);
+    line-height: var(--lh-micro);
+  }
+  .energy-confirm {
+    width: 100%;
+    padding: var(--breath-xs);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+  }
+  .energy-cancel {
+    width: 100%;
+    padding: var(--breath-xs);
+    margin-top: var(--breath-xs);
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+  }
+
+  /* ===== Modal: 温暖回应 ===== */
+  .warmth-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    border-radius: 40px;
+    align-items: center;
+    justify-content: center;
+  }
+  .warmth-overlay.active {
+    display: flex;
+  }
+  .warmth-card {
+    background: var(--color-surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--breath-md) var(--gutter);
+    width: 300px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .warmth-emoji {
+    font-size: 48px;
+    margin-bottom: var(--breath-sm);
+  }
+  .warmth-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-body-lg);
+    color: var(--color-primary);
+    margin-bottom: var(--breath-xs);
+  }
+  .warmth-sub {
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+    line-height: var(--lh-body-lg);
+    margin-bottom: var(--breath-sm);
+  }
+  .warmth-feel {
+    display: flex;
+    gap: var(--breath-xs);
+    justify-content: center;
+    margin-bottom: var(--breath-sm);
+  }
+  .warmth-feel button {
+    padding: var(--breath-xs) var(--breath-sm);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-outline-variant);
+    background: var(--color-surface-container-lowest);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+  .warmth-feel button:hover {
+    border-color: var(--color-primary);
+  }
+  .warmth-close {
+    padding: var(--breath-xs) var(--breath-lg);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    cursor: pointer;
+  }
+
+  /* ===== Modal: 个人资料面板 ===== */
+  .profile-panel {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100%;
+    background: var(--color-surface-container-lowest);
+    z-index: 90;
+    border-radius: 0 40px 40px 0;
+    padding: 60px var(--gutter) 30px;
+    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.08);
+  }
+  .profile-panel.active {
+    display: block;
+  }
+  .profile-close {
+    position: absolute;
+    top: 50px;
+    right: var(--gutter);
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--color-secondary);
+    font-family: var(--font-icon);
+  }
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-headline-lg-mobile);
+    color: var(--color-primary);
+  }
+  .profile-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: var(--breath-xs) 0 var(--breath-sm);
+  }
+  .profile-tag {
+    font-family: var(--font-body);
+    font-size: var(--fs-micro);
+    padding: 3px 8px;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-container);
+    color: var(--color-primary);
+  }
+  .profile-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--breath-xs) 0;
+    border-bottom: 1px solid var(--color-surface-container);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    color: var(--color-on-surface-variant);
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+    padding: var(--breath-xs) var(--breath-sm);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: var(--fs-label-poetic);
+    z-index: 200;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+
+  /* 颜色 chip (引导页 Step 1) — 色觉 chip */
+  .color-chip {
+    position: relative;
+    padding-left: 28px;
+  }
+  .color-chip::before {
+    content: '';
+    position: absolute;
+    left: var(--breath-xs);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-full);
+  }
+  .color-chip.blue::before   { background: #6b9ac4; }
+  .color-chip.orange::before { background: #d4956b; }
+  .color-chip.indigo::before { background: #5b6e8a; }
+  .color-chip.green::before  { background: #8aa87d; }
+  .color-chip.purple::before { background: #9b8ec4; }
+  .color-chip.gold::before   { background: #c4a56b; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- ========== 状态栏 / HEADER ========== -->
+  <div class="header">
+    <span class="header-time">20:35</span>
+    <div class="header-right">
+      <button class="msg-btn" aria-label="消息">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="msg-badge" id="msgBadge">2</span>
+      </button>
+      <button class="profile-btn" aria-label="个人资料">我</button>
+    </div>
+  </div>
+
+  <!-- ========== 引导页 (ONBOARDING) — 2 步 ========== -->
+  <div class="ob-overlay active" id="onboard">
+
+    <!-- 进度点 -->
+    <div class="ob-dots" id="dots">
+      <span class="done" data-step="1"></span>
+      <span data-step="2"></span>
+    </div>
+
+    <!-- Step 1/2: 你的底色 -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-title">你的底色</div>
+      <div class="ob-sub">让我们先了解你——这些选择会让心湖更懂你</div>
+
+      <!-- 色彩气质 -->
+      <div class="ob-section-label">你觉得自己最像哪一种？</div>
+      <div class="chip-grid">
+        <div class="chip color-chip blue">
+          静谧蓝<span class="chip-desc">沉静内敛，深思熟虑</span>
+        </div>
+        <div class="chip color-chip orange">
+          温暖橙<span class="chip-desc">热情开朗，乐于分享</span>
+        </div>
+        <div class="chip color-chip indigo">
+          深邃靛<span class="chip-desc">洞察本质，追求深度</span>
+        </div>
+        <div class="chip color-chip green">
+          柔和绿<span class="chip-desc">平和包容，与世无争</span>
+        </div>
+        <div class="chip color-chip purple">
+          暮光紫<span class="chip-desc">敏感细腻，富有诗意</span>
+        </div>
+        <div class="chip color-chip gold">
+          晨光金<span class="chip-desc">积极向上，充满希望</span>
+        </div>
+      </div>
+
+      <!-- 关系状态 -->
+      <div class="ob-section-label">现在的你，属于哪种状态？</div>
+      <div class="chip-grid">
+        <div class="chip">热恋中</div>
+        <div class="chip">已婚</div>
+        <div class="chip">单身自由</div>
+        <div class="chip">寻觅中</div>
+        <div class="chip">空窗期</div>
+        <div class="chip">模糊地带</div>
+        <div class="chip">暗恋中</div>
+        <div class="chip">分居中</div>
+        <div class="chip">空巢期</div>
+      </div>
+
+      <!-- 上班状态 -->
+      <div class="ob-section-label">上班的你</div>
+      <div class="chip-grid">
+        <div class="chip">在职稳定</div>
+        <div class="chip">创业中</div>
+        <div class="chip">学生党</div>
+        <div class="chip">全职带娃</div>
+        <div class="chip">求职中</div>
+        <div class="chip">Gap期</div>
+      </div>
+
+      <!-- 在家的你 -->
+      <div class="ob-section-label">在家的你</div>
+      <div class="chip-grid">
+        <div class="chip">有娃父母</div>
+        <div class="chip">二人世界</div>
+        <div class="chip">独居自由</div>
+        <div class="chip">宠物家长</div>
+        <div class="chip">照顾老人</div>
+      </div>
+
+      <!-- 盼头 -->
+      <div class="ob-section-label">有没有一件让你期待的事？</div>
+      <div class="chip-grid col2">
+        <div class="chip">有清晰目标，稳步推进</div>
+        <div class="chip">有方向但进展模糊</div>
+        <div class="chip">暂时迷茫，没方向</div>
+        <div class="chip">刚完成大目标，空虚期</div>
+      </div>
+    </div>
+
+    <!-- Step 2/2: 你的此刻 -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-title">你的此刻</div>
+      <div class="ob-sub">今天的你，和平时有什么不同？让石子落在湖面的位置，映照此刻的心境。</div>
+
+      <!-- 情绪主调 -->
+      <div class="ob-section-label">此刻的心湖状态</div>
+      <div class="chip-grid col2">
+        <div class="chip selected">平静 · 心如止水</div>
+        <div class="chip">微澜 · 略有波动</div>
+        <div class="chip">波动 · 情绪起伏</div>
+        <div class="chip">汹涌 · 强烈波动</div>
+      </div>
+
+      <!-- 微状态 chip -->
+      <div class="ob-section-label">今天的你</div>
+      <div class="chip-grid col2">
+        <div class="chip">状态在线</div>
+        <div class="chip">状态不在线</div>
+        <div class="chip">高压冲刺</div>
+        <div class="chip">佛系摸鱼</div>
+      </div>
+
+      <!-- 预览区 -->
+      <div style="text-align:center;padding:var(--breath-sm);background:var(--color-surface-container-low);border-radius:var(--radius-lg);font-family:var(--font-body);font-size:var(--fs-micro);color:var(--color-on-surface-variant);line-height:var(--lh-body-lg);margin-bottom:var(--breath-sm);margin-top:var(--breath-sm)">
+        你将拥有专属湖面映照<br>
+        随时查看每日涟漪变化<br>
+        与在意的人建立温暖守望
+      </div>
+
+      <button class="ob-btn" id="bFinish" disabled>开始</button>
+      <span class="ob-skip">跳过</span>
+    </div>
+  </div>
+
+  <!-- ========== 个人资料面板 ========== -->
+  <div class="profile-panel" id="profile">
+    <span class="profile-close">close</span>
+    <div class="profile-name">小守</div>
+    <div class="profile-tags">
+      <span class="profile-tag">INFP</span>
+      <span class="profile-tag">热恋中</span>
+      <span class="profile-tag">创业中</span>
+      <span class="profile-tag">有方向</span>
+    </div>
+    <div class="profile-row"><span>湖面节奏</span><span style="color:var(--color-primary)">上午平静 · 午后微澜</span></div>
+    <div class="profile-row"><span>情绪敏感度</span><span>中等敏感 · 容易受小事影响</span></div>
+    <div class="profile-row"><span>涟漪来源</span><span>独处安静 · 被关怀时回满</span></div>
+    <div class="profile-row"><span>湖面峰值</span><span style="color:var(--color-on-primary-fixed-variant)">偶尔会超出常规状态</span></div>
+    <div class="profile-row"><span>守望</span><span>3 人 · 1 守护光点</span></div>
+    <div class="profile-row"><span>获得涟漪</span><span style="color:var(--color-on-tertiary-fixed-variant)">高 · 本周被关怀 8 次</span></div>
+  </div>
+
+  <!-- ========== 心湖屏 (HOME) / screen 0 ========== -->
+  <div class="screen" id="sc-home">
+    <!-- 湖面状态切换栏 -->
+    <div class="lake-state-bar">
+      <span class="lake-state-dot active" data-state="mirror"></span>
+      <span class="lake-state-dot" data-state="breeze"></span>
+      <span class="lake-state-dot" data-state="ripples"></span>
+      <span class="lake-state-dot" data-state="storm"></span>
+      <span class="lake-state-label">湖面如镜</span>
+    </div>
+
+    <!-- 湖面核心区域 -->
+    <div class="home-lake-wrap lake--mirror" id="homeLakeWrap">
+      <!-- 湖面容器 -->
+      <div class="lake-container">
+        <!-- 3 层同心装饰涟漪环 (对齐 Stitch 设计) -->
+        <div class="lake-ripple"></div>
+        <div class="lake-ripple"></div>
+        <div class="lake-ripple"></div>
+        <!-- 湖面圆形 -->
+        <div class="lake-surface"></div>
+      </div>
+
+      <!-- 状态描述文字 -->
+      <div class="lake-state-label">
+        <h2 class="lake-text-main">湖面如镜</h2>
+        <div class="lake-text-zen-divider"></div>
+        <p class="lake-text-sub">心湖澄澈，波澜不惊</p>
+      </div>
+
+      <!-- 涟漪来源标签 -->
+      <div class="ripple-source-tags" id="srcTags">
+        <span class="ripple-source-tag"><span class="ripple-source-dot inner"></span>自在</span>
+        <span class="ripple-source-tag"><span class="ripple-source-dot mark"></span>印记</span>
+        <span class="ripple-source-tag"><span class="ripple-source-dot transfer"></span>回响</span>
+      </div>
+
+      <!-- 底部大气雾效 (Stitch: atmospheric perspective) -->
+      <div class="lake-mist"></div>
+    </div>
+
+    <!-- 预警条 -->
+    <div class="warn-bar" id="warn-low">
+      <div class="warn-title">湖面波澜预警</div>
+      <div>你的心湖波动较大，需要平静一下吗？</div>
+      <div class="warn-actions">
+        <button>平静活动</button>
+        <button>投入石子</button>
+      </div>
+    </div>
+
+    <!-- 底部操作按钮 -->
+    <div class="lake-actions">
+      <button class="lake-action-btn primary">
+        <span class="material-symbols-outlined">water_drop</span>
+        投石入水
+      </button>
+      <button class="lake-action-btn">
+        <span class="material-symbols-outlined">edit_note</span>
+        记录此刻
+      </button>
+      <button class="lake-action-btn">
+        <span class="material-symbols-outlined">water_ripple</span>
+        查看涟漪
+      </button>
+    </div>
+
+    <!-- 湖面解读卡片 -->
+    <div class="lake-insight-card">
+      <div class="lake-insight-title">今日湖面映照</div>
+      <div class="lake-insight-text">
+        「今天的你像一片静谧的湖水——白天有过一阵涟漪的波动，但傍晚的平静和满足让一切都柔和下来。你被 2 个人关心过，其中 1 份温暖还在彼岸。明天醒来，又将是新的一天。」
+      </div>
+      <div class="lake-insight-footer">湖面映照着你的状态</div>
+    </div>
+
+    <div class="view-trend-link">查看涟漪趋势 →</div>
+  </div>
+
+  <!-- ========== 涟漪屏 (ECHOES) / screen 1 ========== -->
+  <div class="screen" id="sc-echoes">
+    <div class="echoes-header">
+      <span class="echoes-title">涟漪</span>
+      <span class="echoes-subtitle">石子落入的痕迹</span>
+    </div>
+
+    <!-- 情绪轨迹时间线 -->
+    <div class="ripple-timeline">
+      <div class="ripple-timeline-header">石子落入的痕迹</div>
+
+      <div class="ripple-timeline-item">
+        <div class="ripple-ring">平静</div>
+        <span class="ripple-item-label">平静放松</span>
+        <span class="ripple-item-time">今天 20:35</span>
+      </div>
+      <div class="ripple-timeline-item">
+        <div class="ripple-ring">微澜</div>
+        <span class="ripple-item-label">焦虑不安</span>
+        <span class="ripple-item-time">今天 14:00</span>
+      </div>
+      <div class="ripple-timeline-item">
+        <div class="ripple-ring">波动</div>
+        <span class="ripple-item-label">元气满满</span>
+        <span class="ripple-item-time">今天 08:20</span>
+      </div>
+      <div class="ripple-timeline-item">
+        <div class="ripple-ring">微澜</div>
+        <span class="ripple-item-label">幸福满足</span>
+        <span class="ripple-item-time">昨天 18:10</span>
+      </div>
+      <div class="ripple-timeline-item">
+        <div class="ripple-ring">汹涌</div>
+        <span class="ripple-item-label">低落难过</span>
+        <span class="ripple-item-time">昨天 10:30</span>
+      </div>
+
+      <div class="ripple-load-more">—— 下拉加载更多 ——</div>
+    </div>
+
+    <!-- 空状态 (默认隐藏) -->
+    <div class="ripple-empty" style="display:none" id="echoes-empty">
+      水面如镜，尚无涟漪<br>投一颗石子，记录你的第一道波纹
+    </div>
+  </div>
+
+  <!-- ========== 回响屏 (ECHOES-BACK) / screen 2 ========== -->
+  <div class="screen" id="sc-echoback">
+    <div class="echoback-header">
+      <span class="echoback-title">回响</span>
+      <span class="echoback-subtitle">彼岸传来的波纹</span>
+    </div>
+
+    <!-- 回响卡片 1 — 待回应 -->
+    <div class="msg-item unread" id="msg1">
+      <div class="msg-from">张小明 · 男友 · 守护光点</div>
+      <div class="msg-body">守护光点向你传来一缕波纹（不消耗自身）</div>
+      <div class="msg-time">19:30</div>
+      <span class="msg-tag pending" id="msg1-tag">待回应 · 第1次接收</span>
+      <div class="msg-actions" id="msg1-actions">
+        <button class="msg-accept">接纳这份回响</button>
+        <button class="msg-reject">让它散去</button>
+      </div>
+    </div>
+
+    <!-- 回响卡片 2 — 已自然接纳 -->
+    <div class="msg-item unread" id="msg2">
+      <div class="msg-from">李小花 · 闺蜜 · 相伴</div>
+      <div class="msg-body">给你投来一朵涟漪 「今天也在闪闪发光」</div>
+      <div class="msg-time">17:15</div>
+      <span class="msg-tag accepted" id="msg2-tag">已自然接纳 · 被认可</span>
+    </div>
+
+    <!-- 回响卡片 3 — 已读 -->
+    <div class="msg-item read" id="msg3">
+      <div class="msg-from">老爸 · 家人 · 遥望</div>
+      <div class="msg-body">你的湖面有波澜… 发来问候</div>
+      <div class="msg-time">昨天 20:05</div>
+      <span class="msg-tag accepted">已自然接纳</span>
+    </div>
+  </div>
+
+  <!-- ========== 宿缘屏 (DESTINY) / screen 3 ========== -->
+  <div class="screen" id="sc-destiny">
+    <div class="destiny-header">
+      <span class="destiny-title">宿缘</span>
+      <span class="destiny-subtitle">守望连接</span>
+    </div>
+
+    <!-- Tab 切换 -->
+    <div class="bond-tab-bar">
+      <span class="bond-tab active" data-tab="mutual">相望之缘</span>
+      <span class="bond-tab" data-tab="quiet">静默守望</span>
+    </div>
+
+    <!-- 相望之缘 -->
+    <div class="bond-list" id="bond-mutual">
+      <!-- 守护光点 -->
+      <div class="bond-item" style="background:linear-gradient(135deg, var(--color-surface-container-lowest), var(--color-tertiary-fixed))">
+        <span style="position:absolute;top:6px;right:10px;font-size:18px">&#x2728;</span>
+        <div class="bond-avatar" style="background: linear-gradient(135deg, var(--color-on-tertiary-fixed-variant), var(--color-tertiary-fixed-dim))">张</div>
+        <div class="bond-info">
+          <div class="bond-name">
+            张小明
+            <span class="bond-level lv4">守护光点</span>
+            <div class="bond-tags">
+              <span class="bond-tag public">公开</span>
+              <span class="bond-tag relation">伴侣</span>
+            </div>
+          </div>
+          <div class="bond-status">湖面澄澈 · 累计 98 天 · 回响 53 次</div>
+        </div>
+        <div class="bond-actions">
+          <button class="bond-action shield">免费传</button>
+          <button class="bond-action flower">花</button>
+        </div>
+      </div>
+
+      <!-- 相伴 -->
+      <div class="bond-item">
+        <div class="bond-avatar" style="background: linear-gradient(135deg, var(--color-on-primary-fixed-variant), var(--color-primary-fixed-dim))">李</div>
+        <div class="bond-info">
+          <div class="bond-name">
+            李小花
+            <span class="bond-level lv3">相伴</span>
+            <div class="bond-tags">
+              <span class="bond-tag quiet">静默</span>
+              <span class="bond-tag relation">密友</span>
+            </div>
+          </div>
+          <div class="bond-status">湖面微澜 · 累计 35 天 · 可查看趋势</div>
+        </div>
+        <div class="bond-actions">
+          <button class="bond-action echo">回响</button>
+        </div>
+      </div>
+
+      <!-- 遥望 -->
+      <div class="bond-item">
+        <div class="bond-avatar" style="background: linear-gradient(135deg, var(--color-tertiary-fixed-dim), var(--color-on-tertiary-fixed-variant))">爸</div>
+        <div class="bond-info">
+          <div class="bond-name">
+            老爸
+            <span class="bond-level lv2">遥望</span>
+            <div class="bond-tags">
+              <span class="bond-tag relation">家人</span>
+            </div>
+          </div>
+          <div class="bond-status">状态良好 · 累计 12 天 · 已投花</div>
+        </div>
+        <div class="bond-actions">
+          <button class="bond-action flower">花</button>
+          <button class="bond-action kiss">吻</button>
+        </div>
+      </div>
+
+      <div class="bond-tip">回响不限总次数 · 同一对象≤3次/天 · 衰减 5%→4%→3%→2%→1%→0.5%</div>
+    </div>
+
+    <!-- 静默守望 (默认隐藏) -->
+    <div class="bond-list hidden" id="bond-quiet">
+      <div class="bond-item">
+        <div class="bond-avatar" style="background: linear-gradient(135deg, var(--color-secondary), var(--color-outline))">王</div>
+        <div class="bond-info">
+          <div class="bond-name">
+            王阿姨
+            <span class="bond-level lv1">微光</span>
+            <div class="bond-tags">
+              <span class="bond-tag relation">前同事</span>
+            </div>
+          </div>
+          <div class="bond-status">静默守望 28 天 · 已回响 2 次 · 已慰问 5 次</div>
+        </div>
+        <div class="bond-actions">
+          <button class="bond-action echo">静默慰问</button>
+        </div>
+      </div>
+
+      <div class="bond-item">
+        <div class="bond-avatar" style="background: linear-gradient(135deg, var(--color-outline-variant), var(--color-secondary))">刘</div>
+        <div class="bond-info">
+          <div class="bond-name">
+            刘老师
+            <span class="bond-level lv2">遥望</span>
+            <div class="bond-tags">
+              <span class="bond-tag relation">导师</span>
+            </div>
+          </div>
+          <div class="bond-status">静默守望 56 天 · 已回响 8 次 · 已慰问 12 次</div>
+        </div>
+        <div class="bond-actions">
+          <button class="bond-action echo">静默慰问</button>
+        </div>
+      </div>
+
+      <div class="bond-tip">静默守望：你看得到对方<br>对方不知道你在守望 · 最高 Lv.2<br>仅可见等级、守望时间、回响次数</div>
+    </div>
+
+    <div class="bond-add">+ 建立新的守望</div>
+  </div>
+
+  <!-- ========== Modal: 记录此刻 ========== -->
+  <div class="record-overlay" id="recordOverlay">
+    <div class="record-card">
+      <div class="record-title">投一颗石子</div>
+
+      <!-- Tab 切换 -->
+      <div class="record-tab-bar">
+        <button class="record-tab active" data-rntab="now">此刻的石子</button>
+        <button class="record-tab" data-rntab="day">今日湖面</button>
+      </div>
+
+      <!-- 此刻面板 -->
+      <div class="record-panel active" id="recordPanelNow">
+        <div style="font-family:var(--font-body);font-size:var(--fs-micro);color:var(--color-secondary);margin-bottom:var(--breath-xs)">此刻 · 现在</div>
+        <div class="record-mood-grid">
+          <div class="record-mood-item"><span class="record-mood-emoji">平静</span><span class="record-mood-name">平静放松</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">微澜</span><span class="record-mood-name">轻微波动</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">波动</span><span class="record-mood-name">期待兴奋</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">汹涌</span><span class="record-mood-name">焦虑不安</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">波动</span><span class="record-mood-name">疲惫乏力</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">汹涌</span><span class="record-mood-name">烦躁易怒</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">微澜</span><span class="record-mood-name">幸福满足</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">平静</span><span class="record-mood-name">低落难过</span></div>
+        </div>
+        <button class="record-submit" id="recordSubmitNow" disabled>投入石子</button>
+      </div>
+
+      <!-- 今日面板 -->
+      <div class="record-panel" id="recordPanelDay">
+        <div class="record-day-icon">平静</div>
+        <div class="record-day-title">今天湖面整体是 ______</div>
+        <div class="record-day-sub">基于今天的石子投入</div>
+        <div class="record-mood-grid">
+          <div class="record-mood-item"><span class="record-mood-emoji">平静</span><span class="record-mood-name">平静放松</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">微澜</span><span class="record-mood-name">略有波动</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">波动</span><span class="record-mood-name">期待兴奋</span></div>
+          <div class="record-mood-item"><span class="record-mood-emoji">汹涌</span><span class="record-mood-name">焦虑不安</span></div>
+        </div>
+        <button class="record-submit" id="recordSubmitDay" disabled>完成今日凝望</button>
+      </div>
+
+      <button class="record-close">取消</button>
+    </div>
+  </div>
+
+  <!-- ========== Modal: 能量详情 (回响弹出) ========== -->
+  <div class="energy-popup" id="energyPopup">
+    <div class="energy-title">回响给 李小花</div>
+    <div class="energy-info">守望等级：<strong>相伴</strong> · 回响效率 ×1.3 · 被守望方额外 +1%</div>
+    <div class="energy-info">你当前湖面状态：<strong>充盈</strong> · 今日已向她回响 2 次 · 剩余 1 次</div>
+    <input type="range" class="energy-slider" min="0" max="30" value="10" step="5">
+    <div class="energy-labels"><span>0%</span><span>5%</span><span>10%</span><span>20%</span><span>30%</span></div>
+    <div class="energy-value">回响 <strong id="energyVal">10%</strong> 涟漪</div>
+    <div class="energy-dim" id="energyDim">她将收到 <strong>13%</strong>（10% × 1.3 相伴加成）· 本次接收衰减后 +3%</div>
+    <button class="energy-confirm">确认回响</button>
+    <button class="energy-cancel">取消</button>
+  </div>
+
+  <!-- ========== Modal: 温暖回应 ========== -->
+  <div class="warmth-overlay" id="warmthOverlay">
+    <div class="warmth-card">
+      <div class="warmth-emoji">聚焦</div>
+      <div class="warmth-title">你把今天的涟漪都散出去了</div>
+      <div class="warmth-sub">你给 张小明、李小花、老爸 传递了回响<br>虽然自己只剩很少，但你选择了分享</div>
+      <div style="font-family:var(--font-body);font-size:var(--fs-label-poetic);color:var(--color-on-surface-variant);margin-bottom:var(--breath-sm)">现在感觉怎么样？</div>
+      <div class="warmth-feel">
+        <button>我很开心</button>
+        <button>有点累</button>
+        <button>没想那么多</button>
+      </div>
+      <button class="warmth-close">知道了</button>
+    </div>
+  </div>
+
+  <!-- ========== 底部导航 (中文) ========== -->
+  <div class="btm-nav">
+    <div class="nav-item active" data-screen="home">
+      <span class="nav-icon material-symbols-outlined">water_full</span>
+      <span>心湖</span>
+    </div>
+    <div class="nav-item" data-screen="echoes">
+      <span class="nav-icon material-symbols-outlined">radio_button_checked</span>
+      <span>涟漪</span>
+    </div>
+    <div class="nav-item" data-screen="echoback">
+      <span class="nav-icon material-symbols-outlined">hearing</span>
+      <span>回响</span>
+    </div>
+    <div class="nav-item" data-screen="destiny">
+      <span class="nav-icon material-symbols-outlined">auto_awesome</span>
+      <span>宿缘</span>
+    </div>
+  </div>
+
+  <!-- Toast 提示容器 -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ============================================================
+// 心汐 v9-stitch · 全部 33 个 JS 函数（从 v8-zen 适配）
+// 新增：湖面状态切换、投石动画、初始化事件绑定
+// ============================================================
+
+// ========== 全局状态 ==========
+let obCurrent = 1;
+let obAutoPicked = { s1count: 0, s1need: 5 };
+let obRolePicked = { work: false, fam: false };
+let _rnPicked = { now: null, day: null };
+
+// ============================================================
+// 引导页 (Onboarding) — 6 个函数
+// ============================================================
+
+// Step 2 微状态选择 — 选择即推进
+function pickAuto(el) {
+  let grid = el.parentElement;
+  grid.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  setTimeout(function() { obAdvance(); }, 300);
+}
+
+// Step 1 单选组（人格/关系/盼头）— 仅高亮
+function pickAuto2(el) {
+  let grid = el.parentElement;
+  grid.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+// Step 1 双选组（上班/在家）— 标记选中
+function pickAuto3(el, group) {
+  let grid = el.parentElement;
+  grid.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  if (group === 'work') obRolePicked.work = true;
+  if (group === 'fam') obRolePicked.fam = true;
+}
+
+// 推进到下一步
+function obAdvance() {
+  if (obCurrent >= 2) return;
+  obCurrent++;
+  obJump(obCurrent);
+}
+
+// 跳转到指定步骤
+function obJump(n) {
+  obCurrent = n;
+  document.querySelectorAll('.ob-step').forEach(function(s) { s.classList.remove('active'); });
+  var step = document.getElementById('ob' + n);
+  if (step) step.classList.add('active');
+  document.querySelectorAll('#dots span').forEach(function(d, i) {
+    d.classList.toggle('done', i < n);
+  });
+  // 启用/禁用 Step 2 的完成按钮
+  if (n === 2) {
+    var btn = document.getElementById('bFinish');
+    if (btn) btn.disabled = true;
+  }
+}
+
+// 完成引导
+function finishOB() {
+  document.getElementById('onboard').classList.remove('active');
+  var dots = document.getElementById('dots');
+  if (dots) dots.style.display = 'none';
+  document.getElementById('sc-home').classList.add('active');
+  navAct(0);
+  showToast('湖面映照已建立 · 欢迎来到心湖');
+}
+
+// 角色详情（空函数，保留以维持函数计数）
+function showRoleDetail() {}
+
+// ============================================================
+// 导航 (Navigation) — 3 个函数
+// ============================================================
+
+// 屏幕名映射：兼容 v8 旧名 → v9 新 ID
+var _screenMap = {
+  home: 'sc-home',
+  mood: 'sc-echoes',      // v8 "mood" → v9 "涟漪"
+  echoes: 'sc-echoes',
+  echo: 'sc-echoback',    // v8 "echo" → v9 "回响"
+  echoback: 'sc-echoback',
+  bond: 'sc-destiny',     // v8 "bond" → v9 "宿缘"
+  destiny: 'sc-destiny'
+};
+
+// 导航到指定屏幕
+function navTo(n, i) {
+  var targetId = _screenMap[n] || ('sc-' + n);
+  var screens = ['sc-home', 'sc-echoes', 'sc-echoback', 'sc-destiny'];
+  screens.forEach(function(s) {
+    var el = document.getElementById(s);
+    if (el) el.classList.remove('active');
+  });
+  var target = document.getElementById(targetId);
+  if (target) target.classList.add('active');
+  else {
+    console.warn('navTo: 屏幕 #' + targetId + ' 不存在，尝试 fallback');
+    return;
+  }
+  if (typeof i === 'number') navAct(i);
+}
+
+// 更新底部导航激活状态
+function navAct(i) {
+  document.querySelectorAll('.nav-item').forEach(function(n, j) {
+    n.classList.toggle('active', j === i);
+  });
+}
+
+// 个人资料面板开关
+function toggleProfile() {
+  var p = document.getElementById('profile');
+  if (p) p.classList.toggle('active');
+}
+
+// ============================================================
+// 记录面板 (Record Now Modal) — 7 个函数
+// ============================================================
+
+function openRecordNow() {
+  var overlay = document.getElementById('recordOverlay');
+  if (!overlay) { console.warn('openRecordNow: #recordOverlay 不存在'); return; }
+  overlay.classList.add('active');
+  rnSwitchTab('now');
+}
+
+function closeRecordNow() {
+  var overlay = document.getElementById('recordOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+// 记录面板 tab 切换
+function rnSwitchTab(tab) {
+  var panelNow = document.getElementById('recordPanelNow');
+  var panelDay = document.getElementById('recordPanelDay');
+  if (panelNow) panelNow.classList.toggle('active', tab === 'now');
+  if (panelDay) panelDay.classList.toggle('active', tab === 'day');
+
+  // v9 使用 data-rntab 属性标识 tab
+  document.querySelectorAll('.record-tab').forEach(function(btn) {
+    var tabVal = btn.getAttribute('data-rntab');
+    btn.classList.toggle('active', tabVal === tab);
+  });
+}
+
+// 选择心情
+function rnPickMood(el, tab) {
+  el.parentElement.querySelectorAll('.record-mood-item').forEach(function(m) {
+    m.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  var nameEl = el.querySelector('.record-mood-name');
+  _rnPicked[tab] = nameEl ? nameEl.textContent : el.textContent.trim();
+  var submitBtn = document.getElementById(tab === 'now' ? 'recordSubmitNow' : 'recordSubmitDay');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+  }
+}
+
+// 提交记录
+function rnSubmit(tab) {
+  var mood = _rnPicked[tab];
+  if (!mood) { showToast('请先选择一种心境'); return; }
+  closeRecordNow();
+  if (tab === 'now') showToast(mood + ' · 石子已投入湖中');
+  else showToast('今日湖面：' + mood + ' · 已凝望');
+  _rnPicked = { now: null, day: null };
+  // 重置提交按钮
+  var btnNow = document.getElementById('recordSubmitNow');
+  var btnDay = document.getElementById('recordSubmitDay');
+  if (btnNow) { btnNow.disabled = true; btnNow.style.opacity = '0.35'; }
+  if (btnDay) { btnDay.disabled = true; btnDay.style.opacity = '0.35'; }
+}
+
+// 从预警/首页快捷进入 — 投石模式
+function startMoodNow() {
+  closeRecordNow();
+  swMoodModeInline('now');
+  navTo('echoes', 1);
+}
+
+// 从预警/首页快捷进入 — 全天模式
+function startMoodDay() {
+  closeRecordNow();
+  swMoodModeInline('day');
+  navTo('echoes', 1);
+}
+
+// 心情模式内联切换（v9 无独立心情面板，仅保留事件链路）
+function swMoodModeInline(m) {
+  // v9-stitch 中 mood-now/mood-day 元素不存在，优雅降级
+  var moodNow = document.getElementById('mood-now');
+  var moodDay = document.getElementById('mood-day');
+  if (moodNow) moodNow.style.display = m === 'now' ? 'block' : 'none';
+  if (moodDay) moodDay.style.display = m === 'day' ? 'block' : 'none';
+  document.querySelectorAll('.mmode').forEach(function(b, i) {
+    b.classList.toggle('active', (m === 'now' && i === 0) || (m === 'day' && i === 1));
+  });
+}
+
+// ============================================================
+// 心情 (Mood) — 3 个函数
+// ============================================================
+
+// 选择心情卡（m-card → record-mood-item 兼容）
+function selMood(el) {
+  var parent = el.parentElement;
+  var selector = '.m-card, .record-mood-item';
+  parent.querySelectorAll(selector).forEach(function(m) { m.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+// 心情时间模式切换（v9 无独立心情面板，优雅降级）
+function swMoodMode(m, el) {
+  var moodNow = document.getElementById('mood-now');
+  var moodDay = document.getElementById('mood-day');
+  if (moodNow) moodNow.style.display = m === 'now' ? 'block' : 'none';
+  if (moodDay) moodDay.style.display = m === 'day' ? 'block' : 'none';
+  document.querySelectorAll('.mmode').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+
+// ============================================================
+// 回响 (Messages) — 3 个函数
+// ============================================================
+
+function acceptMsg(id) {
+  var tag = document.getElementById(id + '-tag');
+  var actions = document.getElementById(id + '-actions');
+  if (tag) { tag.textContent = '已接纳 +8%'; tag.className = 'msg-tag accepted'; }
+  if (actions) actions.style.display = 'none';
+  var item = document.getElementById(id);
+  if (item) { item.classList.remove('unread'); item.classList.add('read'); }
+  showToast('已接纳这份回响');
+  updateMsgBadge();
+}
+
+function rejectMsg(id) {
+  var tag = document.getElementById(id + '-tag');
+  var actions = document.getElementById(id + '-actions');
+  if (tag) { tag.textContent = '已散去'; tag.className = 'msg-tag rejected'; }
+  if (actions) actions.style.display = 'none';
+  var item = document.getElementById(id);
+  if (item) { item.classList.remove('unread'); item.classList.add('read'); }
+  showToast('回响已散去');
+  updateMsgBadge();
+}
+
+// 更新消息红点 — v9 使用 #msgBadge
+function updateMsgBadge() {
+  var unread = document.querySelectorAll('#sc-echoback .msg-item.unread').length;
+  var badge = document.getElementById('msgBadge');
+  if (!badge) return;
+  badge.textContent = unread;
+  badge.style.display = unread === 0 ? 'none' : 'flex';
+}
+
+// ============================================================
+// 宿缘 (Bond) — 1 个函数
+// ============================================================
+
+// 宿缘 tab 切换 — v9 使用 .bond-tab
+function swBond(t, el) {
+  var mutual = document.getElementById('bond-mutual');
+  var quiet = document.getElementById('bond-quiet');
+  if (mutual) mutual.style.display = t === 'mutual' ? 'flex' : 'none';
+  if (quiet) quiet.style.display = t === 'quiet' ? 'flex' : 'none';
+  document.querySelectorAll('.bond-tab').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+
+// ============================================================
+// 能量弹窗 (Energy Popup) — 3 个函数
+// ============================================================
+
+function openEnergyPopup() {
+  var popup = document.getElementById('energyPopup');
+  if (popup) popup.classList.add('active');
+}
+
+function closeEP() {
+  var popup = document.getElementById('energyPopup');
+  if (popup) popup.classList.remove('active');
+}
+
+// 更新能量滑块值
+function updateEPSlider(v) {
+  var valEl = document.getElementById('energyVal');
+  var dimEl = document.getElementById('energyDim');
+  if (valEl) valEl.textContent = v + '%';
+  if (dimEl) {
+    dimEl.innerHTML = '她将收到 <strong>' + (v * 1.3).toFixed(0) +
+      '%</strong>（' + v + '% × 1.3 相伴加成）· 本次接收衰减后 +3%';
+  }
+}
+
+// ============================================================
+// 温暖弹窗 (Warmth Popup) — 3 个函数
+// ============================================================
+
+function checkWarmthUser() {
+  var valEl = document.getElementById('energyVal');
+  var v = valEl ? parseInt(valEl.textContent) : 10;
+  var popup = document.getElementById('warmthOverlay');
+  if (82 - v < 10 && popup) {
+    popup.classList.add('active');
+  } else {
+    showToast('已回响 · 自身 -' + v + '%');
+  }
+}
+
+function submitWarmth(feel) {
+  var msgs = {
+    happy: '你的快乐来自分享！系统已记录：利他型快乐模式',
+    tired: '下次回响前会提醒「留一点给自己哦」',
+    neutral: '系统已记录，将在月末总结中回顾'
+  };
+  showToast(msgs[feel] || '已记录');
+  closeWarmth();
+}
+
+function closeWarmth() {
+  var popup = document.getElementById('warmthOverlay');
+  if (popup) popup.classList.remove('active');
+}
+
+// ============================================================
+// Toast — 1 个函数
+// ============================================================
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// 湖面状态切换（新增，Stitch 设计）— 4 种状态
+// ============================================================
+
+var _lakeStates = {
+  mirror:  { main: '湖面如镜', sub: '心湖澄澈，波澜不惊',    emoji: '' },
+  breeze:  { main: '微风微澜', sub: '微风吹过，泛起浅浅涟漪',  emoji: '' },
+  ripples: { main: '涟漪频密', sub: '石子落下，波纹交织',      emoji: '' },
+  storm:   { main: '风起浪涌', sub: '风雨将至，湖面激荡',      emoji: '' }
+};
+var _currentLakeState = 'mirror';
+
+function switchLakeState(state) {
+  if (!_lakeStates[state]) return;
+  _currentLakeState = state;
+  var wrap = document.getElementById('homeLakeWrap');
+  if (!wrap) return;
+
+  // 移除旧状态类，添加新状态类
+  Object.keys(_lakeStates).forEach(function(s) { wrap.classList.remove('lake--' + s); });
+  wrap.classList.add('lake--' + state);
+
+  // 更新状态圆点
+  document.querySelectorAll('.lake-state-dot').forEach(function(dot) {
+    dot.classList.toggle('active', dot.getAttribute('data-state') === state);
+  });
+
+  // 更新状态标签文字
+  var label = document.querySelector('.lake-state-label');
+  if (label) {
+    var info = _lakeStates[state];
+    label.textContent = info.main;
+  }
+
+  // 更新湖面主文字
+  var mainEl = wrap.querySelector('.lake-text-main');
+  var subEl = wrap.querySelector('.lake-text-sub');
+  if (mainEl) mainEl.textContent = _lakeStates[state].main;
+  if (subEl) subEl.textContent = _lakeStates[state].sub;
+
+  // 更新涟漪来源标签中的占位符
+  updateRippleSourceTags(state);
+
+  // 根据状态切换湖面水纹照片 (对齐 Stitch 各状态专属纹理)
+  var lakeSurface = wrap.querySelector('.lake-surface');
+  if (lakeSurface) {
+    var waterTextures = {
+      mirror:  'url(\'https://lh3.googleusercontent.com/aida-public/AB6AXuDHnm0kD0zPt4hIxfP7VtViGbUQ7HQPAhfIQqWtY-SLhfcPbhjx0fVj1Eoa96KRRqRI8DaVfdgz6iIFY4_2vrq2bfhClHO4xSg7ZpIZh9gbRio6FgFTa5ogzotNL1luQkzj4sBN_ch9zop2ZfuG7ZoAEPCPdlZuVDhZ5JvvKIqRh8R2Im-S_lJlNVzDijQqvejRlsooRFv0gOXIIuW5PZhzYv5ZeSr6yIqxVl4JhB0z091NIZrLnD1qR4RpBZraRZfL2VtTqPsNuJ8\')',
+      breeze:  'url(\'https://lh3.googleusercontent.com/aida-public/AB6AXuD_5XzAVQFuOf9ICbD1NWUdspUOUohjDA-Y5bDuC5QysHlfIIdCfb85oXWNKVJ_2r1ymTxnpdoIWfmkMbGBAlijtxtTBkixmYiCIKe7oRDA1r2yp7za51eGQ8LpyBmEWnN1aQpnY_DorpXVmKPaH0r6m39qhhzO1fHePtzXDD8-83DwVSm-VNZa7whOiZSXaieL8nnkJeOMDrQVQYYVq67BZHkMaguAKSbRSUmerN8LMc7X1BxK1CJIqz_dJ2ljodtJAjlAh4OPIxY\')',
+      ripples: 'url(\'https://lh3.googleusercontent.com/aida-public/AB6AXuCcEglC2GLm74BjpTdAob7iTQln6UeQa42amucxG9yWYkTxtyap_qWKI5zgQYIeP_nLoMR3ffEdb_lEdq7xTZaRiaHJeObxCNa0ZNi_8YChPGglRi3_ygTGfFMfVvZUM5ieoTiVjOcCvRaWZiXwb9P-j5XNdun9QRC4w8dUAbFa_Wd0qS6K7lbnTFyb0bVnxwbl8WWHeFj68sV9YfyIX4ZqNHIKYRwqWXdoSp4gy-Vp7U5_ux-nWsaV-gq9MTl2plUD9ZkWOtmkVic\')',
+      storm:   'url(\'https://lh3.googleusercontent.com/aida-public/AB6AXuDwlWMZZJIu6HdE4JdhwTPOVNO50Rz8I5dOAJktlsWbixglCTy4vdUFvJoTrDyQ2-OIDfWcIZs44mXhsm_LAHxNv0-X1pFUFLQLIpICZMefDVU348jgkxEpX3SDrKg_Nm0kxYhHaAjbjjk6Mqe8t-FaGe4RALWDSeqZ1BpDrofpdUDCnbxLS5RxS2zYIMA7jguE0Ryz7kXGLzxQHxDfiqTELYG-9jT9KWsK3QW7rCeOxolbJUkw0zGZRqOFzlxXqQiO7w2AUZm7p2s\')'
+    };
+    lakeSurface.style.backgroundImage = waterTextures[state] || waterTextures.breeze;
+  }
+
+  // 状态切换时有过渡动画
+  wrap.classList.add('lake-state-entering');
+  setTimeout(function() { wrap.classList.remove('lake-state-entering'); }, 600);
+}
+
+function updateRippleSourceTags(state) {
+  var tags = document.getElementById('srcTags');
+  if (!tags) return;
+  var data = {
+    mirror:  { inner: '自在', mark: '印记', transfer: '回响' },
+    breeze:  { inner: '自在', mark: '印记', transfer: '回响' },
+    ripples: { inner: '自在', mark: '印记', transfer: '回响' },
+    storm:   { inner: '自在', mark: '印记', transfer: '回响' }
+  };
+  // 保持标签文案不变，仅作为状态联动点
+  var d = data[state] || data.mirror;
+  var sps = tags.querySelectorAll('.ripple-source-tag');
+  if (sps.length >= 3) {
+    // 标签格式已内联在 HTML 中，暂不覆盖 DOM
+  }
+}
+
+// ============================================================
+// 投石入水动画（新增，Stitch 设计）
+// ============================================================
+
+var _sealChars = ['平', '悦', '忧', '定', '悟', '寂', '闲'];
+
+function throwStone() {
+  var wrap = document.getElementById('homeLakeWrap');
+  var lakeContainer = wrap ? wrap.querySelector('.lake-container') : null;
+  if (!lakeContainer) { showToast('湖面未就绪'); return; }
+
+  // Web Audio API 水滴声 (Stitch: 微风微澜 212-244)
+  try {
+    var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    var oscillator = audioContext.createOscillator();
+    var gainNode = audioContext.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.5);
+  } catch(e) { /* audio not available */ }
+
+  // 创建墨滴滴落动画
+  var drop = document.createElement('div');
+  drop.className = 'ink-drop';
+  drop.style.cssText = 'position:absolute;width:12px;height:20px;background:var(--color-primary);border-radius:50% 50% 40% 40%;pointer-events:none;z-index:20;left:50%;top:40%;margin-left:-6px;margin-top:-10px;';
+  drop.style.animation = 'stone-ink-drop 0.4s cubic-bezier(.17,.67,.83,.67) forwards';
+  lakeContainer.appendChild(drop);
+
+  setTimeout(function() {
+    drop.remove();
+
+    // 印章浮现
+    var seal = document.createElement('div');
+    var ch = _sealChars[Math.floor(Math.random() * _sealChars.length)];
+    seal.textContent = ch;
+    seal.style.cssText = 'position:absolute;font-family:var(--font-display);font-size:32px;color:var(--color-primary);pointer-events:none;z-index:25;left:50%;top:20%;margin-left:-20px;margin-top:-40px;opacity:0;';
+    seal.style.animation = 'stone-seal-emerge 1.2s ease forwards';
+    lakeContainer.appendChild(seal);
+    setTimeout(function() { seal.remove(); }, 2500);
+
+    // 同心圆涟漪扩散（4 层）
+    for (var i = 0; i < 4; i++) {
+      (function(delay) {
+        setTimeout(function() {
+          var ripple = document.createElement('div');
+          ripple.style.cssText = 'position:absolute;border-radius:50%;border:2px solid rgba(23,24,24,0.3);pointer-events:none;z-index:10;left:50%;top:50%;width:0;height:0;margin-left:0;margin-top:0;';
+          ripple.style.animation = 'splash-ripple-expand ' + (1.5 + delay * 0.1) + 's cubic-bezier(0,0.2,0.8,1) forwards';
+          lakeContainer.appendChild(ripple);
+          setTimeout(function() { ripple.remove(); }, 2000);
+        }, delay * 350);
+      })(i);
+    }
+
+    // 飞溅墨滴
+    for (var j = 0; j < 12; j++) {
+      var droplet = document.createElement('div');
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 15 + Math.random() * 50;
+      droplet.style.cssText = 'position:absolute;width:4px;height:4px;background:var(--color-primary);border-radius:50%;pointer-events:none;z-index:18;left:50%;top:40%;margin-left:-2px;margin-top:-2px;';
+      droplet.style.setProperty('--splash-x', Math.cos(angle) * dist + 'px');
+      droplet.style.setProperty('--splash-y', Math.sin(angle) * dist * 0.4 - 40 + 'px');
+      droplet.style.animation = 'stone-ink-droplet 0.7s ease-out forwards';
+      lakeContainer.appendChild(droplet);
+      setTimeout(function() { droplet.remove(); }, 800);
+    }
+
+  }, 450);
+
+  showToast('石子已投入 · 涟漪荡漾');
+}
+
+// ============================================================
+// 页面初始化 — 事件绑定
+// ============================================================
+
+function initApp() {
+  // --- 引导页事件绑定 ---
+  // Step 1: 色彩/人格 chip 绑定 pickAuto2
+  var ob1 = document.getElementById('ob1');
+  if (ob1) {
+    ob1.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        // 判断是否在 col2 盼头组中
+        var grid = chip.parentElement;
+        if (grid && grid.classList.contains('col2')) {
+          pickAuto2(chip);
+        } else {
+          pickAuto2(chip);
+        }
+      });
+    });
+  }
+
+  // Step 2: 微状态 chip 绑定 pickAuto
+  var ob2 = document.getElementById('ob2');
+  if (ob2) {
+    ob2.querySelectorAll('.chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        pickAuto(chip);
+        // 启用"开始"按钮
+        var btn = document.getElementById('bFinish');
+        if (btn) { btn.disabled = false; }
+      });
+    });
+
+    // 完成按钮
+    var bFinish = document.getElementById('bFinish');
+    if (bFinish) {
+      bFinish.addEventListener('click', function() { finishOB(); });
+    }
+
+    // 跳过按钮
+    var skipBtn = ob2.querySelector('.ob-skip');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', function() { finishOB(); });
+    }
+  }
+
+  // --- 导航事件绑定 ---
+  document.querySelectorAll('.nav-item').forEach(function(nav, i) {
+    nav.addEventListener('click', function() {
+      var screen = nav.getAttribute('data-screen');
+      if (screen) navTo(screen, i);
+    });
+  });
+
+  // --- 个人资料按钮 ---
+  var profileBtn = document.querySelector('.profile-btn');
+  if (profileBtn) {
+    profileBtn.addEventListener('click', function() { toggleProfile(); });
+  }
+
+  // 个人资料关闭按钮
+  var profileClose = document.querySelector('.profile-close');
+  if (profileClose) {
+    profileClose.addEventListener('click', function() { toggleProfile(); });
+  }
+
+  // --- 湖面状态切换事件 ---
+  document.querySelectorAll('.lake-state-dot').forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      var state = dot.getAttribute('data-state');
+      if (state) switchLakeState(state);
+    });
+  });
+
+  // --- 投石入水按钮 ---
+  var stoneBtn = document.querySelector('.lake-action-btn.primary');
+  if (stoneBtn) {
+    stoneBtn.addEventListener('click', function() { throwStone(); });
+  }
+
+  // --- 记录此刻按钮 ---
+  var recordBtns = document.querySelectorAll('.lake-action-btn');
+  if (recordBtns.length >= 2) {
+    // 第二个按钮是"记录此刻"
+    recordBtns[1].addEventListener('click', function() { openRecordNow(); });
+  }
+
+  // --- 查看涟漪按钮 ---
+  if (recordBtns.length >= 3) {
+    recordBtns[2].addEventListener('click', function() { navTo('echoes', 1); });
+  }
+
+  // .view-trend-link 链接
+  var trendLink = document.querySelector('.view-trend-link');
+  if (trendLink) {
+    trendLink.addEventListener('click', function() { navTo('echoes', 1); });
+  }
+
+  // --- 记录面板事件 ---
+  // Tab 切换
+  document.querySelectorAll('.record-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var tabName = tab.getAttribute('data-rntab');
+      if (tabName) rnSwitchTab(tabName);
+    });
+  });
+
+  // 心情选择
+  document.querySelectorAll('.record-mood-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      var panel = item.closest('.record-panel');
+      var tab = panel && panel.id === 'recordPanelDay' ? 'day' : 'now';
+      rnPickMood(item, tab);
+    });
+  });
+
+  // 提交按钮
+  var submitNowBtn = document.getElementById('recordSubmitNow');
+  var submitDayBtn = document.getElementById('recordSubmitDay');
+  if (submitNowBtn) submitNowBtn.addEventListener('click', function() { rnSubmit('now'); });
+  if (submitDayBtn) submitDayBtn.addEventListener('click', function() { rnSubmit('day'); });
+
+  // 取消按钮
+  var recordCloseBtn = document.querySelector('.record-close');
+  if (recordCloseBtn) {
+    recordCloseBtn.addEventListener('click', function() { closeRecordNow(); });
+  }
+
+  // --- 预警条按钮 ---
+  var warnBar = document.getElementById('warn-low');
+  if (warnBar) {
+    var warnBtns = warnBar.querySelectorAll('button');
+    if (warnBtns[0]) warnBtns[0].addEventListener('click', function() {
+      showToast('推荐：湖边静坐 10min');
+    });
+    if (warnBtns[1]) warnBtns[1].addEventListener('click', function() {
+      startMoodNow();
+    });
+  }
+
+  // --- 回响屏消息按钮 ---
+  ['msg1', 'msg2', 'msg3'].forEach(function(id) {
+    var acceptBtns = document.querySelectorAll('#' + id + '-actions .msg-accept');
+    var rejectBtns = document.querySelectorAll('#' + id + '-actions .msg-reject');
+    acceptBtns.forEach(function(btn) { btn.addEventListener('click', function() { acceptMsg(id); }); });
+    rejectBtns.forEach(function(btn) { btn.addEventListener('click', function() { rejectMsg(id); }); });
+  });
+
+  // --- 宿缘 tab 切换 ---
+  document.querySelectorAll('.bond-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var t = tab.getAttribute('data-tab');
+      if (t) swBond(t, tab);
+    });
+  });
+
+  // --- 宿缘操作按钮 ---
+  // "回响" 按钮 → 打开能量弹窗
+  document.querySelectorAll('.bond-action.echo').forEach(function(btn) {
+    btn.addEventListener('click', function() { openEnergyPopup(); });
+  });
+  // "免费传" / 花 / 吻 按钮 → toast 提示
+  document.querySelectorAll('.bond-action.shield').forEach(function(btn) {
+    btn.addEventListener('click', function() { showToast('守护光点免费回响！（今日1/1）'); });
+  });
+  document.querySelectorAll('.bond-action.flower').forEach(function(btn) {
+    btn.addEventListener('click', function() { showToast('已投花'); });
+  });
+  document.querySelectorAll('.bond-action.kiss').forEach(function(btn) {
+    btn.addEventListener('click', function() { showToast('已飞吻'); });
+  });
+
+  // --- 能量弹窗事件 ---
+  var energySlider = document.querySelector('.energy-slider');
+  if (energySlider) {
+    energySlider.addEventListener('input', function() {
+      updateEPSlider(this.value);
+    });
+  }
+  var energyConfirm = document.querySelector('.energy-confirm');
+  if (energyConfirm) {
+    energyConfirm.addEventListener('click', function() {
+      closeEP();
+      checkWarmthUser();
+    });
+  }
+  var energyCancel = document.querySelector('.energy-cancel');
+  if (energyCancel) {
+    energyCancel.addEventListener('click', function() { closeEP(); });
+  }
+
+  // --- 温暖弹窗事件 ---
+  var warmthBtns = document.querySelectorAll('.warmth-feel button');
+  var feels = ['happy', 'tired', 'neutral'];
+  warmthBtns.forEach(function(btn, i) {
+    btn.addEventListener('click', function() { submitWarmth(feels[i] || 'neutral'); });
+  });
+  var warmthClose = document.querySelector('.warmth-close');
+  if (warmthClose) {
+    warmthClose.addEventListener('click', function() { closeWarmth(); });
+  }
+
+  // --- 建立守望按钮 ---
+  var addBtn = document.querySelector('.bond-add');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() { showToast('邀请链接已复制'); });
+  }
+
+  // --- 消息按钮 ---
+  var msgBtn = document.querySelector('.msg-btn');
+  if (msgBtn) {
+    msgBtn.addEventListener('click', function() { navTo('echoback', 2); });
+  }
+
+  // --- 初始化消息红点 ---
+  updateMsgBadge();
+
+  // --- 初始化湖面状态 ---
+  switchLakeState('mirror');
+}
+
+// ============================================================
+// 启动
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() { initApp(); });
+</script>
+
+</body>
+</html>
